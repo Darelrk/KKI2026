@@ -34,6 +34,9 @@ venv/
 /*.onnx
 /*.ncnn
 /*.zip
+!/model/
+!/model/**
+/model/**/__pycache__/
 
 # CAD and large design binaries excluded from software-only repository
 /*.fcstd

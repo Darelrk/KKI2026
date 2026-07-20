@@ -1,0 +1,7 @@
+path: /kaggle/working/asv_buoy_merged
+train: images/train
+val: images/val
+test: images/test
+names:
+  0: red_buoy
+  1: green_buoy

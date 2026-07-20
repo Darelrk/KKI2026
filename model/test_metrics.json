@@ -1,0 +1,23 @@
+{
+  "ultralytics_version": "8.4.67",
+  "best_pt": "/kaggle/working/runs/asv_buoy_pilot/yolo26n_red_green_640/weights/best.pt",
+  "overall": {
+    "metrics/precision(B)": 0.9536960417981122,
+    "metrics/recall(B)": 0.9527768430969366,
+    "metrics/mAP50(B)": 0.9834393539269526,
+    "metrics/mAP50-95(B)": 0.8905679915718027,
+    "fitness": 0.8905679915718027
+  },
+  "per_class": {
+    "red_buoy": {
+      "precision": 0.9678748658184955,
+      "recall": 0.9506172839506173,
+      "map50_95": 0.8891372138708032
+    },
+    "green_buoy": {
+      "precision": 0.939517217777729,
+      "recall": 0.9549364022432557,
+      "map50_95": 0.891998769272802
+    }
+  }
+}

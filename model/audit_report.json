@@ -1,0 +1,34 @@
+{
+  "sources": [
+    {
+      "name": "andy",
+      "workspace": "andy-chen-wv5pv",
+      "project": "buoy-detector-5maeu",
+      "version": "4",
+      "url": "https://universe.roboflow.com/andy-chen-wv5pv/buoy-detector-5maeu"
+    }
+  ],
+  "stats": {
+    "images_test": 99,
+    "images_val": 539,
+    "duplicates_removed": 217,
+    "duplicate_label_conflicts": 176,
+    "images_train": 4319
+  },
+  "instances": {
+    "test": {
+      "red_buoy": 243,
+      "green_buoy": 244
+    },
+    "val": {
+      "red_buoy": 2489,
+      "green_buoy": 2063
+    },
+    "train": {
+      "red_buoy": 18274,
+      "green_buoy": 16182
+    }
+  },
+  "issue_counts": {},
+  "issues": []
+}
