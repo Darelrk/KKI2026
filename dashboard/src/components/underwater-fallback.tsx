@@ -4,20 +4,27 @@ import type { UnderwaterFrame } from '../lib/asv-types'
 
 type UnderwaterFallbackProps = {
   frame: UnderwaterFrame | null
+  streamUrl: string | null
 }
 
-export function UnderwaterFallback({ frame }: UnderwaterFallbackProps) {
+export function UnderwaterFallback({ frame, streamUrl }: UnderwaterFallbackProps) {
   return (
     <section className="underwater-fallback" aria-labelledby="underwater-camera-title">
       <div className="panel-heading">
         <Waves aria-hidden="true" />
         <div>
-          <p className="eyebrow">Fallback optical link</p>
-          <h2 id="underwater-camera-title">Underwater frame</h2>
+          <p className="eyebrow">Raw optical link</p>
+          <h2 id="underwater-camera-title">Underwater action camera</h2>
         </div>
       </div>
 
-      {frame ? (
+      {streamUrl ? (
+        <img
+          className="underwater-fallback__stream"
+          src={streamUrl}
+          alt="Live underwater action camera"
+        />
+      ) : frame ? (
         <figure className="underwater-fallback__frame">
           <img
             src={`data:${frame.mime};base64,${frame.data_base64}`}

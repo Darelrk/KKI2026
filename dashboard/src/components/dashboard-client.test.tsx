@@ -16,13 +16,19 @@ function createWrapper() {
 }
 
 describe('DashboardClient', () => {
-  it('loads the complete fixture dashboard without Supabase credentials', async () => {
+  it('loads the complete fixture dashboard with direct raw camera streams', async () => {
     render(<DashboardClient asvId="default" mode="fixture" />, {
       wrapper: createWrapper(),
     })
 
     expect(await screen.findByText('MODEL RUNNING')).toBeInTheDocument()
-    expect(screen.getByText('Surface stream unavailable')).toBeInTheDocument()
-    expect(screen.getByRole('img', { name: 'Latest underwater frame' })).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: 'Live surface camera' })).toHaveAttribute(
+      'src',
+      'https://monitor-kapal-pora-pora.web.id/stream/atas',
+    )
+    expect(screen.getByRole('img', { name: 'Live underwater action camera' })).toHaveAttribute(
+      'src',
+      'https://monitor-kapal-pora-pora.web.id/stream/bawah',
+    )
   })
 })

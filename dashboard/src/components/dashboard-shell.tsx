@@ -5,6 +5,8 @@ import { ConnectionBar } from './connection-bar'
 import { SignalRail } from './signal-rail'
 import { UnderwaterFallback } from './underwater-fallback'
 
+import { asvStreamUrls } from '../lib/stream-urls'
+
 import type { AsvLive, UnderwaterFrame } from '../lib/asv-types'
 import type { ConnectionStatus } from './connection-bar'
 
@@ -14,6 +16,8 @@ type DashboardShellProps = {
   liveRealtimeStatus: ConnectionStatus
   underwaterFrame: UnderwaterFrame | null
   underwaterRealtimeStatus: ConnectionStatus
+  surfaceStreamUrl?: string | null
+  underwaterStreamUrl?: string | null
 }
 
 export function DashboardShell({
@@ -22,6 +26,8 @@ export function DashboardShell({
   liveRealtimeStatus,
   underwaterFrame,
   underwaterRealtimeStatus,
+  surfaceStreamUrl = asvStreamUrls.surface,
+  underwaterStreamUrl = asvStreamUrls.underwater,
 }: DashboardShellProps) {
   const online = live?.online ?? false
   const isUnavailable = !live || !online
@@ -43,8 +49,8 @@ export function DashboardShell({
 
       <section className="dashboard-grid" aria-label="ASV operational dashboard">
         <div className="dashboard-grid__cameras">
-          <CameraStage streamUrl={live?.stream_url ?? null} />
-          <UnderwaterFallback frame={underwaterFrame} />
+          <CameraStage streamUrl={surfaceStreamUrl} />
+          <UnderwaterFallback frame={underwaterFrame} streamUrl={underwaterStreamUrl} />
         </div>
         <SignalRail live={live ?? null} />
       </section>

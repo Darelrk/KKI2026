@@ -192,6 +192,7 @@ h2 {
 }
 
 .camera-stage__stream,
+.underwater-fallback__stream,
 .underwater-fallback__frame img {
   display: block;
   width: 100%;

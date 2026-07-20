@@ -21,7 +21,7 @@ export function CameraStage({ streamUrl }: CameraStageProps) {
         <div className="camera-stage__placeholder" role="status">
           <VideoCamera aria-hidden="true" size={40} />
           <p>Surface stream unavailable</p>
-          <span>Connect a trusted stream URL from the ASV bridge to enable this feed.</span>
+          <span>Configure a raw main camera URL to enable this feed.</span>
         </div>
       )}
     </section>
