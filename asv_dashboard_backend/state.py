@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from typing import AsyncIterator, Literal
 from urllib.parse import urlparse
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from .config import BridgeSettings
 
@@ -41,8 +41,45 @@ class AsvLiveStatus(BaseModel):
         return value.strip() if value and value.strip() else None
 
 
+
+class VisionDetectionBox(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    track_id: int | None = None
+    label: str = Field(min_length=1)
+    confidence: float = Field(ge=0, le=1)
+    x: float = Field(ge=0, le=1)
+    y: float = Field(ge=0, le=1)
+    width: float = Field(gt=0, le=1)
+    height: float = Field(gt=0, le=1)
+
+    @model_validator(mode="after")
+    def fit_inside_source(self) -> "VisionDetectionBox":
+        if self.x + self.width > 1 or self.y + self.height > 1:
+            raise ValueError("detection box must fit inside source frame")
+        return self
+
+
+class VisionMetadata(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    schema_version: Literal[1]
+    asv_id: str = Field(min_length=1)
+    frame_id: int = Field(ge=0)
+    captured_at: datetime
+    source_width: int = Field(gt=0)
+    source_height: int = Field(gt=0)
+    detections: list[VisionDetectionBox]
+
+    @field_validator("captured_at")
+    @classmethod
+    def require_timezone(cls, value: datetime) -> datetime:
+        if value.tzinfo is None or value.utcoffset() is None:
+            raise ValueError("captured_at must include a timezone")
+        return value
+
 class BridgeState:
-    """Store only latest status and latest surface JPEG bytes."""
+    """Store latest status, surface JPEG, and vision metadata only."""
 
     def __init__(self, settings: BridgeSettings) -> None:
         self.settings = settings
@@ -57,12 +94,33 @@ class BridgeState:
         self._surface_frame: bytes | None = None
         self._surface_frame_version = 0
         self._frame_event = asyncio.Event()
+        self._latest_detection: VisionMetadata | None = None
+        self._detection_subscribers: set[asyncio.Queue[VisionMetadata]] = set()
 
     def update_status(self, status: AsvLiveStatus) -> AsvLiveStatus:
         if status.id != self.settings.asv_id:
             raise ValueError(f"status id must be {self.settings.asv_id}")
         self.status = status
         return status
+
+    def publish_detection(self, metadata: VisionMetadata) -> None:
+        if metadata.asv_id != self.settings.asv_id:
+            raise ValueError(f"metadata asv_id must be {self.settings.asv_id}")
+        self._latest_detection = metadata
+        for queue in tuple(self._detection_subscribers):
+            if queue.full():
+                queue.get_nowait()
+            queue.put_nowait(metadata)
+
+    def subscribe_detections(self) -> asyncio.Queue[VisionMetadata]:
+        queue: asyncio.Queue[VisionMetadata] = asyncio.Queue(maxsize=1)
+        self._detection_subscribers.add(queue)
+        if self._latest_detection is not None:
+            queue.put_nowait(self._latest_detection)
+        return queue
+
+    def unsubscribe_detections(self, queue: asyncio.Queue[VisionMetadata]) -> None:
+        self._detection_subscribers.discard(queue)
 
     def update_surface_frame(self, jpeg_bytes: bytes) -> None:
         if not jpeg_bytes.startswith(b"\xff\xd8") or b"\xff\xd9" not in jpeg_bytes:

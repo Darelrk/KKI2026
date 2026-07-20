@@ -6,12 +6,13 @@ from unittest.mock import AsyncMock
 
 import pytest
 from fastapi.testclient import TestClient
+from starlette.websockets import WebSocketDisconnect
 
 from asv_dashboard_backend.config import BridgeSettings
 from asv_dashboard_backend.frames import FrameTooLargeError, build_underwater_payload
 from asv_dashboard_backend.main import create_app
 from asv_dashboard_backend.publisher import NullPublisher
-from asv_dashboard_backend.state import BridgeState
+from asv_dashboard_backend.state import BridgeState, VisionMetadata
 
 SMALL_JPEG = base64.b64decode(
     "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAAJABADASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAj/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFAEBAAAAAAAAAAAAAAAAAAAABf/EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhEDEQA/AJpAIAn/2Q=="
@@ -133,6 +134,84 @@ def test_mjpeg_stream_has_http_multipart_shape() -> None:
     assert response.headers["content-type"].startswith("multipart/x-mixed-replace")
     assert b"Content-Type: image/jpeg" in response.content
     assert response.content.endswith(SMALL_JPEG + b"\r\n")
+
+
+def vision_payload(frame_id: int = 1) -> dict[str, object]:
+    return {
+        "schema_version": 1,
+        "asv_id": "default",
+        "frame_id": frame_id,
+        "captured_at": "2026-07-20T10:00:00+00:00",
+        "source_width": 1280,
+        "source_height": 720,
+        "detections": [
+            {
+                "track_id": None,
+                "label": "buoy",
+                "confidence": 0.9,
+                "x": 0.1,
+                "y": 0.1,
+                "width": 0.2,
+                "height": 0.2,
+            }
+        ],
+    }
+
+
+def test_vision_metadata_rejects_invalid_schema_and_out_of_bounds_box() -> None:
+    app = create_app(settings=settings(), publisher=NullPublisher())
+    payload = vision_payload()
+    payload["schema_version"] = 2
+    payload["detections"][0]["x"] = 0.9
+    payload["detections"][0]["width"] = 0.2
+
+    with TestClient(app) as client:
+        response = client.post("/api/vision/metadata", json=payload)
+
+    assert response.status_code == 422
+
+
+def test_vision_metadata_post_broadcasts_to_websocket() -> None:
+    app = create_app(settings=settings(), publisher=NullPublisher())
+    expected = VisionMetadata.model_validate(vision_payload()).model_dump(mode="json")
+
+    with TestClient(app) as client:
+        with client.websocket_connect("/ws/vision/default") as socket:
+            response = client.post("/api/vision/metadata", json=vision_payload())
+            assert response.status_code == 200
+            assert socket.receive_json() == expected
+
+
+def test_vision_state_keeps_only_newest_payload() -> None:
+    state = BridgeState(settings())
+    queue = state.subscribe_detections()
+    state.publish_detection(VisionMetadata.model_validate(vision_payload(frame_id=1)))
+    state.publish_detection(VisionMetadata.model_validate(vision_payload(frame_id=2)))
+
+    assert queue.get_nowait().frame_id == 2
+    state.unsubscribe_detections(queue)
+
+
+def test_vision_metadata_rejects_wrong_asv_id() -> None:
+    app = create_app(settings=settings(), publisher=NullPublisher())
+    payload = vision_payload()
+    payload["asv_id"] = "other"
+
+    with TestClient(app) as client:
+        response = client.post("/api/vision/metadata", json=payload)
+
+    assert response.status_code == 409
+
+
+def test_vision_websocket_rejects_wrong_asv_id() -> None:
+    app = create_app(settings=settings(), publisher=NullPublisher())
+
+    with TestClient(app) as client:
+        with pytest.raises(WebSocketDisconnect) as error:
+            with client.websocket_connect("/ws/vision/other"):
+                pass
+
+    assert getattr(error.value, "code", None) == 1008
 
 
 class FakeSupabaseQuery:

@@ -6,13 +6,13 @@ import asyncio
 from datetime import datetime, timezone
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import StreamingResponse
 
 from .config import BridgeSettings
 from .frames import FrameTooLargeError, build_underwater_payload
 from .publisher import Publisher, create_publisher
-from .state import AsvLiveStatus, BridgeState
+from .state import AsvLiveStatus, BridgeState, VisionMetadata
 from .telemetry import PixhawkTelemetry, PixhawkTelemetryReader
 
 
@@ -105,6 +105,54 @@ def create_app(
 
         await resolved_publisher.publish_underwater_frame(payload)
         return payload
+
+    @app.post("/api/vision/metadata", response_model=VisionMetadata)
+    async def post_vision_metadata(metadata: VisionMetadata) -> VisionMetadata:
+        if metadata.asv_id != resolved_settings.asv_id:
+            raise HTTPException(status_code=409, detail="ASV id does not match bridge")
+        resolved_state.publish_detection(metadata)
+        return metadata
+
+    @app.websocket("/ws/vision/{asv_id}")
+    async def vision_metadata_websocket(websocket: WebSocket, asv_id: str) -> None:
+        if asv_id != resolved_settings.asv_id:
+            await websocket.close(code=1008)
+            return
+
+        await websocket.accept()
+        queue = resolved_state.subscribe_detections()
+
+        async def send_loop() -> None:
+            try:
+                while True:
+                    metadata = await queue.get()
+                    await websocket.send_json(metadata.model_dump(mode="json"))
+            except WebSocketDisconnect:
+                return
+
+        async def receive_loop() -> None:
+            try:
+                while True:
+                    await websocket.receive_text()
+            except WebSocketDisconnect:
+                return
+
+        send_task = asyncio.create_task(send_loop())
+        receive_task = asyncio.create_task(receive_loop())
+        try:
+            await asyncio.wait(
+                (send_task, receive_task),
+                return_when=asyncio.FIRST_COMPLETED,
+            )
+        finally:
+            send_task.cancel()
+            receive_task.cancel()
+            await asyncio.gather(
+                send_task,
+                receive_task,
+                return_exceptions=True,
+            )
+            resolved_state.unsubscribe_detections(queue)
 
     @app.get("/stream.mjpg")
     async def stream_mjpeg(once: bool = False) -> StreamingResponse:
