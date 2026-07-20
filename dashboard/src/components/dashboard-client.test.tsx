@@ -30,5 +30,9 @@ describe('DashboardClient', () => {
       'src',
       'https://monitor-kapal-pora-pora.web.id/stream/bawah',
     )
+    expect(screen.getByRole('heading', { name: 'Navigation map' })).toBeInTheDocument()
+    expect(screen.getByText('GPS position unavailable')).toBeInTheDocument()
+    expect(screen.getByText('MISSION MOCKUP')).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent('Ready / Preparation')
   })
 })

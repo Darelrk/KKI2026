@@ -1,10 +1,15 @@
-import { MapPin, WarningCircle } from '@phosphor-icons/react'
+import { WarningCircle } from '@phosphor-icons/react'
 
+import { MissionStage } from './mission-stage'
+import { NavigationMap } from './navigation-map'
+import { TelemetryPanel } from './telemetry-panel'
 import { CameraStage } from './camera-stage'
 import { ConnectionBar } from './connection-bar'
 import { SignalRail } from './signal-rail'
 import { UnderwaterFallback } from './underwater-fallback'
 
+import { emptyNavigationTelemetry } from '../lib/navigation-types'
+import type { NavigationTelemetry } from '../lib/navigation-types'
 import { asvStreamUrls } from '../lib/stream-urls'
 
 import type { AsvLive, UnderwaterFrame } from '../lib/asv-types'
@@ -16,6 +21,7 @@ type DashboardShellProps = {
   liveRealtimeStatus: ConnectionStatus
   underwaterFrame: UnderwaterFrame | null
   underwaterRealtimeStatus: ConnectionStatus
+  navigation?: NavigationTelemetry
   surfaceStreamUrl?: string | null
   underwaterStreamUrl?: string | null
 }
@@ -26,6 +32,7 @@ export function DashboardShell({
   liveRealtimeStatus,
   underwaterFrame,
   underwaterRealtimeStatus,
+  navigation = emptyNavigationTelemetry,
   surfaceStreamUrl = asvStreamUrls.surface,
   underwaterStreamUrl = asvStreamUrls.underwater,
 }: DashboardShellProps) {
@@ -52,20 +59,14 @@ export function DashboardShell({
           <CameraStage streamUrl={surfaceStreamUrl} />
           <UnderwaterFallback frame={underwaterFrame} streamUrl={underwaterStreamUrl} />
         </div>
-        <SignalRail live={live ?? null} />
-      </section>
-
-      <section className="navigation-placeholder" aria-labelledby="navigation-title">
-        <div className="panel-heading">
-          <MapPin aria-hidden="true" />
-          <div>
-            <p className="eyebrow">Route telemetry</p>
-            <h2 id="navigation-title">Navigation view</h2>
+          <div className="dashboard-grid__side">
+            <SignalRail live={live ?? null} />
+            <TelemetryPanel telemetry={navigation} updatedAt={live?.updated_at ?? null} />
           </div>
-        </div>
-        <p>Navigation feed not connected</p>
-        <span>Position, heading, speed, and route data will appear when the ASV bridge publishes telemetry.</span>
-      </section>
+        </section>
+
+      <NavigationMap telemetry={navigation} />
+      <MissionStage />
 
       <footer className="dashboard-shell__footer">
         <span>Surface channel: {liveRealtimeStatus}</span>
