@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { defaultAsvStreamUrls, resolveAsvStreamUrls } from './stream-urls'
+import { defaultAsvStreamUrls, resolveAsvStreamUrls, resolveAsvVisionWsUrl } from './stream-urls'
 
 describe('resolveAsvStreamUrls', () => {
   it('uses the configured raw camera URLs', () => {
@@ -22,5 +22,14 @@ describe('resolveAsvStreamUrls', () => {
         VITE_ASV_UNDERWATER_STREAM_URL: undefined,
       }),
     ).toEqual(defaultAsvStreamUrls)
+  })
+
+  it('keeps the vision WebSocket URL independent from camera URLs', () => {
+    expect(
+      resolveAsvVisionWsUrl({
+        VITE_ASV_VISION_WS_URL: ' wss://bridge.example.test ',
+      }),
+    ).toBe('wss://bridge.example.test')
+    expect(resolveAsvVisionWsUrl({})).toBeNull()
   })
 })

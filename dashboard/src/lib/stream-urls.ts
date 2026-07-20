@@ -6,6 +6,7 @@ export const defaultAsvStreamUrls = {
 type AsvStreamEnv = Partial<{
   VITE_ASV_SURFACE_STREAM_URL: string
   VITE_ASV_UNDERWATER_STREAM_URL: string
+  VITE_ASV_VISION_WS_URL: string
 }>
 
 export function resolveAsvStreamUrls(env: AsvStreamEnv): {
@@ -18,7 +19,15 @@ export function resolveAsvStreamUrls(env: AsvStreamEnv): {
   }
 }
 
+export function resolveAsvVisionWsUrl(env: AsvStreamEnv): string | null {
+  return env.VITE_ASV_VISION_WS_URL?.trim() || null
+}
+
 export const asvStreamUrls = resolveAsvStreamUrls({
   VITE_ASV_SURFACE_STREAM_URL: import.meta.env.VITE_ASV_SURFACE_STREAM_URL,
   VITE_ASV_UNDERWATER_STREAM_URL: import.meta.env.VITE_ASV_UNDERWATER_STREAM_URL,
+})
+
+export const asvVisionWsUrl = resolveAsvVisionWsUrl({
+  VITE_ASV_VISION_WS_URL: import.meta.env.VITE_ASV_VISION_WS_URL,
 })

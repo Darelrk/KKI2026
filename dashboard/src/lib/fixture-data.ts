@@ -1,5 +1,6 @@
 import type { AsvLive, UnderwaterFrame } from './asv-types'
 import type { AsvTelemetry } from './asv-telemetry'
+import type { VisionMetadata } from './vision-metadata'
 
 export function getFixtureAsvLive(id: string): AsvLive {
   return {
@@ -12,6 +13,26 @@ export function getFixtureAsvLive(id: string): AsvLive {
     updated_at: '2026-07-20T09:30:00.000Z',
   }
 }
+
+export const fixtureVisionMetadata = {
+  schema_version: 1,
+  asv_id: 'default',
+  frame_id: 1,
+  captured_at: '2026-07-20T09:30:00.000Z',
+  source_width: 1280,
+  source_height: 720,
+  detections: [
+    {
+      track_id: null,
+      label: 'buoy',
+      confidence: 0.91,
+      x: 0.4,
+      y: 0.25,
+      width: 0.2,
+      height: 0.2,
+    },
+  ],
+} satisfies VisionMetadata
 
 export const fixtureUnderwaterFrame = {
   mime: 'image/jpeg',

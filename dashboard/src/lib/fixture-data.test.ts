@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
 
-import { fixtureTelemetry, fixtureUnderwaterFrame, getFixtureAsvLive } from './fixture-data'
+import {
+  fixtureTelemetry,
+  fixtureUnderwaterFrame,
+  fixtureVisionMetadata,
+  getFixtureAsvLive,
+} from './fixture-data'
 
 describe('ASV fixture data', () => {
   it('returns a running surface status for the requested ASV', () => {
@@ -13,6 +18,15 @@ describe('ASV fixture data', () => {
     })
   })
 
+
+  it('provides a valid deterministic vision metadata fixture', () => {
+    expect(fixtureVisionMetadata).toMatchObject({
+      source_width: 1280,
+      source_height: 720,
+      frame_id: 1,
+      detections: [{ track_id: null }],
+    })
+  })
   it('provides a bounded JPEG underwater fallback frame', () => {
     expect(fixtureUnderwaterFrame).toMatchObject({
       mime: 'image/jpeg',
