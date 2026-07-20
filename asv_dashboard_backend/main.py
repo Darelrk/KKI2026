@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from datetime import datetime, timezone
 from contextlib import asynccontextmanager
 
@@ -12,6 +13,7 @@ from .config import BridgeSettings
 from .frames import FrameTooLargeError, build_underwater_payload
 from .publisher import Publisher, create_publisher
 from .state import AsvLiveStatus, BridgeState
+from .telemetry import PixhawkTelemetry, PixhawkTelemetryReader
 
 
 def create_app(
@@ -19,16 +21,29 @@ def create_app(
     settings: BridgeSettings | None = None,
     publisher: Publisher | None = None,
     state: BridgeState | None = None,
+    telemetry_reader: PixhawkTelemetryReader | None = None,
 ) -> FastAPI:
     """Create an app with injectable state and publisher for deterministic tests."""
     resolved_settings = settings or BridgeSettings.from_env()
     resolved_state = state or BridgeState(resolved_settings)
     resolved_publisher = publisher or create_publisher(resolved_settings)
+    resolved_telemetry = telemetry_reader or PixhawkTelemetryReader(resolved_settings)
 
     @asynccontextmanager
     async def lifespan(_: FastAPI):
-        yield
-        await resolved_publisher.close()
+        telemetry_task = None
+        if resolved_settings.pixhawk_enabled:
+            telemetry_task = asyncio.create_task(
+                resolved_telemetry.run(resolved_publisher.publish_telemetry)
+            )
+        try:
+            yield
+        finally:
+            await resolved_telemetry.close()
+            if telemetry_task is not None:
+                telemetry_task.cancel()
+                await asyncio.gather(telemetry_task, return_exceptions=True)
+            await resolved_publisher.close()
 
     app = FastAPI(
         title="ASV Raspberry Pi Bridge",
@@ -48,6 +63,10 @@ def create_app(
     @app.get("/api/status", response_model=AsvLiveStatus)
     async def get_status() -> AsvLiveStatus:
         return resolved_state.status
+
+    @app.get("/api/telemetry", response_model=PixhawkTelemetry)
+    async def get_telemetry() -> PixhawkTelemetry:
+        return resolved_telemetry.snapshot()
 
     @app.put("/api/status", response_model=AsvLiveStatus)
     async def put_status(status: AsvLiveStatus) -> AsvLiveStatus:

@@ -24,6 +24,13 @@ class BridgeSettings:
     max_base64_length: int = 180_000
     max_fps: float = 1.0
     frame_wait_timeout: float = 1.0
+    pixhawk_enabled: bool = False
+    pixhawk_endpoint: str = "/dev/ttyACM0"
+    pixhawk_baud: int = 115_200
+    pixhawk_update_hz: float = 1.0
+    pixhawk_heartbeat_timeout: float = 3.0
+    pixhawk_track_max_points: int = 500
+    pixhawk_reconnect_seconds: float = 3.0
 
     def __post_init__(self) -> None:
         if not self.asv_id.strip():
@@ -42,6 +49,18 @@ class BridgeSettings:
             raise ConfigError("ASV_FALLBACK_MAX_FPS must be positive")
         if self.frame_wait_timeout <= 0:
             raise ConfigError("ASV_FRAME_WAIT_TIMEOUT must be positive")
+        if not self.pixhawk_endpoint.strip():
+            raise ConfigError("ASV_PIXHAWK_ENDPOINT must not be empty")
+        if self.pixhawk_baud <= 0:
+            raise ConfigError("ASV_PIXHAWK_BAUD must be positive")
+        if self.pixhawk_update_hz <= 0:
+            raise ConfigError("ASV_PIXHAWK_UPDATE_HZ must be positive")
+        if self.pixhawk_heartbeat_timeout <= 0:
+            raise ConfigError("ASV_PIXHAWK_HEARTBEAT_TIMEOUT must be positive")
+        if self.pixhawk_track_max_points < 1:
+            raise ConfigError("ASV_PIXHAWK_TRACK_MAX_POINTS must be positive")
+        if self.pixhawk_reconnect_seconds <= 0:
+            raise ConfigError("ASV_PIXHAWK_RECONNECT_SECONDS must be positive")
 
     @property
     def supabase_enabled(self) -> bool:
@@ -61,6 +80,17 @@ class BridgeSettings:
             max_base64_length=_int_env("ASV_FALLBACK_MAX_BASE64", 180_000),
             max_fps=_float_env("ASV_FALLBACK_MAX_FPS", 1.0),
             frame_wait_timeout=_float_env("ASV_FRAME_WAIT_TIMEOUT", 1.0),
+            pixhawk_enabled=_bool_env("ASV_PIXHAWK_ENABLED", False),
+            pixhawk_endpoint=environ.get("ASV_PIXHAWK_ENDPOINT", "/dev/ttyACM0"),
+            pixhawk_baud=_int_env("ASV_PIXHAWK_BAUD", 115_200),
+            pixhawk_update_hz=_float_env("ASV_PIXHAWK_UPDATE_HZ", 1.0),
+            pixhawk_heartbeat_timeout=_float_env(
+                "ASV_PIXHAWK_HEARTBEAT_TIMEOUT", 3.0
+            ),
+            pixhawk_track_max_points=_int_env("ASV_PIXHAWK_TRACK_MAX_POINTS", 500),
+            pixhawk_reconnect_seconds=_float_env(
+                "ASV_PIXHAWK_RECONNECT_SECONDS", 3.0
+            ),
         )
 
 
@@ -87,6 +117,18 @@ def _float_env(name: str, default: float) -> float:
         return float(raw)
     except ValueError as exc:
         raise ConfigError(f"{name} must be a number") from exc
+
+
+def _bool_env(name: str, default: bool) -> bool:
+    raw = environ.get(name)
+    if raw is None:
+        return default
+    normalized = raw.strip().lower()
+    if normalized in {"1", "true", "yes", "on"}:
+        return True
+    if normalized in {"0", "false", "no", "off"}:
+        return False
+    raise ConfigError(f"{name} must be a boolean")
 
 
 def _require_https_url(value: str, name: str) -> None:

@@ -177,6 +177,59 @@ class FakeSupabaseClient:
         return None
 
 
+def test_supabase_publisher_uses_async_realtime_client_for_frames() -> None:
+    import asyncio
+
+    from asv_dashboard_backend.publisher import SupabasePublisher
+
+    status_client = FakeSupabaseClient()
+    realtime_client = FakeSupabaseClient()
+    publisher = SupabasePublisher(
+        status_client,
+        "default",
+        realtime_client=realtime_client,
+    )
+    payload = {"mime": "image/jpeg", "data_base64": "/9j/", "frame_id": "f-2"}
+
+    async def exercise() -> None:
+        await publisher.publish_status({"id": "default", "online": True})
+        await publisher.publish_underwater_frame(payload)
+        await publisher.close()
+
+    asyncio.run(exercise())
+
+    assert status_client.query.rows == [{"id": "default", "online": True}]
+    assert status_client.channel_args is None
+    assert realtime_client.channel_args == (
+        "asv-camera:default",
+        {"config": {"private": True}},
+    )
+    assert realtime_client.channel_instance.broadcasts == [
+        ("underwater_frame", payload),
+    ]
+
+
+def test_supabase_publisher_does_not_close_sync_realtime_client() -> None:
+    import asyncio
+
+    from asv_dashboard_backend.publisher import SupabasePublisher
+
+    client = FakeSupabaseClient()
+
+    def fail_sync_realtime_close() -> None:
+        raise NotImplementedError("sync Realtime is unavailable")
+
+    client.remove_all_channels = fail_sync_realtime_close  # type: ignore[method-assign]
+    publisher = SupabasePublisher(
+        client,
+        "default",
+        realtime_url="https://example.test",
+        realtime_key="test-key",
+    )
+
+    asyncio.run(publisher.close())
+
+
 def test_supabase_publisher_targets_status_table_and_private_channel() -> None:
     import asyncio
 
