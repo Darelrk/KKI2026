@@ -1,15 +1,28 @@
 import { CheckCircle, WarningCircle } from '@phosphor-icons/react'
 
 import type { AsvLive } from '../lib/asv-types'
+import type { ConnectionStatus } from './connection-bar'
 
 type SignalRailProps = {
   live: AsvLive | null
+  telemetryConnected: boolean | null
+  telemetryStatus: ConnectionStatus
 }
 
 
-export function SignalRail({ live }: SignalRailProps) {
+export function SignalRail({
+  live,
+  telemetryConnected,
+  telemetryStatus,
+}: SignalRailProps) {
   const modelStatus = live?.model_status ?? 'offline'
   const isRunning = live?.online && modelStatus === 'running'
+  const telemetryStatusCopy = {
+    fixture: 'Fixture data',
+    connecting: 'Connecting',
+    connected: 'Connected',
+    error: 'Error',
+  } satisfies Record<ConnectionStatus, string>
 
   return (
     <aside className="signal-rail" aria-label="Operational signal summary">
@@ -40,7 +53,17 @@ export function SignalRail({ live }: SignalRailProps) {
         </div>
         <div>
           <dt>Navigation feed</dt>
-          <dd>Not connected</dd>
+          <dd>
+            {telemetryConnected === null
+              ? 'Unavailable'
+              : telemetryConnected
+                ? 'Pixhawk connected'
+                : 'Pixhawk offline'}
+          </dd>
+        </div>
+        <div>
+          <dt>Telemetry channel</dt>
+          <dd>{telemetryStatusCopy[telemetryStatus]}</dd>
         </div>
       </dl>
     </aside>

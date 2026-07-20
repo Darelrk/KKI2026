@@ -1,4 +1,5 @@
 import type { AsvLive, UnderwaterFrame } from './asv-types'
+import type { AsvTelemetry } from './asv-telemetry'
 
 export function getFixtureAsvLive(id: string): AsvLive {
   return {
@@ -19,3 +20,13 @@ export const fixtureUnderwaterFrame = {
   captured_at: '2026-07-20T09:30:00.000Z',
   frame_id: 'fixture-underwater-001',
 } satisfies UnderwaterFrame
+
+export const fixtureTelemetry = {
+  connected: true,
+  position: null,
+  heading_deg: 144,
+  speed_mps: 0,
+  captured_at: '2026-07-20T09:30:00.000Z',
+  heartbeat_at: '2026-07-20T09:29:59.000Z',
+  track: [],
+} satisfies AsvTelemetry

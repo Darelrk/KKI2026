@@ -9,19 +9,20 @@ import { SignalRail } from './signal-rail'
 import { UnderwaterFallback } from './underwater-fallback'
 
 import { emptyNavigationTelemetry } from '../lib/navigation-types'
-import type { NavigationTelemetry } from '../lib/navigation-types'
 import { asvStreamUrls } from '../lib/stream-urls'
 
 import type { AsvLive, UnderwaterFrame } from '../lib/asv-types'
+import type { AsvTelemetry } from '../lib/asv-telemetry'
 import type { ConnectionStatus } from './connection-bar'
 
 type DashboardShellProps = {
   asvId: string
   live: AsvLive | null | undefined
   liveRealtimeStatus: ConnectionStatus
+  telemetry?: AsvTelemetry | null
+  telemetryRealtimeStatus?: ConnectionStatus
   underwaterFrame: UnderwaterFrame | null
   underwaterRealtimeStatus: ConnectionStatus
-  navigation?: NavigationTelemetry
   surfaceStreamUrl?: string | null
   underwaterStreamUrl?: string | null
 }
@@ -30,26 +31,30 @@ export function DashboardShell({
   asvId,
   live,
   liveRealtimeStatus,
+  telemetry = null,
+  telemetryRealtimeStatus = 'connecting',
   underwaterFrame,
   underwaterRealtimeStatus,
-  navigation = emptyNavigationTelemetry,
   surfaceStreamUrl = asvStreamUrls.surface,
   underwaterStreamUrl = asvStreamUrls.underwater,
 }: DashboardShellProps) {
-  const online = live?.online ?? false
-  const isUnavailable = !live || !online
+  const isUnavailable = !telemetry || !telemetry.connected
+  const navigation = telemetry ?? emptyNavigationTelemetry
 
   return (
     <main className="dashboard-shell">
-
-      <ConnectionBar asvId={asvId} online={online} status={liveRealtimeStatus} />
+      <ConnectionBar
+        asvId={asvId}
+        online={telemetry?.connected ?? false}
+        status={telemetryRealtimeStatus}
+      />
 
       {isUnavailable ? (
         <section className="dashboard-shell__alert" role="status">
           <WarningCircle aria-hidden="true" weight="fill" />
           <div>
             <strong>Telemetry unavailable</strong>
-            <p>Waiting for a valid ASV status message from the realtime channel.</p>
+            <p>Waiting for a valid Pixhawk telemetry message from the realtime channel.</p>
           </div>
         </section>
       ) : null}
@@ -59,11 +64,18 @@ export function DashboardShell({
           <CameraStage streamUrl={surfaceStreamUrl} />
           <UnderwaterFallback frame={underwaterFrame} streamUrl={underwaterStreamUrl} />
         </div>
-          <div className="dashboard-grid__side">
-            <SignalRail live={live ?? null} />
-            <TelemetryPanel telemetry={navigation} updatedAt={live?.updated_at ?? null} />
-          </div>
-        </section>
+        <div className="dashboard-grid__side">
+          <SignalRail
+            live={live ?? null}
+            telemetryConnected={telemetry?.connected ?? null}
+            telemetryStatus={telemetryRealtimeStatus}
+          />
+          <TelemetryPanel
+            telemetry={navigation}
+            updatedAt={telemetry?.captured_at ?? null}
+          />
+        </div>
+      </section>
 
       <NavigationMap telemetry={navigation} />
       <MissionStage />
@@ -71,6 +83,7 @@ export function DashboardShell({
       <footer className="dashboard-shell__footer">
         <span>Surface channel: {liveRealtimeStatus}</span>
         <span>Fallback channel: {underwaterRealtimeStatus}</span>
+        <span>Telemetry channel: {telemetryRealtimeStatus}</span>
       </footer>
     </main>
   )
