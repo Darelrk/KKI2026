@@ -2,13 +2,14 @@
 Description=ASV Ground Station Raspberry Pi bridge
 Wants=network-online.target
 After=network-online.target
+PartOf=asv-stack.target
 
 [Service]
 Type=simple
 User=pi
 Group=pi
 SupplementaryGroups=dialout
-WorkingDirectory=/opt/asv-dashboard
+WorkingDirectory=/home/pi/KKI2026
 EnvironmentFile=/etc/asv-dashboard.env
 ExecStart=/opt/asv-dashboard/.venv/bin/uvicorn asv_dashboard_backend.main:app --host 0.0.0.0 --port 8080
 Restart=on-failure
