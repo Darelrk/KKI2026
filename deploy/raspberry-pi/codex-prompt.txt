@@ -1,0 +1,108 @@
+You are operating directly on a Raspberry Pi 5. Set up only the Python ASV backend from the KKI2026 repository.
+
+Repository: https://github.com/Darelrk/KKI2026.git
+Target checkout: /home/pi/KKI2026
+Runtime install: /opt/asv-dashboard
+
+IMPORTANT ARCHITECTURE:
+- The Raspberry Pi runs Python FastAPI/Uvicorn and the existing Python vision process.
+- The JavaScript dashboard runs on Vercel.
+- Do NOT install Bun, Node.js, npm, dashboard dependencies, or the frontend on the Pi.
+- Do not commit, push, print, or expose secrets.
+- Do not use git reset --hard, git clean -fd, or overwrite local changes without permission.
+
+1. Inspect the Pi:
+   uname -a
+   uname -m
+   whoami
+   python3 --version
+   git --version
+
+2. Ensure only these system packages exist, installing missing ones with apt if necessary:
+   git python3 python3-venv python3-pip curl
+   Do not perform a full OS upgrade.
+
+3. Clone or update the repository:
+   - If /home/pi/KKI2026 does not exist:
+       git clone https://github.com/Darelrk/KKI2026.git /home/pi/KKI2026
+   - If it exists, inspect git status first. If the tree is dirty, stop and report it. If clean:
+       cd /home/pi/KKI2026
+       git fetch origin main
+       git checkout main
+       git pull --ff-only origin main
+   - Confirm the active branch is main.
+
+4. Before running the install script, create the required system environment file. The systemd service requires this file.
+   cd /home/pi/KKI2026
+   sudo install -o root -g root -m 600 \
+     deploy/raspberry-pi/asv-dashboard.env.example \
+     /etc/asv-dashboard.env
+   sudoedit /etc/asv-dashboard.env
+
+   Set real values for:
+   ASV_ID=default
+   ASV_BACKEND_HOST=0.0.0.0
+   ASV_BACKEND_PORT=8080
+   ASV_STREAM_URL=https://PUBLIC_CAMERA_HOST/stream.mjpg
+   ASV_FALLBACK_MAX_BASE64=180000
+   ASV_FALLBACK_MAX_FPS=1
+   ASV_FRAME_WAIT_TIMEOUT=1
+   SUPABASE_URL=https://YOUR_PROJECT.supabase.co
+   SUPABASE_SERVICE_ROLE_KEY=YOUR_REAL_SERVICE_ROLE_KEY
+
+   Replace every placeholder. If Supabase is not ready, set BOTH Supabase variables to empty values:
+   SUPABASE_URL=
+   SUPABASE_SERVICE_ROLE_KEY=
+   Never leave the example URL or replace-me value. ASV_STREAM_URL may be empty if Cloudflare Tunnel is not ready.
+   Do not show the service-role key in any output. Confirm permission is 600.
+
+5. Check the service user. The provided service uses User=pi and Group=pi. If the actual runtime user is not pi, make a local copy/adjustment of the installed systemd unit so User and Group match the real user. Do not modify the repository copy for a machine-specific user change.
+
+6. Install the backend from the repository root:
+   cd /home/pi/KKI2026
+   sudo APP_DIR=/opt/asv-dashboard \
+     bash deploy/raspberry-pi/install-asv-dashboard.sh
+
+   The installer must create /opt/asv-dashboard/.venv, install only requirements-dashboard.txt, copy asv_dashboard_backend, install the systemd unit, and enable the service. Do not install requirements-dashboard-dev.txt unless explicitly requested.
+
+7. Reload and start the service:
+   sudo systemctl daemon-reload
+   sudo systemctl enable asv-dashboard.service
+   sudo systemctl restart asv-dashboard.service
+   sudo systemctl --no-pager --full status asv-dashboard.service
+
+   If it fails, inspect:
+   sudo journalctl -u asv-dashboard.service -n 100 --no-pager
+   Report the root cause; do not hide the error.
+
+8. Smoke-test the running bridge:
+   curl -fsS http://127.0.0.1:8080/healthz
+   curl -fsS http://127.0.0.1:8080/api/status
+   ss -ltnp | grep ':8080'
+
+   /healthz must return JSON containing "ok": true. Do not send real camera frames during this smoke test.
+
+9. Verify low-memory operation:
+   - exactly one Uvicorn process;
+   - no --reload;
+   - no extra worker processes;
+   - no Node/Bun/npm process;
+   - only the latest surface frame is retained;
+   - fallback JPEG payload remains bounded.
+   Use:
+   systemctl status asv-dashboard.service
+   ps -o pid,ppid,rss,cmd -C uvicorn
+
+10. Final report must include:
+   - Pi architecture;
+   - checkout path and branch/commit;
+   - service status;
+   - /healthz response;
+   - /api/status response;
+   - listening port;
+   - Uvicorn RSS memory;
+   - whether Supabase publishing is enabled;
+   - whether ASV_STREAM_URL is configured;
+   - remaining warnings/errors.
+
+Do not push anything to GitHub. Do not print secrets.
