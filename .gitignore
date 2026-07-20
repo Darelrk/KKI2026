@@ -1,0 +1,56 @@
+# JavaScript dependencies and generated output
+node_modules/
+**/node_modules/
+.output/
+**/.output/
+.vercel/
+**/.vercel/
+.tanstack/
+**/.tanstack/
+dist/
+build/
+
+# Environment and secrets
+.env*
+!.env.example
+!**/.env.example
+
+# Python caches and environments
+__pycache__/
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# Logs, recordings, and local experiment output
+*.log
+*.jsonl
+
+# Model weights and generated model artifacts
+/model/
+/model.zip
+/*.pt
+/*.onnx
+/*.ncnn
+/*.zip
+
+# CAD and large design binaries excluded from software-only repository
+/*.fcstd
+/*.FCStd
+/*.FCBak
+/*.dxf
+/*.cdr
+/*.rar
+/*.fbx
+/*.obj
+/*.mtl
+/*.pdf
+/*.png
+/*.jpg
+/*.jpeg
+
+# Editor and OS files
+.DS_Store
+Thumbs.db
+.vscode/*.local.json

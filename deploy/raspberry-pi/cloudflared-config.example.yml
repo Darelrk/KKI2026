@@ -1,0 +1,9 @@
+# Install cloudflared as a system service separately.
+# The hostname below becomes ASV_STREAM_URL in asv-dashboard.env.
+tunnel: replace-with-tunnel-id
+credentials-file: /etc/cloudflared/replace-with-tunnel-id.json
+
+ingress:
+  - hostname: camera.example.com
+    service: http://127.0.0.1:8080/stream.mjpg
+  - service: http_status:404

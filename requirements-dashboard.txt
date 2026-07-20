@@ -1,0 +1,16 @@
+# ASV dashboard bridge dependencies for Raspberry Pi 5
+#
+# Vercel hosts the frontend. These packages run only on the Pi:
+# - the existing model process produces camera frames;
+# - the local bridge exposes those frames over HTTP;
+# - Supabase carries small status and bounded fallback metadata.
+
+# Local camera bridge API/stream endpoint
+fastapi>=0.115,<1
+uvicorn[standard]>=0.30,<1
+
+# Supabase status publisher and Realtime fallback sender
+supabase>=2,<3
+
+# Optional: include only if this bridge publishes Pixhawk telemetry.
+# pymavlink

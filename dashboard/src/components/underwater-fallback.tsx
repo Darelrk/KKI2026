@@ -1,0 +1,40 @@
+import { Waves } from '@phosphor-icons/react'
+
+import type { UnderwaterFrame } from '../lib/asv-types'
+
+type UnderwaterFallbackProps = {
+  frame: UnderwaterFrame | null
+}
+
+export function UnderwaterFallback({ frame }: UnderwaterFallbackProps) {
+  return (
+    <section className="underwater-fallback" aria-labelledby="underwater-camera-title">
+      <div className="panel-heading">
+        <Waves aria-hidden="true" />
+        <div>
+          <p className="eyebrow">Fallback optical link</p>
+          <h2 id="underwater-camera-title">Underwater frame</h2>
+        </div>
+      </div>
+
+      {frame ? (
+        <figure className="underwater-fallback__frame">
+          <img
+            src={`data:${frame.mime};base64,${frame.data_base64}`}
+            alt="Latest underwater frame"
+          />
+          <figcaption>
+            <span>{frame.frame_id}</span>
+            <time dateTime={frame.captured_at}>{new Date(frame.captured_at).toLocaleTimeString()}</time>
+          </figcaption>
+        </figure>
+      ) : (
+        <div className="underwater-fallback__empty" role="status">
+          <Waves aria-hidden="true" size={32} />
+          <p>No underwater frame received</p>
+          <span>The last valid JPEG fallback will appear here.</span>
+        </div>
+      )}
+    </section>
+  )
+}

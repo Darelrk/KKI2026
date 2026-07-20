@@ -1,0 +1,530 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #071216;
+  color: #dbeef0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  min-width: 20rem;
+  background: #071216;
+}
+
+button {
+  font: inherit;
+}
+
+button:focus-visible,
+img:focus-visible {
+  outline: 2px solid #32d5e8;
+  outline-offset: 3px;
+}
+
+.dashboard-shell {
+  width: min(100%, 144rem);
+  margin: 0 auto;
+  padding: 1.25rem;
+}
+
+.dashboard-notice {
+  width: min(100%, 96rem);
+  margin: 0 auto;
+  padding: 1.25rem;
+}
+
+.dashboard-shell {
+  display: grid;
+  gap: 0.875rem;
+}
+
+.connection-bar,
+.dashboard-shell__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+
+.eyebrow,
+.connection-bar,
+.dashboard-shell__footer,
+.status-chip,
+.signal-list dt,
+.underwater-fallback figcaption {
+  font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.eyebrow {
+  margin: 0;
+  color: #6c969b;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+h1,
+h2,
+p {
+  margin-top: 0;
+}
+
+h1,
+h2 {
+  color: #f4fcfc;
+  font-weight: 680;
+  letter-spacing: -0.035em;
+}
+
+h1 {
+  margin-bottom: 0;
+  font-size: clamp(1.7rem, 3.5vw, 2.65rem);
+}
+
+h2 {
+  margin-bottom: 0;
+  font-size: 1rem;
+}
+
+
+.connection-bar {
+  min-height: 3.5rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid #25454a;
+  background: #0a1a1f;
+  color: #a8cdd0;
+  font-size: 0.72rem;
+}
+
+.connection-bar__identity,
+.connection-bar__signals,
+.panel-heading,
+.signal-rail__status,
+.dashboard-shell__alert {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.connection-bar svg,
+.panel-heading svg,
+.signal-rail__status svg {
+  flex: none;
+  color: #32d5e8;
+}
+
+.connection-bar__signals {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.connection-bar__identity,
+.connection-bar__signals {
+  min-width: 0;
+}
+
+.status-chip {
+  padding: 0.28rem 0.48rem;
+  border: 1px solid currentColor;
+  font-size: 0.61rem;
+  font-weight: 750;
+  line-height: 1;
+}
+
+.status-chip--online,
+.status-chip--connected,
+.status-chip--fixture {
+  color: #6fe5b7;
+}
+
+.status-chip--offline,
+.status-chip--error {
+  color: #ff9762;
+}
+
+.status-chip--connecting {
+  color: #edc46b;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.75fr) minmax(14.5rem, 0.65fr);
+  gap: 0.875rem;
+}
+
+.dashboard-grid__cameras {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(13rem, 0.8fr);
+  gap: 0.875rem;
+}
+
+.camera-stage,
+.underwater-fallback,
+.signal-rail,
+.navigation-placeholder {
+  min-width: 0;
+  border: 1px solid #25454a;
+  background: #0a1a1f;
+}
+
+.camera-stage,
+.underwater-fallback,
+.navigation-placeholder {
+  padding: 1rem;
+}
+
+.panel-heading {
+  margin-bottom: 0.85rem;
+}
+
+.camera-stage__stream,
+.underwater-fallback__frame img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: contain;
+  border: 1px solid #315259;
+  background: #050b0e;
+}
+
+.camera-stage__placeholder,
+.underwater-fallback__empty {
+  display: grid;
+  min-height: 15rem;
+  place-content: center;
+  justify-items: center;
+  gap: 0.55rem;
+  padding: 1rem;
+  border: 1px dashed #315259;
+  background: #061216;
+  color: #78a0a4;
+  text-align: center;
+}
+
+.camera-stage__placeholder svg,
+.underwater-fallback__empty svg {
+  color: #39757b;
+}
+
+.camera-stage__placeholder p,
+.underwater-fallback__empty p,
+.navigation-placeholder > p {
+  margin-bottom: 0;
+  color: #d3e8e9;
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+
+.camera-stage__placeholder span,
+.underwater-fallback__empty span,
+.navigation-placeholder > span {
+  max-width: 25rem;
+  color: #769ca0;
+  font-size: 0.77rem;
+  line-height: 1.55;
+}
+
+.underwater-fallback__frame {
+  margin: 0;
+}
+
+.underwater-fallback__frame img {
+  min-height: 15rem;
+}
+
+.underwater-fallback figcaption {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding-top: 0.55rem;
+  color: #7fa8ab;
+  font-size: 0.61rem;
+}
+
+.signal-rail {
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1rem;
+  border-left: 3px solid #32d5e8;
+}
+
+.signal-rail__status {
+  align-items: flex-start;
+}
+
+.signal-rail__status svg {
+  margin-top: 0.1rem;
+}
+
+.signal-rail__status strong {
+  display: block;
+  margin-top: 0.25rem;
+  color: #f3ffff;
+  font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.83rem;
+}
+
+.signal-list {
+  display: grid;
+  margin: 1.25rem 0 0;
+  border-top: 1px solid #25454a;
+}
+
+.signal-list div {
+  display: grid;
+  gap: 0.28rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #25454a;
+}
+
+.signal-list dt {
+  color: #749ca0;
+  font-size: 0.58rem;
+}
+
+.signal-list dd {
+  margin: 0;
+  color: #d9efef;
+  overflow-wrap: anywhere;
+  font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.74rem;
+}
+
+.dashboard-shell__alert {
+  padding: 0.8rem 0.95rem;
+  border: 1px solid #854a35;
+  border-left: 3px solid #ff9762;
+  background: #211510;
+  color: #ffc5a7;
+}
+
+.dashboard-shell__alert svg {
+  flex: none;
+  color: #ff9762;
+}
+
+.dashboard-shell__alert strong,
+.dashboard-shell__alert p {
+  display: block;
+  margin: 0;
+}
+
+.dashboard-shell__alert p {
+  margin-top: 0.18rem;
+  color: #d4a58e;
+  font-size: 0.78rem;
+}
+
+.navigation-placeholder {
+  display: grid;
+  min-height: 7rem;
+  align-content: center;
+  border-left: 3px solid #39757b;
+}
+
+.navigation-placeholder .panel-heading {
+  margin-bottom: 0.5rem;
+}
+
+.navigation-placeholder > span {
+  margin-top: 0.35rem;
+}
+
+.dashboard-shell__footer {
+  flex-wrap: wrap;
+  padding-top: 0.25rem;
+  color: #6c969b;
+  font-size: 0.61rem;
+}
+
+.dashboard-notice {
+  display: grid;
+  min-height: 100vh;
+  align-content: center;
+  justify-items: start;
+  gap: 0.75rem;
+}
+
+.dashboard-notice h1,
+.dashboard-notice p {
+  margin: 0;
+}
+
+.dashboard-notice > p:not(.eyebrow) {
+  color: #88adb0;
+}
+
+.dashboard-notice--error {
+  color: #ffc5a7;
+}
+
+.dashboard-notice--error svg {
+  color: #ff9762;
+}
+
+.dashboard-notice--error button {
+  padding: 0.65rem 0.8rem;
+  border: 1px solid #32d5e8;
+  border-radius: 0;
+  background: transparent;
+  color: #dffaff;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.dashboard-notice--error button:hover {
+  background: #10343a;
+}
+
+@media (min-width: 60.0625rem) {
+  .dashboard-shell {
+    box-sizing: border-box;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+  }
+
+  .dashboard-grid {
+    grid-row: 3;
+  }
+
+  .navigation-placeholder {
+    grid-row: 4;
+  }
+
+  .dashboard-shell__footer {
+    grid-row: 5;
+  }
+
+
+  .connection-bar {
+    min-height: 3.125rem;
+    padding: 0.55rem 0.8rem;
+  }
+
+  .dashboard-grid,
+  .dashboard-grid__cameras,
+  .camera-stage,
+  .underwater-fallback,
+  .signal-rail {
+    min-height: 0;
+  }
+
+  .camera-stage,
+  .underwater-fallback,
+  .underwater-fallback__frame {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+  }
+
+  .camera-stage__placeholder,
+  .underwater-fallback__empty,
+  .underwater-fallback__frame {
+    min-height: 0;
+  }
+
+  .camera-stage__placeholder,
+  .underwater-fallback__empty,
+  .underwater-fallback__frame img {
+    flex: 1;
+  }
+
+  .camera-stage__stream,
+  .underwater-fallback__frame img {
+    min-height: 0;
+  }
+
+  .signal-list {
+    margin-top: 0.75rem;
+  }
+
+  .signal-list div {
+    padding: 0.55rem 0;
+  }
+
+  .navigation-placeholder {
+    min-height: 5.5rem;
+    padding: 0.75rem 1rem;
+  }
+}
+
+@media (min-width: 60.0625rem) and (max-height: 40rem) {
+  .signal-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 0.5rem;
+  }
+
+  .signal-list div {
+    min-width: 0;
+    padding: 0.3rem 0;
+  }
+
+  .signal-list div:nth-child(odd) {
+    padding-right: 0.5rem;
+  }
+
+  .signal-list dd {
+    font-size: 0.65rem;
+  }
+}
+
+@media (max-width: 60rem) {
+  .dashboard-grid,
+  .dashboard-grid__cameras {
+    grid-template-columns: 1fr;
+  }
+
+  .signal-rail {
+    min-height: auto;
+  }
+
+  .signal-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .signal-list div:nth-child(odd) {
+    padding-right: 0.75rem;
+  }
+}
+
+@media (max-width: 38rem) {
+  .dashboard-shell,
+  .dashboard-notice {
+    padding: 0.85rem;
+  }
+
+  .connection-bar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .connection-bar__signals {
+    justify-content: flex-start;
+  }
+
+  .signal-list {
+    grid-template-columns: 1fr;
+  }
+
+  .signal-list div:nth-child(odd) {
+    padding-right: 0;
+  }
+}
