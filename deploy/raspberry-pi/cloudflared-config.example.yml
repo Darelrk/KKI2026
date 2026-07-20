@@ -1,9 +1,14 @@
 # Install cloudflared as a system service separately.
-# The hostname below becomes ASV_STREAM_URL in asv-dashboard.env.
+# Keep the browser's raw surface camera URL outside this fallback ingress.
+# This bridge only exposes metadata WebSocket and bounded fallback/debug MJPEG.
 tunnel: replace-with-tunnel-id
 credentials-file: /etc/cloudflared/replace-with-tunnel-id.json
 
 ingress:
   - hostname: camera.example.com
-    service: http://127.0.0.1:8080/stream.mjpg
+    path: ^/ws/vision/.*$
+    service: http://127.0.0.1:8080
+  - hostname: camera.example.com
+    path: ^/stream\.mjpg$
+    service: http://127.0.0.1:8080
   - service: http_status:404

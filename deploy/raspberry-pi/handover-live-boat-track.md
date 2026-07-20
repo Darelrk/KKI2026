@@ -123,6 +123,14 @@ Frontend berada di `dashboard/` dan dideploy dari branch `main` oleh Vercel. Per
 
 Jika URL raw camera sudah dikonfigurasi, jangan menggantinya dengan placeholder. Jangan mencetak secret Supabase atau service-role key saat laporan.
 
+## Jalur kamera raw dan metadata vision
+
+- `VITE_ASV_SURFACE_STREAM_URL` adalah URL kamera surface raw yang langsung dibaca browser pada 20–30 FPS.
+- `VITE_ASV_VISION_WS_URL` adalah base URL terpisah untuk `/ws/vision/{asv_id}`; konfigurasi ini mendukung upgrade WebSocket.
+- `/stream.mjpg` pada bridge Pi hanya fallback/debug bounded, bukan sumber utama dashboard.
+- Metadata vision tervalidasi dikirim sebagai JSON ke `POST /api/vision/metadata` dan diterima dashboard melalui WebSocket.
+- Jika model atau WebSocket mati, raw `<img>` tetap dipertahankan dan overlay dibersihkan setelah 1 detik.
+
 ## Prompt copy-paste untuk Codex Raspberry Pi
 
 ```text

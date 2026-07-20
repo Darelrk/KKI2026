@@ -16,20 +16,27 @@ Database dan kanal realtime yang dipilih: **Supabase Free**.
 ## 2. Arsitektur
 
 ```text
-Kamera + model ASV yang sudah berjalan di Raspberry Pi
-        │ menghasilkan frame hasil model
-        ▼
-Surface camera bridge di Pi
-        │ HTTP/MJPEG read-only
-        ▼
-cloudflared Tunnel → HTTPS public camera hostname
+Raw surface camera 20–30 FPS + ASV model on Raspberry Pi
         │
-        ▼
-Vercel dashboard → menampilkan feed surface
+        ├── browser-compatible raw URL ──► Vercel dashboard <img>
+        │                                  + canvas detection overlay
         │
-        ├── Supabase Postgres/Realtime → status dan metadata sesi
-        └── Supabase Realtime Broadcast → fallback underwater full-color
+        ├── POST /api/vision/metadata ───► local bridge
+        │                                  └── /ws/vision/{asv_id}
+        │
+        └── Supabase Postgres/Realtime ──► status and bounded underwater fallback
 ```
+
+The Vercel dashboard reads the raw camera URL directly and receives model
+detections as low-rate JSON metadata. The metadata WebSocket and raw camera
+URL are configured independently.
+
+The Raspberry Pi bridge remains responsible for validated metadata relay,
+status publication, and bounded fallback/debug MJPEG. It does not re-encode
+the main surface stream.
+
+Supabase remains the managed status/realtime service. The bridge never sends
+continuous surface video through Supabase or a Vercel Function.
 
 Tidak diperlukan custom cloud backend. Namun tetap diperlukan:
 
@@ -127,15 +134,15 @@ Yang tidak boleh disimpan atau dikirim:
 
 ## 5. Jalur kamera
 
-1. Model ASV menghasilkan annotated frame di Raspberry Pi.
-2. Surface camera bridge menyediakan endpoint read-only, misalnya `/stream.mjpg`.
-3. `cloudflared` meneruskan endpoint lokal ke hostname HTTPS.
-4. Vercel dashboard membaca `stream_url` dari tabel `asv_live` Supabase.
-5. Browser menampilkan surface stream langsung dari hostname kamera.
-6. Jika surface stream atau USB underwater terputus, Pi mengirim frame underwater full-color terbaru melalui Broadcast `asv-camera`.
-7. Jika Pi atau tunnel mati, dashboard menampilkan status offline dan placeholder, bukan retry tanpa batas.
+1. Kamera surface menyediakan URL raw yang kompatibel browser pada target 20–30 FPS.
+2. Proses ASV menjalankan inferensi terpisah sekitar 4 FPS dan mengirim metadata JSON ke `POST /api/vision/metadata`.
+3. Bridge meneruskan metadata melalui `/ws/vision/{asv_id}` dan menyediakan `/stream.mjpg` hanya sebagai fallback/debug bounded.
+4. Vercel dashboard membuka `VITE_ASV_SURFACE_STREAM_URL` sebagai `<img>` utama dan menggambar metadata pada canvas transparan.
+5. `VITE_ASV_VISION_WS_URL` dikonfigurasi terpisah dari URL kamera raw dan mendukung upgrade WebSocket.
+6. Jika surface raw, model, atau WebSocket terputus, raw image tetap dipertahankan dan overlay menjadi stale setelah 1 detik.
+7. Jika Pi atau tunnel mati, dashboard menampilkan status offline dan placeholder, bukan mengganti raw image dengan MJPEG fallback.
 
-Jika model yang sudah berjalan telah menyediakan URL stream yang kompatibel dengan browser, FastAPI camera bridge tidak perlu ditambahkan.
+Jika model yang sudah berjalan telah menyediakan URL stream yang kompatibel dengan browser, FastAPI camera bridge tidak perlu menjadi jalur video utama.
 
 ## 6. Keamanan minimum
 
