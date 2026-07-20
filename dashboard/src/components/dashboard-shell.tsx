@@ -13,6 +13,8 @@ import { asvStreamUrls } from '../lib/stream-urls'
 
 import type { AsvLive, UnderwaterFrame } from '../lib/asv-types'
 import type { AsvTelemetry } from '../lib/asv-telemetry'
+import type { VisionMetadataCache } from '../lib/vision-metadata'
+import type { VisionRealtimeStatus } from '../lib/use-vision-metadata'
 import type { ConnectionStatus } from './connection-bar'
 
 type DashboardShellProps = {
@@ -23,6 +25,8 @@ type DashboardShellProps = {
   telemetryRealtimeStatus?: ConnectionStatus
   underwaterFrame: UnderwaterFrame | null
   underwaterRealtimeStatus: ConnectionStatus
+  visionMetadataCache?: VisionMetadataCache | null
+  visionMetadataStatus?: VisionRealtimeStatus
   surfaceStreamUrl?: string | null
   underwaterStreamUrl?: string | null
 }
@@ -35,6 +39,8 @@ export function DashboardShell({
   telemetryRealtimeStatus = 'connecting',
   underwaterFrame,
   underwaterRealtimeStatus,
+  visionMetadataCache = null,
+  visionMetadataStatus = 'error',
   surfaceStreamUrl = asvStreamUrls.surface,
   underwaterStreamUrl = asvStreamUrls.underwater,
 }: DashboardShellProps) {
@@ -61,7 +67,11 @@ export function DashboardShell({
 
       <section className="dashboard-grid" aria-label="ASV operational dashboard">
         <div className="dashboard-grid__cameras">
-          <CameraStage streamUrl={surfaceStreamUrl} />
+          <CameraStage
+            streamUrl={surfaceStreamUrl}
+            metadataCache={visionMetadataCache}
+            metadataStatus={visionMetadataStatus}
+          />
           <UnderwaterFallback frame={underwaterFrame} streamUrl={underwaterStreamUrl} />
         </div>
         <div className="dashboard-grid__side">

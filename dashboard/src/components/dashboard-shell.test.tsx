@@ -13,7 +13,7 @@ const liveStatus = {
   online: true,
   model_status: 'running',
   camera: 'surface',
-  stream_url: 'https://monitor-kapal-pora-pora.web.id/stream.mjpg',
+  stream_url: 'https://camera.example.test/raw-surface',
   run_id: 'fixture-run-001',
   updated_at: '2026-07-20T09:30:00.000Z',
 } satisfies AsvLive
