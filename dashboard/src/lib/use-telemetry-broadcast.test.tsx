@@ -19,9 +19,17 @@ describe('useTelemetryBroadcast', () => {
     expect(result.current.telemetry).toMatchObject({
       connected: true,
       heading_deg: 144,
-      speed_mps: 0,
+      speed_mps: 0.6,
+      position: {
+        latitude: -6.1224,
+        longitude: 106.8226,
+      },
+      track: [
+        { latitude: -6.1234, longitude: 106.821 },
+        { latitude: -6.123, longitude: 106.8218 },
+        { latitude: -6.1224, longitude: 106.8226 },
+      ],
     })
-    expect(result.current.telemetry?.position).toBeNull()
     expect(result.current.realtimeStatus).toBe('fixture')
   })
 

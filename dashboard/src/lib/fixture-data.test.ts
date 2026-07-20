@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { fixtureUnderwaterFrame, getFixtureAsvLive } from './fixture-data'
+import { fixtureTelemetry, fixtureUnderwaterFrame, getFixtureAsvLive } from './fixture-data'
 
 describe('ASV fixture data', () => {
   it('returns a running surface status for the requested ASV', () => {
@@ -23,4 +23,11 @@ describe('ASV fixture data', () => {
     expect(jpeg.subarray(0, 2).toString('hex')).toBe('ffd8')
     expect(jpeg.subarray(-2).toString('hex')).toBe('ffd9')
   })
+  it('provides a synthetic three-point GPS fixture path', () => {
+    expect(fixtureTelemetry.track).toHaveLength(3)
+    expect(fixtureTelemetry.position).toEqual(fixtureTelemetry.track.at(-1))
+    expect(fixtureTelemetry.heading_deg).toBe(144)
+    expect(fixtureTelemetry.speed_mps).toBeGreaterThanOrEqual(0)
+  })
+
 })

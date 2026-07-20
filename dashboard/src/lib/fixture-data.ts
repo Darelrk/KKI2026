@@ -23,10 +23,30 @@ export const fixtureUnderwaterFrame = {
 
 export const fixtureTelemetry = {
   connected: true,
-  position: null,
+  position: {
+    latitude: -6.1224,
+    longitude: 106.8226,
+    captured_at: '2026-07-20T09:32:00.000Z',
+  },
   heading_deg: 144,
-  speed_mps: 0,
-  captured_at: '2026-07-20T09:30:00.000Z',
-  heartbeat_at: '2026-07-20T09:29:59.000Z',
-  track: [],
+  speed_mps: 0.6,
+  captured_at: '2026-07-20T09:32:00.000Z',
+  heartbeat_at: '2026-07-20T09:31:59.000Z',
+  track: [
+    {
+      latitude: -6.1234,
+      longitude: 106.821,
+      captured_at: '2026-07-20T09:30:00.000Z',
+    },
+    {
+      latitude: -6.123,
+      longitude: 106.8218,
+      captured_at: '2026-07-20T09:31:00.000Z',
+    },
+    {
+      latitude: -6.1224,
+      longitude: 106.8226,
+      captured_at: '2026-07-20T09:32:00.000Z',
+    },
+  ],
 } satisfies AsvTelemetry

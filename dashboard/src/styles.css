@@ -388,16 +388,6 @@ h2 {
   align-items: center;
 }
 
-.mockup-badge {
-  margin-left: auto;
-  padding: 0.28rem 0.42rem;
-  border: 1px solid #d6aa49;
-  color: #edc46b;
-  font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 0.58rem;
-  font-weight: 750;
-  letter-spacing: 0.08em;
-}
 
 .navigation-map__canvas {
   position: relative;
@@ -451,6 +441,31 @@ h2 {
   height: calc(100% - 2rem);
   color: #6fe5b7;
 }
+.navigation-map__track {
+  color: #6fe5b7;
+  filter: drop-shadow(0 0 0.18rem rgba(111, 229, 183, 0.7));
+}
+
+.navigation-map__boat {
+  color: #ff9762;
+  transform-box: fill-box;
+  transform-origin: center;
+  filter: drop-shadow(0 0 0.3rem rgba(255, 151, 98, 0.75));
+}
+
+.navigation-map__boat-arrow {
+  fill: currentColor;
+  stroke: #fff1e8;
+  stroke-width: 0.65;
+  vector-effect: non-scaling-stroke;
+}
+
+.navigation-map__boat-dot {
+  fill: currentColor;
+  stroke: #fff1e8;
+  stroke-width: 0.7;
+  vector-effect: non-scaling-stroke;
+}
 
 .navigation-map__readout {
   position: absolute;
@@ -467,65 +482,6 @@ h2 {
   text-transform: uppercase;
 }
 
-.navigation-map__legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.55rem 0.9rem;
-  margin-top: 0.75rem;
-  color: #a8cdd0;
-  font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 0.61rem;
-  text-transform: uppercase;
-}
-
-.navigation-map__legend span {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.32rem;
-}
-
-.map-key {
-  display: inline-block;
-  width: 0.55rem;
-  height: 0.55rem;
-  border: 1px solid currentColor;
-  border-radius: 50%;
-}
-
-.map-key--start {
-  color: #f3ffff;
-  background: #f3ffff;
-}
-
-.map-key--finish,
-.map-key--dock {
-  color: #5f8dff;
-  background: #5f8dff;
-}
-
-.map-key--route {
-  color: #ff9762;
-  background: linear-gradient(90deg, #ff9762 50%, #6fe5b7 50%);
-}
-
-.map-key--surface {
-  color: #6fe5b7;
-  background: #6fe5b7;
-}
-
-.map-key--underwater {
-  color: #5f8dff;
-  background: #5f8dff;
-}
-
-.navigation-map__note {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  margin: 0.75rem 0 0;
-  color: #769ca0;
-  font-size: 0.72rem;
-}
 
 .mission-stage {
   border-left: 3px solid #d6aa49;

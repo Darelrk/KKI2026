@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import type { PropsWithChildren } from 'react'
 import { describe, expect, it } from 'vitest'
 
@@ -30,9 +30,12 @@ describe('DashboardClient', () => {
       'src',
       'https://monitor-kapal-pora-pora.web.id/stream/bawah',
     )
-    expect(screen.getByRole('heading', { name: 'Navigation map' })).toBeInTheDocument()
-    expect(screen.getByText('GPS position unavailable')).toBeInTheDocument()
-    expect(screen.getByText('MISSION MOCKUP')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Live boat track' })).toBeInTheDocument()
+    expect(screen.getByText('GPS position available')).toBeInTheDocument()
+    expect(screen.getByText('GPS track · 3 points')).toBeInTheDocument()
+    expect(
+      within(screen.getByRole('region', { name: 'Live boat track' })).queryByText('MISSION MOCKUP'),
+    ).not.toBeInTheDocument()
     expect(screen.getByRole('status')).toHaveTextContent('Ready / Preparation')
   })
 })
