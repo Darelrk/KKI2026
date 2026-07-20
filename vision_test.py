@@ -16,8 +16,10 @@ from __future__ import annotations
 
 import argparse
 import json
+import threading
 import time
-from dataclasses import asdict
+from collections import deque
+from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Sequence
@@ -83,6 +85,80 @@ def detections_from_result(result: Any) -> list[Detection]:
             )
         )
     return detections
+
+
+@dataclass(frozen=True)
+class CapturedFrame:
+    frame: Any
+    frame_id: int
+    captured_at: datetime
+
+
+class LatestFrameQueue:
+    """Bounded handoff that always exposes the newest captured frame."""
+
+    def __init__(self) -> None:
+        self._items: deque[CapturedFrame] = deque(maxlen=1)
+        self._condition = threading.Condition()
+        self._closed = False
+
+    def put_latest(self, item: CapturedFrame) -> None:
+        with self._condition:
+            if self._closed:
+                return
+            self._items.clear()
+            self._items.append(item)
+            self._condition.notify()
+
+    def get(self, timeout: float | None = None) -> CapturedFrame | None:
+        with self._condition:
+            deadline = None if timeout is None else time.monotonic() + timeout
+            while not self._items and not self._closed:
+                remaining = None if deadline is None else deadline - time.monotonic()
+                if remaining is not None and remaining <= 0:
+                    return None
+                self._condition.wait(remaining)
+            if self._items:
+                return self._items.popleft()
+            return None
+
+    def close(self) -> None:
+        with self._condition:
+            self._closed = True
+            self._condition.notify_all()
+
+
+def detection_metadata_from_result(
+    detections: Sequence[Detection],
+    *,
+    asv_id: str,
+    frame_id: int,
+    captured_at: datetime,
+    source_width: int,
+    source_height: int,
+) -> dict[str, Any]:
+    if source_width <= 0 or source_height <= 0:
+        raise ValueError("source dimensions must be positive")
+    return {
+        "schema_version": 1,
+        "asv_id": asv_id,
+        "frame_id": frame_id,
+        "captured_at": captured_at.isoformat(),
+        "source_width": source_width,
+        "source_height": source_height,
+        "detections": [
+            {
+                "track_id": None,
+                "label": detection.label,
+                "confidence": detection.confidence,
+                "x": (detection.x_center - detection.width / 2) / source_width,
+                "y": (detection.y_center - detection.height / 2) / source_height,
+                "width": detection.width / source_width,
+                "height": detection.height / source_height,
+            }
+            for detection in detections
+        ],
+    }
 
 
 class JsonlLogger:
@@ -286,6 +362,12 @@ def parse_args() -> argparse.Namespace:
         "--conf", type=float, default=0.35, help="Confidence minimum deteksi"
     )
     parser.add_argument(
+        "--vision-fps",
+        type=float,
+        default=4.0,
+        help="Maksimum laju inferensi/model per detik",
+    )
+    parser.add_argument(
         "--gain", type=float, default=1.0, help="Gain steering"
     )
     parser.add_argument(
@@ -312,7 +394,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--bridge-stream-url",
         default=None,
-        help="HTTPS URL stream.mjpg yang dilihat dashboard",
+        help="HTTPS URL raw surface stream yang ditampilkan dashboard",
     )
     parser.add_argument(
         "--bridge-surface-fps",
@@ -366,6 +448,8 @@ def main() -> None:
     args = parse_args()
     if not 0.0 < args.conf <= 1.0:
         raise ValueError("--conf harus berada di antara 0 dan 1")
+    if not 0.0 < args.vision_fps:
+        raise ValueError("--vision-fps harus positif")
     if not 1500 <= args.throttle_pwm <= 1700:
         raise ValueError("--throttle-pwm harus 1500..1700 untuk uji awal")
     if args.duration < 0:
@@ -397,6 +481,7 @@ def main() -> None:
             "endpoint": args.endpoint,
             "camera": args.camera,
             "run_id": run_id,
+            "vision_fps": args.vision_fps,
         }
     )
     camera = cv2.VideoCapture(args.camera)
@@ -406,7 +491,10 @@ def main() -> None:
         raise RuntimeError(f"Webcam {args.camera} tidak dapat dibuka")
 
     print("Tekan Q atau ESC untuk berhenti.")
-    print(f"Throttle aktif ({args.throttle_pwm}) saat buoy terdeteksi, netral saat tidak ada target.")
+    print(
+        f"Throttle aktif ({args.throttle_pwm}) saat buoy terdeteksi, "
+        "netral saat tidak ada target."
+    )
     bridge = (
         BridgeFramePublisher(
             args.bridge_url,
@@ -423,70 +511,150 @@ def main() -> None:
             model_status="running",
             run_id=run_id,
         )
+
+    capture_queue = LatestFrameQueue()
+    capture_stop = threading.Event()
+    capture_errors: list[BaseException] = []
+
+    def capture_frames() -> None:
+        frame_id = 0
+        try:
+            while not capture_stop.is_set():
+                ok, frame = camera.read()
+                if not ok:
+                    raise RuntimeError("Gagal membaca frame webcam")
+                frame_id += 1
+                capture_queue.put_latest(
+                    CapturedFrame(
+                        frame=frame,
+                        frame_id=frame_id,
+                        captured_at=datetime.now(timezone.utc),
+                    )
+                )
+        except BaseException as exc:
+            capture_errors.append(exc)
+        finally:
+            capture_queue.close()
+
+    producer = threading.Thread(
+        target=capture_frames,
+        name="asv-camera-capture",
+        daemon=True,
+    )
+    producer.start()
     last_log = 0.0
     started_at = time.monotonic()
+    next_inference_at = 0.0
+    inference_interval = 1.0 / args.vision_fps
+    last_detections: list[Detection] = []
+    target_x: float | None = None
+    steering_pwm = NEUTRAL_PWM
+    throttle_pwm = NEUTRAL_PWM
+    mode = "UNKNOWN"
+    telemetry: dict[str, Any] = {}
 
     try:
         while True:
-            if args.duration and time.monotonic() - started_at >= args.duration:
-                break
-            ok, frame = camera.read()
-            if not ok:
-                raise RuntimeError("Gagal membaca frame webcam")
-
-            result = model.predict(frame, conf=args.conf, verbose=False)[0]
-            detections = detections_from_result(result)
-            target_x = select_target_x(detections)
-            steering_pwm = (
-                compute_steering_pwm(
-                    target_x,
-                    frame.shape[1],
-                    gain=args.gain,
-                    invert=args.invert_steering,
-                )
-                if target_x is not None
-                else NEUTRAL_PWM
-            )
-            target_found = target_x is not None
-            throttle_pwm = args.throttle_pwm if target_found else NEUTRAL_PWM
-
-            mode = link.mode()
-            if mode == "MANUAL":
-                link.send_override(steering_pwm, throttle_pwm)
-            else:
-                link.release_override()
-            telemetry = link.telemetry()
-
             now = time.monotonic()
-            if now - last_log >= 0.25:
-                labels = ",".join(d.label for d in detections) or "none"
-                record = {
-                    "timestamp_utc": datetime.now(timezone.utc).isoformat(),
-                    "vision": {
-                        "detections": [asdict(detection) for detection in detections],
-                        "target_x": target_x,
-                        "frame_width": int(frame.shape[1]),
-                    },
-                    "command": {
-                        "mode": mode,
-                        "steering_pwm": steering_pwm,
-                        "throttle_pwm": throttle_pwm,
-                    },
-                    "ardupilot": telemetry,
-                }
-                logger.write(record)
-                print(
-                    f"mode={mode} detections={labels} "
-                    f"target_x={target_x if target_x is not None else '-'} "
-                    f"steering={steering_pwm} throttle={throttle_pwm} "
-                    f"servo1={telemetry['servo1']} servo3={telemetry['servo3']} "
-                    f"armed={telemetry['armed']}"
-                )
-                last_log = now
+            if args.duration and now - started_at >= args.duration:
+                break
+            if capture_errors:
+                raise capture_errors[0]
 
-            annotated = draw_detections(frame, detections, target_x)
+            captured = capture_queue.get(timeout=0.1)
+            if captured is None:
+                if capture_errors:
+                    raise capture_errors[0]
+                if capture_stop.is_set():
+                    break
+                continue
+
+            frame = captured.frame
+            metadata_published: bool | None = None
+            if now >= next_inference_at:
+                result = model.predict(frame, conf=args.conf, verbose=False)[0]
+                last_detections = detections_from_result(result)
+                target_x = select_target_x(last_detections)
+                steering_pwm = (
+                    compute_steering_pwm(
+                        target_x,
+                        frame.shape[1],
+                        gain=args.gain,
+                        invert=args.invert_steering,
+                    )
+                    if target_x is not None
+                    else NEUTRAL_PWM
+                )
+                target_found = target_x is not None
+                throttle_pwm = args.throttle_pwm if target_found else NEUTRAL_PWM
+
+                mode = link.mode()
+                if mode == "MANUAL":
+                    link.send_override(steering_pwm, throttle_pwm)
+                else:
+                    link.release_override()
+                telemetry = link.telemetry()
+
+                if bridge is not None:
+                    metadata_published = bridge.publish_detection_metadata(
+                        detection_metadata_from_result(
+                            last_detections,
+                            asv_id=args.bridge_asv_id,
+                            frame_id=captured.frame_id,
+                            captured_at=captured.captured_at,
+                            source_width=int(frame.shape[1]),
+                            source_height=int(frame.shape[0]),
+                        )
+                    )
+                queue_age_ms = max(
+                    0.0,
+                    (
+                        datetime.now(timezone.utc) - captured.captured_at
+                    ).total_seconds()
+                    * 1000,
+                )
+                if now - last_log >= 0.25:
+                    labels = ",".join(
+                        detection.label for detection in last_detections
+                    ) or "none"
+                    record = {
+                        "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+                        "frame_id": captured.frame_id,
+                        "captured_at": captured.captured_at.isoformat(),
+                        "queue_age_ms": queue_age_ms,
+                        "metadata_published": metadata_published,
+                        "vision": {
+                            "detections": [
+                                asdict(detection)
+                                for detection in last_detections
+                            ],
+                            "target_x": target_x,
+                            "frame_width": int(frame.shape[1]),
+                        },
+                        "command": {
+                            "mode": mode,
+                            "steering_pwm": steering_pwm,
+                            "throttle_pwm": throttle_pwm,
+                        },
+                        "ardupilot": telemetry,
+                    }
+                    logger.write(record)
+                    print(
+                        f"frame={captured.frame_id} mode={mode} "
+                        f"detections={labels} "
+                        f"target_x={target_x if target_x is not None else '-'} "
+                        f"steering={steering_pwm} throttle={throttle_pwm} "
+                        f"metadata={metadata_published} "
+                        f"servo1={telemetry['servo1']} "
+                        f"servo3={telemetry['servo3']} "
+                        f"armed={telemetry['armed']}"
+                    )
+                    last_log = now
+                next_inference_at = now + inference_interval
+
+            preview = draw_detections(frame.copy(), last_detections, target_x)
             cv2.putText(
-                annotated,
+                preview,
                 f"MODE {mode}  STEER {steering_pwm}  THR {throttle_pwm}",
                 (10, 25),
                 cv2.FONT_HERSHEY_SIMPLEX,
@@ -497,16 +665,19 @@ def main() -> None:
             if bridge is not None:
                 encoded_ok, encoded_frame = cv2.imencode(
                     ".jpg",
-                    annotated,
+                    frame,
                     [cv2.IMWRITE_JPEG_QUALITY, 80],
                 )
                 if encoded_ok:
                     bridge.publish_surface_frame(bytes(encoded_frame))
-            cv2.imshow("Vision Test - tekan Q untuk berhenti", annotated)
+            cv2.imshow("Vision Test - tekan Q untuk berhenti", preview)
             key = cv2.waitKey(1) & 0xFF
             if key in (ord("q"), 27):
                 break
     finally:
+        capture_stop.set()
+        capture_queue.close()
+        producer.join()
         camera.release()
         cv2.destroyAllWindows()
         try:

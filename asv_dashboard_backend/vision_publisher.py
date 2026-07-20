@@ -34,9 +34,13 @@ class BridgeFramePublisher:
         self.stream_url = stream_url
         self.max_surface_interval = 1.0 / max_surface_fps
         self.timeout_seconds = timeout_seconds
-        self._executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="asv-bridge")
+        self._executor = ThreadPoolExecutor(max_workers=3, thread_name_prefix="asv-bridge")
         self._lock = threading.Lock()
-        self._future: Future[None] | None = None
+        self._futures: dict[str, Future[None] | None] = {
+            "surface": None,
+            "metadata": None,
+            "status": None,
+        }
         self._last_surface_at = float("-inf")
 
     def publish_status(
@@ -61,6 +65,17 @@ class BridgeFramePublisher:
             "/api/status",
             json.dumps(payload, separators=(",", ":")).encode("utf-8"),
             "application/json",
+            lane="status",
+        )
+
+    def publish_detection_metadata(self, payload: dict[str, Any]) -> bool:
+        """Queue the latest model result as compact JSON metadata."""
+        return self._submit(
+            "POST",
+            "/api/vision/metadata",
+            json.dumps(payload, separators=(",", ":")).encode("utf-8"),
+            "application/json",
+            lane="metadata",
         )
 
     def publish_surface_frame(self, jpeg_bytes: bytes, *, now: float | None = None) -> bool:
@@ -70,7 +85,13 @@ class BridgeFramePublisher:
             if current - self._last_surface_at < self.max_surface_interval:
                 return False
             self._last_surface_at = current
-        return self._submit("POST", "/api/frame/surface", jpeg_bytes, "image/jpeg")
+        return self._submit(
+            "POST",
+            "/api/frame/surface",
+            jpeg_bytes,
+            "image/jpeg",
+            lane="surface",
+        )
 
     def publish_underwater_frame(
         self,
@@ -84,8 +105,8 @@ class BridgeFramePublisher:
             jpeg_bytes,
             "image/jpeg",
             {"X-Frame-ID": frame_id},
+            lane="surface",
         )
-
     def _submit(
         self,
         method: str,
@@ -93,12 +114,17 @@ class BridgeFramePublisher:
         body: bytes,
         content_type: str,
         extra_headers: dict[str, str] | None = None,
+        *,
+        lane: str = "surface",
     ) -> bool:
+        if lane not in self._futures:
+            raise ValueError(f"unknown bridge publisher lane: {lane}")
         with self._lock:
-            if self._future is not None and not self._future.done():
+            future = self._futures[lane]
+            if future is not None and not future.done():
                 return False
             headers = {"Content-Type": content_type, **(extra_headers or {})}
-            self._future = self._executor.submit(
+            self._futures[lane] = self._executor.submit(
                 self._send,
                 method,
                 path,
@@ -128,6 +154,10 @@ class BridgeFramePublisher:
     def last_error(self) -> BaseException | None:
         """Return the last async error without interrupting the vision loop."""
         with self._lock:
-            if self._future is None or not self._future.done():
-                return None
-            return self._future.exception()
+            futures = tuple(self._futures.values())
+        for future in futures:
+            if future is not None and future.done():
+                error = future.exception()
+                if error is not None:
+                    return error
+        return None
