@@ -77,3 +77,22 @@ Expected:
 Frontend berada di `dashboard/` dan dideploy dari branch `main` oleh Vercel. Perubahan frontend tidak perlu dipasang sebagai service di Raspberry Pi. Pi hanya perlu menjaga publisher/backend telemetry tetap mengirim kontrak di atas.
 
 Jika URL raw camera sudah dikonfigurasi, jangan menggantinya dengan placeholder. Jangan mencetak secret Supabase atau service-role key saat laporan.
+
+## Prompt copy-paste untuk Codex Raspberry Pi
+
+```text
+Kamu bekerja di /home/pi/KKI2026. Sinkronkan repository dan verifikasi backend ASV tanpa mengubah kontrol keselamatan Pixhawk.
+
+1. Jalankan `git status --short`. Jika ada perubahan lokal, jangan reset, stash, checkout paksa, atau menghapusnya; laporkan dan berhenti.
+2. Jika bersih, jalankan `git pull --ff-only origin main`.
+3. Baca `deploy/raspberry-pi/handover-live-boat-track.md`.
+4. Jalankan:
+   `python3 -m pytest -q tests/test_telemetry.py`
+   `curl -fsS http://127.0.0.1:8080/healthz`
+   `curl -fsS http://127.0.0.1:8080/api/status`
+   `curl -fsS http://127.0.0.1:8080/api/telemetry`
+   `sudo systemctl --no-pager status asv-dashboard.service`
+5. Pastikan `/api/telemetry` mempertahankan `connected`, `position`, `heading_deg`, `speed_mps`, `captured_at`, `heartbeat_at`, dan `track`.
+6. Jangan mengirim MAVLink command, RC override, arm/disarm, perubahan mode, koordinat palsu, atau secret ke output.
+7. Laporkan commit sebelum/sesudah pull, status working tree, hasil test, response endpoint, status systemd, dan masalah yang ditemukan.
+```
