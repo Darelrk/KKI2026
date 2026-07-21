@@ -124,6 +124,6 @@ describe('CameraStage', () => {
     expect(canvasContext.clearRect).toHaveBeenCalled()
     expect(canvasContext.strokeRect).not.toHaveBeenCalled()
     expect(screen.getByRole('img', { name: 'Live surface camera' })).toBeInTheDocument()
-    expect(screen.getByText('Metadata channel error')).toBeInTheDocument()
+    expect(screen.getByText('Vision error')).toBeInTheDocument()
   })
 })

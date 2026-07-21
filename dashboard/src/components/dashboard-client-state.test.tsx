@@ -23,7 +23,9 @@ describe('DashboardClient states', () => {
     render(<DashboardClient asvId="default" mode="fixture" />)
 
     expect(screen.getByRole('main')).toHaveAttribute('aria-busy', 'true')
-    expect(screen.getByText('Synchronising telemetry')).toBeInTheDocument()
+    expect(screen.getByLabelText('Loading ASV dashboard')).toBeInTheDocument()
+    expect(document.querySelector('.dashboard-skeleton')).toBeInTheDocument()
+    expect(document.querySelector('.dashboard-skeleton-bar')).toBeInTheDocument()
   })
 
   it('shows a recovery action when the live status request fails', () => {

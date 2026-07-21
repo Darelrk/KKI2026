@@ -20,10 +20,19 @@ export function DashboardClient({ asvId, mode }: DashboardClientProps) {
   const vision = useVisionMetadata(asvId, mode)
   if (liveQuery.isPending) {
     return (
-      <main className="dashboard-notice" aria-busy="true">
-        <p className="eyebrow">ASV Ground Station</p>
-        <h1>Synchronising telemetry</h1>
-        <p>Loading the current ASV status.</p>
+      <main className="dashboard-shell" aria-busy="true">
+        <div className="dashboard-skeleton-bar" />
+        <section className="dashboard-grid" aria-label="Loading ASV dashboard">
+          <div className="dashboard-grid__cameras">
+            <div className="dashboard-skeleton dashboard-skeleton--camera" />
+            <div className="dashboard-skeleton dashboard-skeleton--camera" />
+          </div>
+          <div className="dashboard-grid__side">
+            <div className="dashboard-skeleton dashboard-skeleton--panel" />
+            <div className="dashboard-skeleton dashboard-skeleton--panel" />
+          </div>
+        </section>
+        <div className="dashboard-skeleton dashboard-skeleton--map" />
       </main>
     )
   }

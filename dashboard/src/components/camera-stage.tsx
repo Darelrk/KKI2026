@@ -118,9 +118,11 @@ export function CameraStage({
         </div>
       )}
       {streamUrl ? (
-        <p className="camera-stage__metadata-status" aria-live="polite">
-          Metadata channel {metadataStatus}
-        </p>
+        <div className="camera-stage__metadata-bar">
+          <span className={`status-chip status-chip--${metadataStatus === 'connected' ? 'connected' : metadataStatus === 'fixture' ? 'fixture' : metadataStatus === 'connecting' ? 'connecting' : 'error'}`}>
+            Vision {metadataStatus}
+          </span>
+        </div>
       ) : null}
     </section>
   )

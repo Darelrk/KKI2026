@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Flag } from '@phosphor-icons/react'
 
 const missionStages = [
   { id: 'ready', label: 'Ready / Preparation' },
@@ -20,6 +21,7 @@ export function MissionStage() {
     <section className="mission-stage" aria-labelledby="mission-stage-title">
       <div className="mission-stage__header">
         <div className="panel-heading">
+          <Flag aria-hidden="true" />
           <div>
             <p className="eyebrow">Operational phase</p>
             <h2 id="mission-stage-title">Mission stage</h2>
