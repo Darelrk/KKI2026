@@ -9,7 +9,7 @@ type ConnectionBarProps = {
 }
 
 const statusCopy: Record<ConnectionStatus, string> = {
-  fixture: 'Fixture data',
+  fixture: 'Local mode',
   connecting: 'Connecting',
   connected: 'Live realtime',
   error: 'Realtime delayed',

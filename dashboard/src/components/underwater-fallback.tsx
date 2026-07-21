@@ -38,8 +38,8 @@ export function UnderwaterFallback({ frame, streamUrl }: UnderwaterFallbackProps
       ) : (
         <div className="underwater-fallback__empty" role="status">
           <Waves aria-hidden="true" size={32} />
-          <p>No underwater frame received</p>
-          <span>The last valid JPEG fallback will appear here.</span>
+          <p>Underwater feed offline</p>
+          <span>Waiting for the latest underwater frame from the realtime channel.</span>
         </div>
       )}
     </section>

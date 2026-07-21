@@ -123,6 +123,6 @@ describe('DashboardShell', () => {
     )
 
     expect(screen.getByText('ASV offline')).toBeInTheDocument()
-    expect(screen.getByText('No underwater frame received')).toBeInTheDocument()
+    expect(screen.getByText('Underwater feed offline')).toBeInTheDocument()
   })
 })

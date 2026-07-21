@@ -21,15 +21,13 @@ export function MissionStage() {
       <div className="mission-stage__header">
         <div className="panel-heading">
           <div>
-            <p className="eyebrow">Formalitas operasi</p>
+            <p className="eyebrow">Operational phase</p>
             <h2 id="mission-stage-title">Mission stage</h2>
           </div>
-          <span className="mockup-badge">MISSION MOCKUP</span>
         </div>
-        <p>Kontrol lokal untuk pratinjau UI. Tidak terhubung ke Supabase atau autopilot.</p>
       </div>
 
-      <div className="mission-stage__controls" role="group" aria-label="Mission mockup stages">
+      <div className="mission-stage__controls" role="group" aria-label="Mission stages">
         {missionStages.map((stage) => (
           <button
             key={stage.id}

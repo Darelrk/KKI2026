@@ -113,8 +113,8 @@ export function CameraStage({
       ) : (
         <div className="camera-stage__placeholder" role="status">
           <VideoCamera aria-hidden="true" size={40} />
-          <p>Surface stream unavailable</p>
-          <span>Configure a raw main camera URL to enable this feed.</span>
+          <p>Surface stream offline</p>
+          <span>Camera feed is not available. Verify the stream URL configuration.</span>
         </div>
       )}
       {streamUrl ? (

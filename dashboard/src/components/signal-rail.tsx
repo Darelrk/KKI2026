@@ -18,7 +18,7 @@ export function SignalRail({
   const modelStatus = live?.model_status ?? 'offline'
   const isRunning = live?.online && modelStatus === 'running'
   const telemetryStatusCopy = {
-    fixture: 'Fixture data',
+    fixture: 'Local mode',
     connecting: 'Connecting',
     connected: 'Connected',
     error: 'Error',
