@@ -297,33 +297,6 @@ def compute_heading_steering_pwm(
     return int(round(clamp(center_pwm + correction * max_delta, PWM_MIN, PWM_MAX)))
 
 
-def select_paired_target_x(
-    detections: Sequence[Detection],
-    *,
-    min_confidence: float,
-) -> float | None:
-    red = max(
-        (
-            d
-            for d in detections
-            if d.label == "red_buoy" and d.confidence >= min_confidence
-        ),
-        key=lambda d: (d.confidence, d.area),
-        default=None,
-    )
-    green = max(
-        (
-            d
-            for d in detections
-            if d.label == "green_buoy" and d.confidence >= min_confidence
-        ),
-        key=lambda d: (d.confidence, d.area),
-        default=None,
-    )
-    if red is None or green is None:
-        return None
-    return (red.x_center + green.x_center) / 2.0
-
 
 @dataclass(frozen=True)
 class RouteConfig:
