@@ -204,7 +204,9 @@ def resolve_pixhawk_endpoint(endpoint: str) -> str:
     import sys
     if sys.platform == "win32":
         if endpoint.upper().startswith("COM"):
-            return endpoint
+            return endpoint.upper()
+        if endpoint.startswith("/dev/"):
+            return "COM5"
         try:
             import serial.tools.list_ports
             ports = list(serial.tools.list_ports.comports())
@@ -216,8 +218,7 @@ def resolve_pixhawk_endpoint(endpoint: str) -> str:
                 return ports[0].device
         except Exception:
             pass
-        return endpoint
-
+        return "COM5"
     import glob
     if Path(endpoint).exists():
         return endpoint
@@ -273,7 +274,7 @@ class PixhawkLink:
         endpoints_to_try = [resolved_endpoint]
         import sys
         if sys.platform == "win32":
-            for com in ["COM3", "COM4", "COM5", "COM6", "COM7", "COM8"]:
+            for com in ["COM5", "COM3", "COM4", "COM6", "COM7", "COM8"]:
                 if com not in endpoints_to_try:
                     endpoints_to_try.append(com)
         else:
@@ -282,15 +283,15 @@ class PixhawkLink:
                     endpoints_to_try.append(alt)
 
         for ep in endpoints_to_try:
-            for attempt in range(2):
+            for baud in [115200, 57600, 38400, 9600]:
                 try:
                     conn = self._mavutil.mavlink_connection(
                         ep,
-                        baud=115200,
+                        baud=baud,
                         source_system=255,
                         source_component=190,
                     )
-                    hb = conn.wait_heartbeat(timeout=1.5)
+                    hb = conn.wait_heartbeat(timeout=0.8)
                     if hb is not None:
                         if self.connection is not None:
                             try:
@@ -301,13 +302,13 @@ class PixhawkLink:
                         self._last_heartbeat = hb
                         self._last_heartbeat_time = time.monotonic()
                         print(
-                            f"Pixhawk terhubung: endpoint={ep}, system={conn.target_system}, "
+                            f"Pixhawk terhubung: endpoint={ep} ({baud} baud), system={conn.target_system}, "
                             f"component={conn.target_component}, mode={str(conn.flightmode or 'UNKNOWN').upper()}"
                         )
                         return True
                     conn.close()
                 except Exception:
-                    time.sleep(0.1)
+                    pass
         return False
 
     def reconnect(self) -> bool:
