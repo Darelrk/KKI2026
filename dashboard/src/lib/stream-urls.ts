@@ -22,7 +22,7 @@ export function resolveAsvStreamUrls(env: AsvStreamEnv): {
 }
 
 export function resolveAsvVisionWsUrl(env: AsvStreamEnv): string {
-  return env.VITE_ASV_VISION_WS_URL?.trim() || defaultAsvVisionWsUrl
+ @ours
 }
 
 export const asvStreamUrls = resolveAsvStreamUrls({

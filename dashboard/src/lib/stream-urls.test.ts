@@ -21,7 +21,10 @@ describe('resolveAsvStreamUrls', () => {
         VITE_ASV_SURFACE_STREAM_URL: ' ',
         VITE_ASV_UNDERWATER_STREAM_URL: undefined,
       }),
-    ).toEqual(defaultAsvStreamUrls)
+    ).toEqual({
+      surface: defaultAsvStreamUrls.surface,
+      underwater: defaultAsvStreamUrls.underwater,
+    })
   })
 
   it('keeps the vision WebSocket URL independent from camera URLs', () => {
@@ -30,6 +33,6 @@ describe('resolveAsvStreamUrls', () => {
         VITE_ASV_VISION_WS_URL: ' wss://bridge.example.test ',
       }),
     ).toBe('wss://bridge.example.test')
-    expect(resolveAsvVisionWsUrl({})).toBe('wss://monitor-kapal-pora-pora.web.id')
+ @ours
   })
 })
