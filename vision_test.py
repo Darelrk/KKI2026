@@ -223,6 +223,22 @@ class PixhawkLink:
             ) from exc
 
         self._mavutil = mavutil
+        self._lock = threading.Lock()
+        self._mav_lock = threading.Lock()
+        self._target_steering = NEUTRAL_PWM
+        self._target_throttle = NEUTRAL_PWM
+        self._override_active = False
+        self._running = True
+        self._last_heartbeat = None
+        self._last_servo_output = None
+        self._last_rc_channels = None
+        self._last_vfr_hud = None
+
+        if endpoint.lower() in ("none", "null", "dummy", "disabled", "off", "false", ""):
+            self.connection = None
+            print("Pixhawk Link: Mode DUMMY (tanpa koneksi hardware).")
+            return
+
         resolved_endpoint = resolve_pixhawk_endpoint(endpoint)
         self.connection = None
         heartbeat = None
@@ -256,16 +272,16 @@ class PixhawkLink:
                 "Pastikan Pixhawk terhubung dan port tidak dikunci oleh QGroundControl/Mission Planner."
             )
         self._last_heartbeat = heartbeat
-        self._last_servo_output = None
-        self._last_rc_channels = None
-        self._last_vfr_hud = None
+        self.arm_vehicle()
 
-        self._target_steering = NEUTRAL_PWM
-        self._target_throttle = NEUTRAL_PWM
-        self._override_active = False
-        self._running = True
-        self._lock = threading.Lock()
+        self._stream_thread = threading.Thread(target=self._override_loop, daemon=True)
+        self._stream_thread.start()
 
+        print(
+            f"Pixhawk terhubung: system={self.connection.target_system}, "
+            f"component={self.connection.target_component}, "
+            f"mode={self.mode()}"
+        )
         # Arm vehicle for active throttle testing
         self.arm_vehicle()
 
@@ -281,59 +297,79 @@ class PixhawkLink:
 
     def arm_vehicle(self) -> None:
         """Bypass pre-arm checks and arm Pixhawk for active throttle testing."""
-        try:
-            self.connection.mav.param_set_send(
-                self.connection.target_system,
-                self.connection.target_component,
-                b'ARMING_CHECK',
-                0.0,
-                self._mavutil.mavlink.MAV_PARAM_TYPE_REAL32
-            )
-            time.sleep(0.1)
-            self.connection.mav.command_long_send(
-                self.connection.target_system,
-                self.connection.target_component,
-                self._mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM,
-                0, 1, 21196, 0, 0, 0, 0, 0
-            )
-        except Exception:
-            pass
+        if self.connection is None:
+            return
+        with self._mav_lock:
+            try:
+                self.connection.mav.param_set_send(
+                    self.connection.target_system,
+                    self.connection.target_component,
+                    b'ARMING_CHECK',
+                    0.0,
+                    self._mavutil.mavlink.MAV_PARAM_TYPE_REAL32
+                )
+                time.sleep(0.05)
+                self.connection.mav.command_long_send(
+                    self.connection.target_system,
+                    self.connection.target_component,
+                    self._mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM,
+                    0, 1, 21196, 0, 0, 0, 0, 0
+                )
+            except Exception:
+                pass
+
     def mode(self) -> str:
         """Read and cache the latest heartbeat mode."""
-        try:
-            heartbeat = self.connection.recv_match(
-                type="HEARTBEAT", blocking=False, timeout=0.01
-            )
-            if heartbeat is not None:
-                self._last_heartbeat = heartbeat
-        except Exception:
-            pass
-        return str(self.connection.flightmode or "UNKNOWN").upper()
+        if self.connection is None:
+            return "UNKNOWN"
+        with self._mav_lock:
+            try:
+                heartbeat = self.connection.recv_match(
+                    type="HEARTBEAT", blocking=False, timeout=0.01
+                )
+                if heartbeat is not None:
+                    self._last_heartbeat = heartbeat
+            except Exception:
+                pass
+            return str(self.connection.flightmode or "UNKNOWN").upper()
 
     def is_manual(self) -> bool:
         return self.mode() == "MANUAL"
 
     def telemetry(self) -> dict[str, Any]:
         """Return latest ArduPilot heartbeat, RC input, and PWM output."""
-        try:
-            for _ in range(20):
-                message = self.connection.recv_match(
-                    type=["HEARTBEAT", "RC_CHANNELS", "SERVO_OUTPUT_RAW", "VFR_HUD"],
-                    blocking=False,
-                )
-                if message is None:
-                    break
-                message_type = message.get_type()
-                if message_type == "HEARTBEAT":
-                    self._last_heartbeat = message
-                elif message_type == "RC_CHANNELS":
-                    self._last_rc_channels = message
-                elif message_type == "SERVO_OUTPUT_RAW":
-                    self._last_servo_output = message
-                elif message_type == "VFR_HUD":
-                    self._last_vfr_hud = message
-        except Exception:
-            pass
+        if self.connection is None:
+            return {
+                "mode": "UNKNOWN",
+                "armed": False,
+                "base_mode": None,
+                "system_status": None,
+                "heading_deg": None,
+                "rc1": None,
+                "rc3": None,
+                "servo1": None,
+                "servo3": None,
+            }
+        with self._mav_lock:
+            try:
+                while True:
+                    message = self.connection.recv_match(
+                        type=["HEARTBEAT", "RC_CHANNELS", "SERVO_OUTPUT_RAW", "VFR_HUD"],
+                        blocking=False,
+                    )
+                    if message is None:
+                        break
+                    message_type = message.get_type()
+                    if message_type == "HEARTBEAT":
+                        self._last_heartbeat = message
+                    elif message_type == "RC_CHANNELS":
+                        self._last_rc_channels = message
+                    elif message_type == "SERVO_OUTPUT_RAW":
+                        self._last_servo_output = message
+                    elif message_type == "VFR_HUD":
+                        self._last_vfr_hud = message
+            except Exception:
+                pass
         heartbeat = self._last_heartbeat
         armed = False
         base_mode = None
@@ -382,17 +418,18 @@ class PixhawkLink:
                 thr = self._target_throttle
 
             if active and self.connection is not None:
-                try:
-                    self.connection.mav.rc_channels_override_send(
-                        self.connection.target_system,
-                        self.connection.target_component,
-                        steer,
-                        unused,
-                        thr,
-                        unused, unused, unused, unused, unused
-                    )
-                except Exception:
-                    pass
+                with self._mav_lock:
+                    try:
+                        self.connection.mav.rc_channels_override_send(
+                            self.connection.target_system,
+                            self.connection.target_component,
+                            steer,
+                            unused,
+                            thr,
+                            unused, unused, unused, unused, unused
+                        )
+                    except Exception:
+                        pass
             time.sleep(0.05)
 
     def close(self) -> None:
@@ -400,22 +437,22 @@ class PixhawkLink:
         self.release_override()
         unused = 65535
         if self.connection is not None:
-            try:
-                self.connection.mav.rc_channels_override_send(
-                    self.connection.target_system,
-                    self.connection.target_component,
-                    0, unused, 0, unused, unused, unused, unused, unused
-                )
-                self.connection.mav.command_long_send(
-                    self.connection.target_system,
-                    self.connection.target_component,
-                    self._mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM,
-                    0, 0, 0, 0, 0, 0, 0, 0
-                )
-                self.connection.close()
-            except Exception:
-                pass
-
+            with self._mav_lock:
+                try:
+                    self.connection.mav.rc_channels_override_send(
+                        self.connection.target_system,
+                        self.connection.target_component,
+                        0, unused, 0, unused, unused, unused, unused, unused
+                    )
+                    self.connection.mav.command_long_send(
+                        self.connection.target_system,
+                        self.connection.target_component,
+                        self._mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM,
+                        0, 0, 0, 0, 0, 0, 0, 0
+                    )
+                    self.connection.close()
+                except Exception:
+                    pass
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Deteksi buoy webcam dan kirim steering ke Pixhawk."
