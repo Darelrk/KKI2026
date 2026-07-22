@@ -179,6 +179,20 @@ class JsonlLogger:
         self._file.close()
 
 
+def resolve_pixhawk_endpoint(endpoint: str) -> str:
+    """Auto-detect Pixhawk serial device if the specified endpoint does not exist."""
+    if endpoint.startswith("tcp:") or endpoint.startswith("udp:"):
+        return endpoint
+    import glob
+    if Path(endpoint).exists():
+        return endpoint
+    by_id = glob.glob("/dev/serial/by-id/*ArduPilot*") + glob.glob("/dev/serial/by-id/*Pixhawk*")
+    if by_id:
+        return by_id[0]
+    for candidate in ["/dev/ttyACM1", "/dev/ttyACM0", "/dev/ttyUSB0", "/dev/ttyUSB1"]:
+        if Path(candidate).exists():
+            return candidate
+    return endpoint
 class PixhawkLink:
     """Minimal MAVLink connection for ArduRover RC overrides."""
 
@@ -192,17 +206,37 @@ class PixhawkLink:
             ) from exc
 
         self._mavutil = mavutil
-        self.connection = mavutil.mavlink_connection(
-            endpoint,
-            source_system=255,
-            source_component=190,
-        )
-        heartbeat = self.connection.wait_heartbeat(timeout=heartbeat_timeout)
-        if heartbeat is None:
-            self.connection.close()
+        resolved_endpoint = resolve_pixhawk_endpoint(endpoint)
+        self.connection = None
+        heartbeat = None
+        endpoints_to_try = [resolved_endpoint]
+        for alt in ["/dev/ttyACM1", "/dev/ttyACM0", "/dev/ttyUSB0"]:
+            if alt not in endpoints_to_try and Path(alt).exists():
+                endpoints_to_try.append(alt)
+
+        for ep in endpoints_to_try:
+            for attempt in range(2):
+                try:
+                    conn = mavutil.mavlink_connection(
+                        ep,
+                        baud=115200,
+                        source_system=255,
+                        source_component=190,
+                    )
+                    hb = conn.wait_heartbeat(timeout=2.0)
+                    if hb is not None:
+                        self.connection = conn
+                        heartbeat = hb
+                        break
+                    conn.close()
+                except Exception:
+                    time.sleep(0.2)
+            if self.connection is not None:
+                break
+        if self.connection is None or heartbeat is None:
             raise TimeoutError(
                 f"Tidak menerima heartbeat Pixhawk dari {endpoint}. "
-                "Pastikan Mission Planner MAVLink forwarding aktif."
+                "Pastikan Pixhawk terhubung dan port tidak dikunci oleh QGroundControl/Mission Planner."
             )
         self._last_heartbeat = heartbeat
         self._last_servo_output = None
