@@ -236,12 +236,6 @@ class PixhawkLink:
         self._last_rc_channels = None
         self._last_vfr_hud = None
 
-        self._is_dummy = endpoint.lower() in ("none", "null", "dummy", "disabled", "off", "false", "")
-        if self._is_dummy:
-            self.connection = None
-            print("Pixhawk Link: Mode DUMMY (tanpa koneksi hardware).")
-            return
-
         with self._mav_lock:
             connected = self._try_connect(endpoint)
 
@@ -294,8 +288,6 @@ class PixhawkLink:
 
     def reconnect(self) -> bool:
         """Attempt to recover lost Pixhawk connection dynamically."""
-        if self._is_dummy:
-            return True
         with self._mav_lock:
             print(f"Mencoba menyambungkan ulang MAVLink ke {self._endpoint}...")
             ok = self._try_connect(self._endpoint)
@@ -426,13 +418,12 @@ class PixhawkLink:
                 steer = self._target_steering
                 thr = self._target_throttle
 
-            if not self._is_dummy:
+            if active and self.connection is not None:
                 now = time.monotonic()
-                if active and self._last_heartbeat_time > 0 and (now - self._last_heartbeat_time > self._heartbeat_timeout):
-                    print("HEARTBEAT timeout tercapai, mencoba reconnect...")
+                if self._last_heartbeat_time > 0 and (now - self._last_heartbeat_time > self._heartbeat_timeout):
+                    print("Heartbeat MAVLink terputus, mencoba menyambungkan ulang...")
                     self.reconnect()
 
-            if active and self.connection is not None:
                 with self._mav_lock:
                     try:
                         self.connection.mav.rc_channels_override_send(
