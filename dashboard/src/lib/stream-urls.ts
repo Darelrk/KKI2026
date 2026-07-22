@@ -3,6 +3,8 @@ export const defaultAsvStreamUrls = {
   underwater: 'https://monitor-kapal-pora-pora.web.id/stream/bawah',
 } as const
 
+export const defaultAsvVisionWsUrl = 'wss://monitor-kapal-pora-pora.web.id'
+
 type AsvStreamEnv = Partial<{
   VITE_ASV_SURFACE_STREAM_URL: string
   VITE_ASV_UNDERWATER_STREAM_URL: string
@@ -19,8 +21,8 @@ export function resolveAsvStreamUrls(env: AsvStreamEnv): {
   }
 }
 
-export function resolveAsvVisionWsUrl(env: AsvStreamEnv): string | null {
-  return env.VITE_ASV_VISION_WS_URL?.trim() || null
+export function resolveAsvVisionWsUrl(env: AsvStreamEnv): string {
+  return env.VITE_ASV_VISION_WS_URL?.trim() || defaultAsvVisionWsUrl
 }
 
 export const asvStreamUrls = resolveAsvStreamUrls({

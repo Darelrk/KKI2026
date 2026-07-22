@@ -30,6 +30,6 @@ describe('resolveAsvStreamUrls', () => {
         VITE_ASV_VISION_WS_URL: ' wss://bridge.example.test ',
       }),
     ).toBe('wss://bridge.example.test')
-    expect(resolveAsvVisionWsUrl({})).toBeNull()
+    expect(resolveAsvVisionWsUrl({})).toBe('wss://monitor-kapal-pora-pora.web.id')
   })
 })
