@@ -30,6 +30,7 @@ from vision_route import (
     NEUTRAL_PWM,
     PWM_MAX,
     PWM_MIN,
+    clamp,
     PatternMatcher,
     PatternSignature,
     RouteConfig,
@@ -216,11 +217,14 @@ class PixhawkLink:
 
     def mode(self) -> str:
         """Read and cache the latest heartbeat mode."""
-        heartbeat = self.connection.recv_match(
-            type="HEARTBEAT", blocking=False, timeout=0.01
-        )
-        if heartbeat is not None:
-            self._last_heartbeat = heartbeat
+        try:
+            heartbeat = self.connection.recv_match(
+                type="HEARTBEAT", blocking=False, timeout=0.01
+            )
+            if heartbeat is not None:
+                self._last_heartbeat = heartbeat
+        except Exception:
+            pass
         return str(self.connection.flightmode or "UNKNOWN").upper()
 
     def is_manual(self) -> bool:
@@ -228,25 +232,25 @@ class PixhawkLink:
 
     def telemetry(self) -> dict[str, Any]:
         """Return latest ArduPilot heartbeat, RC input, and PWM output."""
-        for _ in range(20):
-            message = self.connection.recv_match(
-                type=["HEARTBEAT", "RC_CHANNELS", "SERVO_OUTPUT_RAW", "VFR_HUD"],
-                blocking=False,
-            )
-            if message is None:
-                break
-            message_type = message.get_type()
-            if message_type == "HEARTBEAT":
-                self._last_heartbeat = message
-            elif message_type == "RC_CHANNELS":
-                self._last_rc_channels = message
-            elif message_type == "SERVO_OUTPUT_RAW":
-                self._last_servo_output = message
-            elif message_type == "VFR_HUD":
-                self._last_vfr_hud = message
-
-        heartbeat = self._last_heartbeat
-        armed = None
+        try:
+            for _ in range(20):
+                message = self.connection.recv_match(
+                    type=["HEARTBEAT", "RC_CHANNELS", "SERVO_OUTPUT_RAW", "VFR_HUD"],
+                    blocking=False,
+                )
+                if message is None:
+                    break
+                message_type = message.get_type()
+                if message_type == "HEARTBEAT":
+                    self._last_heartbeat = message
+                elif message_type == "RC_CHANNELS":
+                    self._last_rc_channels = message
+                elif message_type == "SERVO_OUTPUT_RAW":
+                    self._last_servo_output = message
+                elif message_type == "VFR_HUD":
+                    self._last_vfr_hud = message
+        except Exception:
+            pass
         base_mode = None
         system_status = None
         if heartbeat is not None:
@@ -271,64 +275,45 @@ class PixhawkLink:
         }
 
     def send_override(self, steering_pwm: int, throttle_pwm: int) -> None:
-        """Override only RC1 steering and RC3 throttle.
-
-        65535 tells ArduPilot to ignore the untouched channels. The script
-        never sends an arm command.
-        """
+        """Override only RC1 steering and RC3 throttle."""
         unused = 65535
-        self.connection.mav.rc_channels_override_send(
-            self.connection.target_system,
-            self.connection.target_component,
-            int(clamp(steering_pwm, PWM_MIN, PWM_MAX)),
-            unused,
-            int(clamp(throttle_pwm, PWM_MIN, PWM_MAX)),
-            unused,
-            unused,
-            unused,
-            unused,
-            unused,
-            unused,
-            unused,
-            unused,
-            unused,
-            unused,
-            unused,
-            unused,
-            unused,
-            unused,
-            unused,
-        )
+        try:
+            self.connection.mav.rc_channels_override_send(
+                self.connection.target_system,
+                self.connection.target_component,
+                int(clamp(steering_pwm, PWM_MIN, PWM_MAX)),
+                unused,
+                int(clamp(throttle_pwm, PWM_MIN, PWM_MAX)),
+                unused,
+                unused,
+                unused,
+                unused,
+                unused,
+            )
+        except Exception:
+            pass
 
     def release_override(self) -> None:
         """Release RC1 and RC3 overrides back to the normal input source."""
         unused = 65535
-        self.connection.mav.rc_channels_override_send(
-            self.connection.target_system,
-            self.connection.target_component,
-            0,
-            unused,
-            0,
-            unused,
-            unused,
-            unused,
-            unused,
-            unused,
-            unused,
-            unused,
-            unused,
-            unused,
-            unused,
-            unused,
-            unused,
-            unused,
-            unused,
-            unused,
+        try:
+            self.connection.mav.rc_channels_override_send(
+                self.connection.target_system,
+                self.connection.target_component,
+                0,
+                unused,
+                0,
+                unused,
+                unused,
+                unused,
+                unused,
+                unused,
+            )
+        except Exception:
+            pass
 
-        )
     def close(self) -> None:
         self.connection.close()
-
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -356,7 +341,7 @@ def parse_args() -> argparse.Namespace:
         help="Durasi uji dalam detik; 0 berarti berjalan sampai Q/ESC",
     )
     parser.add_argument(
-        "--camera", type=int, default=0, help="Nomor webcam OpenCV"
+        "--camera", default="0", help="Nomor webcam OpenCV atau URL stream"
     )
     parser.add_argument(
         "--conf", type=float, default=0.35, help="Confidence minimum deteksi"
@@ -484,7 +469,8 @@ def main() -> None:
             "vision_fps": args.vision_fps,
         }
     )
-    camera = cv2.VideoCapture(args.camera)
+    camera_source = int(args.camera) if str(args.camera).isdigit() else args.camera
+    camera = cv2.VideoCapture(camera_source)
     if not camera.isOpened():
         logger.close()
         link.close()
@@ -588,12 +574,16 @@ def main() -> None:
                 target_found = target_x is not None
                 throttle_pwm = args.throttle_pwm if target_found else NEUTRAL_PWM
 
-                mode = link.mode()
-                if mode == "MANUAL":
-                    link.send_override(steering_pwm, throttle_pwm)
-                else:
-                    link.release_override()
-                telemetry = link.telemetry()
+                try:
+                    mode = link.mode()
+                    if mode == "MANUAL":
+                        link.send_override(steering_pwm, throttle_pwm)
+                    else:
+                        link.release_override()
+                    telemetry = link.telemetry()
+                except Exception as exc:
+                    mode = "MAVLINK_ERROR"
+                    telemetry = {"servo1": None, "servo3": None, "armed": False, "error": str(exc)}
 
                 if bridge is not None:
                     metadata_published = bridge.publish_detection_metadata(
