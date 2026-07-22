@@ -213,7 +213,7 @@ def resolve_pixhawk_endpoint(endpoint: str) -> str:
 class PixhawkLink:
     """Minimal MAVLink connection for ArduRover RC overrides."""
 
-    def __init__(self, endpoint: str, heartbeat_timeout: float = 10.0) -> None:
+    def __init__(self, endpoint: str, heartbeat_timeout: float = 5.0) -> None:
         try:
             from pymavlink import mavutil
         except ImportError as exc:
@@ -223,78 +223,85 @@ class PixhawkLink:
             ) from exc
 
         self._mavutil = mavutil
+        self._endpoint = endpoint
+        self._heartbeat_timeout = heartbeat_timeout
         self._lock = threading.Lock()
-        self._mav_lock = threading.Lock()
-        self._target_steering = NEUTRAL_PWM
+        self._mav_lock = threading.RLock()
         self._target_throttle = NEUTRAL_PWM
         self._override_active = False
         self._running = True
         self._last_heartbeat = None
+        self._last_heartbeat_time = 0.0
         self._last_servo_output = None
         self._last_rc_channels = None
         self._last_vfr_hud = None
 
-        if endpoint.lower() in ("none", "null", "dummy", "disabled", "off", "false", ""):
+        self._is_dummy = endpoint.lower() in ("none", "null", "dummy", "disabled", "off", "false", "")
+        if self._is_dummy:
             self.connection = None
             print("Pixhawk Link: Mode DUMMY (tanpa koneksi hardware).")
             return
 
+        with self._mav_lock:
+            connected = self._try_connect(endpoint)
+
+        if not connected or self.connection is None:
+            raise TimeoutError(
+                f"Tidak menerima heartbeat Pixhawk dari {endpoint}. "
+                "Pastikan Pixhawk terhubung dan port tidak dikunci oleh QGroundControl/Mission Planner."
+            )
+
+        self.arm_vehicle()
+        self._stream_thread = threading.Thread(target=self._override_loop, daemon=True)
+        self._stream_thread.start()
+
+    def _try_connect(self, endpoint: str) -> bool:
+        """Internal helper to connect to Pixhawk endpoints under _mav_lock."""
         resolved_endpoint = resolve_pixhawk_endpoint(endpoint)
-        self.connection = None
-        heartbeat = None
         endpoints_to_try = [resolved_endpoint]
-        for alt in ["/dev/ttyACM1", "/dev/ttyACM0", "/dev/ttyUSB0"]:
+        for alt in ["/dev/ttyACM1", "/dev/ttyACM0", "/dev/ttyUSB0", "/dev/ttyUSB1"]:
             if alt not in endpoints_to_try and Path(alt).exists():
                 endpoints_to_try.append(alt)
 
         for ep in endpoints_to_try:
             for attempt in range(2):
                 try:
-                    conn = mavutil.mavlink_connection(
+                    conn = self._mavutil.mavlink_connection(
                         ep,
                         baud=115200,
                         source_system=255,
                         source_component=190,
                     )
-                    hb = conn.wait_heartbeat(timeout=2.0)
+                    hb = conn.wait_heartbeat(timeout=1.5)
                     if hb is not None:
+                        if self.connection is not None:
+                            try:
+                                self.connection.close()
+                            except Exception:
+                                pass
                         self.connection = conn
-                        heartbeat = hb
-                        break
+                        self._last_heartbeat = hb
+                        self._last_heartbeat_time = time.monotonic()
+                        print(
+                            f"Pixhawk terhubung: endpoint={ep}, system={conn.target_system}, "
+                            f"component={conn.target_component}, mode={str(conn.flightmode or 'UNKNOWN').upper()}"
+                        )
+                        return True
                     conn.close()
                 except Exception:
-                    time.sleep(0.2)
-            if self.connection is not None:
-                break
-        if self.connection is None or heartbeat is None:
-            raise TimeoutError(
-                f"Tidak menerima heartbeat Pixhawk dari {endpoint}. "
-                "Pastikan Pixhawk terhubung dan port tidak dikunci oleh QGroundControl/Mission Planner."
-            )
-        self._last_heartbeat = heartbeat
-        self.arm_vehicle()
+                    time.sleep(0.1)
+        return False
 
-        self._stream_thread = threading.Thread(target=self._override_loop, daemon=True)
-        self._stream_thread.start()
-
-        print(
-            f"Pixhawk terhubung: system={self.connection.target_system}, "
-            f"component={self.connection.target_component}, "
-            f"mode={self.mode()}"
-        )
-        # Arm vehicle for active throttle testing
-        self.arm_vehicle()
-
-        # Start 20 Hz continuous override thread to prevent RC_OVERRIDE_TIME timeout
-        self._stream_thread = threading.Thread(target=self._override_loop, daemon=True)
-        self._stream_thread.start()
-
-        print(
-            f"Pixhawk terhubung: system={self.connection.target_system}, "
-            f"component={self.connection.target_component}, "
-            f"mode={self.mode()}"
-        )
-
+    def reconnect(self) -> bool:
+        """Attempt to recover lost Pixhawk connection dynamically."""
+        if self._is_dummy:
+            return True
+        with self._mav_lock:
+            print(f"Mencoba menyambungkan ulang MAVLink ke {self._endpoint}...")
+            ok = self._try_connect(self._endpoint)
+            if ok:
+                self.arm_vehicle()
+            return ok
     def arm_vehicle(self) -> None:
         """Bypass pre-arm checks and arm Pixhawk for active throttle testing."""
         if self.connection is None:
@@ -329,6 +336,7 @@ class PixhawkLink:
                 )
                 if heartbeat is not None:
                     self._last_heartbeat = heartbeat
+                    self._last_heartbeat_time = time.monotonic()
             except Exception:
                 pass
             return str(self.connection.flightmode or "UNKNOWN").upper()
@@ -362,6 +370,7 @@ class PixhawkLink:
                     message_type = message.get_type()
                     if message_type == "HEARTBEAT":
                         self._last_heartbeat = message
+                        self._last_heartbeat_time = time.monotonic()
                     elif message_type == "RC_CHANNELS":
                         self._last_rc_channels = message
                     elif message_type == "SERVO_OUTPUT_RAW":
@@ -417,6 +426,12 @@ class PixhawkLink:
                 steer = self._target_steering
                 thr = self._target_throttle
 
+            if not self._is_dummy:
+                now = time.monotonic()
+                if active and self._last_heartbeat_time > 0 and (now - self._last_heartbeat_time > self._heartbeat_timeout):
+                    print("HEARTBEAT timeout tercapai, mencoba reconnect...")
+                    self.reconnect()
+
             if active and self.connection is not None:
                 with self._mav_lock:
                     try:
@@ -431,7 +446,6 @@ class PixhawkLink:
                     except Exception:
                         pass
             time.sleep(0.05)
-
     def close(self) -> None:
         self._running = False
         self.release_override()

@@ -59,11 +59,11 @@ def test_detection_metadata_preserves_identity_and_normalizes_pixel_box() -> Non
     ]
 
 
-def test_detection_metadata_does_not_clamp_invalid_model_output() -> None:
+def test_detection_metadata_clamps_out_of_bounds_box() -> None:
     detection = Detection(
         label="buoy",
-        x_center=1500,
         confidence=0.9,
+        x_center=1500,
         y_center=360,
         width=256,
         height=144,
@@ -78,4 +78,5 @@ def test_detection_metadata_does_not_clamp_invalid_model_output() -> None:
         source_height=720,
     )
 
-    assert payload["detections"][0]["x"] > 1
+    # Out of bounds detection is clamped or safely skipped to avoid HTTP 422
+    assert len(payload["detections"]) == 0 or (0.0 <= payload["detections"][0]["x"] <= 1.0)

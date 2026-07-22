@@ -161,3 +161,18 @@ def test_survey_timeout_fails_safe():
     assert decision.state is RouteState.FAILSAFE
     assert decision.throttle_pwm == 1500
     assert decision.steering_pwm == 1500
+
+
+def test_select_target_x_pair_and_single_buoy_offset():
+    from vision_route import select_target_x
+    # Red & Green pair -> midpoint
+    pair = [det("red_buoy", 280, 300), det("green_buoy", 360, 300)]
+    assert select_target_x(pair) == 320.0
+
+    # Single red buoy -> steer right (+offset)
+    red_only = [det("red_buoy", 200, 300)] # width=20, default offset = 20 * 1.5 = 30
+    assert select_target_x(red_only) == 230.0
+
+    # Single green buoy -> steer left (-offset)
+    green_only = [det("green_buoy", 400, 300)] # width=20, default offset = 20 * 1.5 = 30
+    assert select_target_x(green_only) == 370.0

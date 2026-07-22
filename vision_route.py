@@ -38,8 +38,12 @@ def clamp(value: float, lower: float, upper: float) -> float:
     return max(lower, min(upper, value))
 
 
-def select_target_x(detections: Sequence[Detection]) -> float | None:
-    """Return the midpoint of the best red/green target, or one best buoy."""
+def select_target_x(
+    detections: Sequence[Detection],
+    *,
+    single_buoy_offset: float = 0.0,
+) -> float | None:
+    """Return the midpoint of the best red/green target, or offset for a single buoy."""
     relevant = [d for d in detections if d.label in TARGET_LABELS]
     if not relevant:
         return None
@@ -58,8 +62,15 @@ def select_target_x(detections: Sequence[Detection]) -> float | None:
     if red is not None and green is not None:
         return (red.x_center + green.x_center) / 2.0
 
-    return max(relevant, key=lambda d: (d.confidence, d.area)).x_center
+    if red is not None:
+        offset = single_buoy_offset if single_buoy_offset > 0.0 else (red.width * 1.5)
+        return max(0.0, red.x_center + offset)
 
+    if green is not None:
+        offset = single_buoy_offset if single_buoy_offset > 0.0 else (green.width * 1.5)
+        return max(0.0, green.x_center - offset)
+    best = max(relevant, key=lambda d: (d.confidence, d.area))
+    return best.x_center
 
 def compute_steering_pwm(
     target_x: float,
@@ -486,9 +497,8 @@ class RouteController:
             ):
                 return self._enter_failsafe("survey_timeout")
 
-            target_x = select_paired_target_x(
-                detections,
-                min_confidence=self.config.reacquire_confidence,
+            target_x = select_target_x(
+                [d for d in detections if d.confidence >= self.config.reacquire_confidence]
             )
             if target_x is None:
                 self._reacquire_count = 0
