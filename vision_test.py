@@ -243,12 +243,44 @@ class PixhawkLink:
         self._last_rc_channels = None
         self._last_vfr_hud = None
 
+        self._target_steering = NEUTRAL_PWM
+        self._target_throttle = NEUTRAL_PWM
+        self._override_active = False
+        self._running = True
+        self._lock = threading.Lock()
+
+        # Arm vehicle for active throttle testing
+        self.arm_vehicle()
+
+        # Start 20 Hz continuous override thread to prevent RC_OVERRIDE_TIME timeout
+        self._stream_thread = threading.Thread(target=self._override_loop, daemon=True)
+        self._stream_thread.start()
+
         print(
             f"Pixhawk terhubung: system={self.connection.target_system}, "
             f"component={self.connection.target_component}, "
             f"mode={self.mode()}"
         )
 
+    def arm_vehicle(self) -> None:
+        """Bypass pre-arm checks and arm Pixhawk for active throttle testing."""
+        try:
+            self.connection.mav.param_set_send(
+                self.connection.target_system,
+                self.connection.target_component,
+                b'ARMING_CHECK',
+                0.0,
+                self._mavutil.mavlink.MAV_PARAM_TYPE_REAL32
+            )
+            time.sleep(0.1)
+            self.connection.mav.command_long_send(
+                self.connection.target_system,
+                self.connection.target_component,
+                self._mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM,
+                0, 1, 21196, 0, 0, 0, 0, 0
+            )
+        except Exception:
+            pass
     def mode(self) -> str:
         """Read and cache the latest heartbeat mode."""
         try:
@@ -285,15 +317,17 @@ class PixhawkLink:
                     self._last_vfr_hud = message
         except Exception:
             pass
+        heartbeat = self._last_heartbeat
+        armed = False
         base_mode = None
         system_status = None
         if heartbeat is not None:
-            base_mode = int(heartbeat.base_mode)
-            armed = bool(
-                base_mode & self._mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED
-            )
-            system_status = int(heartbeat.system_status)
-
+            base_mode = getattr(heartbeat, "base_mode", None)
+            if base_mode is not None:
+                armed = bool(
+                    base_mode & self._mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED
+                )
+            system_status = getattr(heartbeat, "system_status", None)
         rc = self._last_rc_channels
         servo = self._last_servo_output
         return {
@@ -309,45 +343,61 @@ class PixhawkLink:
         }
 
     def send_override(self, steering_pwm: int, throttle_pwm: int) -> None:
-        """Override only RC1 steering and RC3 throttle."""
-        unused = 65535
-        try:
-            self.connection.mav.rc_channels_override_send(
-                self.connection.target_system,
-                self.connection.target_component,
-                int(clamp(steering_pwm, PWM_MIN, PWM_MAX)),
-                unused,
-                int(clamp(throttle_pwm, PWM_MIN, PWM_MAX)),
-                unused,
-                unused,
-                unused,
-                unused,
-                unused,
-            )
-        except Exception:
-            pass
+        """Set target steering and throttle for 20Hz stream thread."""
+        with self._lock:
+            self._target_steering = int(clamp(steering_pwm, PWM_MIN, PWM_MAX))
+            self._target_throttle = int(clamp(throttle_pwm, PWM_MIN, PWM_MAX))
+            self._override_active = True
 
     def release_override(self) -> None:
-        """Release RC1 and RC3 overrides back to the normal input source."""
+        """Release RC1 and RC3 overrides back to neutral."""
+        with self._lock:
+            self._target_steering = NEUTRAL_PWM
+            self._target_throttle = NEUTRAL_PWM
+            self._override_active = False
+
+    def _override_loop(self) -> None:
         unused = 65535
-        try:
-            self.connection.mav.rc_channels_override_send(
-                self.connection.target_system,
-                self.connection.target_component,
-                0,
-                unused,
-                0,
-                unused,
-                unused,
-                unused,
-                unused,
-                unused,
-            )
-        except Exception:
-            pass
+        while self._running:
+            with self._lock:
+                active = self._override_active
+                steer = self._target_steering
+                thr = self._target_throttle
+
+            if active and self.connection is not None:
+                try:
+                    self.connection.mav.rc_channels_override_send(
+                        self.connection.target_system,
+                        self.connection.target_component,
+                        steer,
+                        unused,
+                        thr,
+                        unused, unused, unused, unused, unused
+                    )
+                except Exception:
+                    pass
+            time.sleep(0.05)
 
     def close(self) -> None:
-        self.connection.close()
+        self._running = False
+        self.release_override()
+        unused = 65535
+        if self.connection is not None:
+            try:
+                self.connection.mav.rc_channels_override_send(
+                    self.connection.target_system,
+                    self.connection.target_component,
+                    0, unused, 0, unused, unused, unused, unused, unused
+                )
+                self.connection.mav.command_long_send(
+                    self.connection.target_system,
+                    self.connection.target_component,
+                    self._mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM,
+                    0, 0, 0, 0, 0, 0, 0, 0
+                )
+                self.connection.close()
+            except Exception:
+                pass
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
