@@ -140,6 +140,34 @@ def detection_metadata_from_result(
 ) -> dict[str, Any]:
     if source_width <= 0 or source_height <= 0:
         raise ValueError("source dimensions must be positive")
+
+    formatted_detections: list[dict[str, Any]] = []
+    for detection in detections:
+        raw_x = (detection.x_center - detection.width / 2.0) / source_width
+        raw_y = (detection.y_center - detection.height / 2.0) / source_height
+        raw_w = detection.width / source_width
+        raw_h = detection.height / source_height
+
+        x = max(0.0, min(1.0, raw_x))
+        y = max(0.0, min(1.0, raw_y))
+        width = max(0.0, min(1.0 - x, raw_w))
+        height = max(0.0, min(1.0 - y, raw_h))
+
+        if width <= 0.0 or height <= 0.0:
+            continue
+
+        formatted_detections.append(
+            {
+                "track_id": None,
+                "label": detection.label,
+                "confidence": detection.confidence,
+                "x": round(x, 6),
+                "y": round(y, 6),
+                "width": round(width, 6),
+                "height": round(height, 6),
+            }
+        )
+
     return {
         "schema_version": 1,
         "asv_id": asv_id,
@@ -147,18 +175,7 @@ def detection_metadata_from_result(
         "captured_at": captured_at.isoformat(),
         "source_width": source_width,
         "source_height": source_height,
-        "detections": [
-            {
-                "track_id": None,
-                "label": detection.label,
-                "confidence": detection.confidence,
-                "x": (detection.x_center - detection.width / 2) / source_width,
-                "y": (detection.y_center - detection.height / 2) / source_height,
-                "width": detection.width / source_width,
-                "height": detection.height / source_height,
-            }
-            for detection in detections
-        ],
+        "detections": formatted_detections,
     }
 
 
