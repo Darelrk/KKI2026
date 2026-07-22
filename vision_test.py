@@ -231,21 +231,22 @@ def resolve_pixhawk_endpoint(endpoint: str) -> str:
     return endpoint
 class PixhawkLink:
     """Minimal MAVLink connection for ArduRover RC overrides."""
-
     def __init__(self, endpoint: str, heartbeat_timeout: float = 5.0) -> None:
         try:
             from pymavlink import mavutil
+            import serial
         except ImportError as exc:
             raise RuntimeError(
-                "pymavlink belum terpasang. Jalankan: "
-                "python -m pip install pymavlink"
+                "Dependensi MAVLink serial belum lengkap. Jalankan: "
+                "python -m pip install pymavlink pyserial"
             ) from exc
-
         self._mavutil = mavutil
         self._endpoint = endpoint
         self._heartbeat_timeout = heartbeat_timeout
+        self.connection = None
         self._lock = threading.Lock()
         self._mav_lock = threading.RLock()
+        self._target_steering = NEUTRAL_PWM
         self._target_throttle = NEUTRAL_PWM
         self._override_active = False
         self._running = True
@@ -284,6 +285,7 @@ class PixhawkLink:
 
         for ep in endpoints_to_try:
             for baud in [115200, 57600, 38400, 9600]:
+                conn = None
                 try:
                     conn = self._mavutil.mavlink_connection(
                         ep,
@@ -291,9 +293,9 @@ class PixhawkLink:
                         source_system=255,
                         source_component=190,
                     )
-                    hb = conn.wait_heartbeat(timeout=0.8)
+                    hb = conn.wait_heartbeat(timeout=2.5)
                     if hb is not None:
-                        if self.connection is not None:
+                        if getattr(self, "connection", None) is not None:
                             try:
                                 self.connection.close()
                             except Exception:
@@ -306,10 +308,14 @@ class PixhawkLink:
                             f"component={conn.target_component}, mode={str(conn.flightmode or 'UNKNOWN').upper()}"
                         )
                         return True
-                    conn.close()
-                except Exception:
-                    pass
-        return False
+                except Exception as exc:
+                    print(f"Percobaan {ep} ({baud} baud) -> {exc}")
+                finally:
+                    if conn is not None and getattr(self, "connection", None) != conn:
+                        try:
+                            conn.close()
+                        except Exception:
+                            pass
 
     def reconnect(self) -> bool:
         """Attempt to recover lost Pixhawk connection dynamically."""
