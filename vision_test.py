@@ -200,13 +200,31 @@ def resolve_pixhawk_endpoint(endpoint: str) -> str:
     """Auto-detect Pixhawk serial device if the specified endpoint does not exist."""
     if endpoint.startswith("tcp:") or endpoint.startswith("udp:"):
         return endpoint
+
+    import sys
+    if sys.platform == "win32":
+        if endpoint.upper().startswith("COM"):
+            return endpoint
+        try:
+            import serial.tools.list_ports
+            ports = list(serial.tools.list_ports.comports())
+            for p in ports:
+                desc = (p.description or "").lower()
+                if any(k in desc for k in ["pixhawk", "ardupilot", "px4", "stm", "ch340", "silicon"]):
+                    return p.device
+            if ports:
+                return ports[0].device
+        except Exception:
+            pass
+        return endpoint
+
     import glob
     if Path(endpoint).exists():
         return endpoint
     by_id = glob.glob("/dev/serial/by-id/*ArduPilot*") + glob.glob("/dev/serial/by-id/*Pixhawk*")
     if by_id:
         return by_id[0]
-    for candidate in ["/dev/ttyACM1", "/dev/ttyACM0", "/dev/ttyUSB0", "/dev/ttyUSB1"]:
+    for candidate in ["/dev/ttyACM0", "/dev/ttyACM1", "/dev/ttyUSB0", "/dev/ttyUSB1"]:
         if Path(candidate).exists():
             return candidate
     return endpoint
@@ -253,9 +271,15 @@ class PixhawkLink:
         """Internal helper to connect to Pixhawk endpoints under _mav_lock."""
         resolved_endpoint = resolve_pixhawk_endpoint(endpoint)
         endpoints_to_try = [resolved_endpoint]
-        for alt in ["/dev/ttyACM1", "/dev/ttyACM0", "/dev/ttyUSB0", "/dev/ttyUSB1"]:
-            if alt not in endpoints_to_try and Path(alt).exists():
-                endpoints_to_try.append(alt)
+        import sys
+        if sys.platform == "win32":
+            for com in ["COM3", "COM4", "COM5", "COM6", "COM7", "COM8"]:
+                if com not in endpoints_to_try:
+                    endpoints_to_try.append(com)
+        else:
+            for alt in ["/dev/ttyACM1", "/dev/ttyACM0", "/dev/ttyUSB0", "/dev/ttyUSB1"]:
+                if alt not in endpoints_to_try and Path(alt).exists():
+                    endpoints_to_try.append(alt)
 
         for ep in endpoints_to_try:
             for attempt in range(2):
