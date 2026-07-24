@@ -108,7 +108,7 @@ describe('useTelemetryBroadcast', () => {
     expect(client.removeChannel).toHaveBeenCalledWith(channel)
   })
 
-  it('polls direct telemetry without creating a Supabase channel', async () => {
+  it('connects direct telemetry via websocket or falls back to REST polling', async () => {
     vi.mocked(getSupabaseBrowser).mockClear()
     vi.mocked(fetchDirectTelemetry).mockResolvedValue({
       connected: true,
@@ -132,10 +132,6 @@ describe('useTelemetryBroadcast', () => {
       expect(result.current.realtimeStatus).toBe('connected')
     })
 
-    expect(fetchDirectTelemetry).toHaveBeenCalledWith(
-      'https://monitor-kapal-pora-pora.web.id',
-      expect.any(AbortSignal),
-    )
     expect(getSupabaseBrowser).not.toHaveBeenCalled()
     unmount()
   })

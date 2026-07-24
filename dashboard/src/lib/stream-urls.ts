@@ -12,6 +12,7 @@ type AsvStreamEnv = Partial<{
   VITE_ASV_SURFACE_STREAM_URL: string
   VITE_ASV_UNDERWATER_STREAM_URL: string
   VITE_ASV_VISION_WS_URL: string
+  VITE_ASV_TELEMETRY_WS_URL: string
 }>
 
 export function resolveAsvStreamUrls(env: AsvStreamEnv): {
@@ -31,6 +32,9 @@ export function resolveAsvBridgeUrl(env: AsvStreamEnv): string {
 export function resolveAsvVisionWsUrl(env: AsvStreamEnv): string {
   return env.VITE_ASV_VISION_WS_URL?.trim() || defaultAsvVisionWsUrl
 }
+export function resolveAsvTelemetryWsUrl(env: AsvStreamEnv): string {
+  return env.VITE_ASV_TELEMETRY_WS_URL?.trim() || env.VITE_ASV_VISION_WS_URL?.trim() || defaultAsvVisionWsUrl
+}
 
 export const asvBridgeUrl = resolveAsvBridgeUrl({
   VITE_ASV_BRIDGE_URL: import.meta.env.VITE_ASV_BRIDGE_URL,
@@ -42,5 +46,9 @@ export const asvStreamUrls = resolveAsvStreamUrls({
 })
 
 export const asvVisionWsUrl = resolveAsvVisionWsUrl({
+  VITE_ASV_VISION_WS_URL: import.meta.env.VITE_ASV_VISION_WS_URL,
+})
+export const asvTelemetryWsUrl = resolveAsvTelemetryWsUrl({
+  VITE_ASV_TELEMETRY_WS_URL: import.meta.env.VITE_ASV_TELEMETRY_WS_URL,
   VITE_ASV_VISION_WS_URL: import.meta.env.VITE_ASV_VISION_WS_URL,
 })

@@ -5,6 +5,7 @@ import {
   defaultAsvStreamUrls,
   resolveAsvBridgeUrl,
   resolveAsvStreamUrls,
+  resolveAsvTelemetryWsUrl,
   resolveAsvVisionWsUrl,
 } from './stream-urls'
 
@@ -50,4 +51,12 @@ describe('resolveAsvStreamUrls', () => {
     ).toBe('wss://bridge.example.test')
     expect(resolveAsvVisionWsUrl({})).toBe('wss://monitor-kapal-pora-pora.web.id')
   })
-})
+
+  it('keeps the telemetry WebSocket URL independent from camera URLs', () => {
+    expect(
+      resolveAsvTelemetryWsUrl({
+        VITE_ASV_TELEMETRY_WS_URL: ' wss://telemetry.example.test ',
+      }),
+    ).toBe('wss://telemetry.example.test')
+    expect(resolveAsvTelemetryWsUrl({})).toBe('wss://monitor-kapal-pora-pora.web.id')
+  })

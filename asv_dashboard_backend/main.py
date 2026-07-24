@@ -32,10 +32,14 @@ def create_app(
 
     @asynccontextmanager
     async def lifespan(_: FastAPI):
+        async def publish_telemetry_payload(payload: dict[str, object]) -> None:
+            resolved_state.publish_telemetry(payload)
+            await resolved_publisher.publish_telemetry(payload)
+
         telemetry_task = None
         if resolved_settings.pixhawk_enabled:
             telemetry_task = asyncio.create_task(
-                resolved_telemetry.run(resolved_publisher.publish_telemetry)
+                resolved_telemetry.run(publish_telemetry_payload)
             )
         try:
             yield
@@ -153,6 +157,37 @@ def create_app(
             await asyncio.gather(send_task, return_exceptions=True)
             resolved_state.unsubscribe_detections(queue)
 
+    @app.websocket("/ws/telemetry/{asv_id}")
+    async def telemetry_websocket(websocket: WebSocket, asv_id: str) -> None:
+        if asv_id != resolved_settings.asv_id:
+            await websocket.close(code=1008)
+            return
+
+        await websocket.accept()
+        queue = resolved_state.subscribe_telemetry()
+
+        async def send_loop() -> None:
+            try:
+                while True:
+                    payload = await queue.get()
+                    await websocket.send_json(payload)
+            except WebSocketDisconnect:
+                return
+
+        async def receive_loop() -> None:
+            try:
+                while True:
+                    await websocket.receive_text()
+            except WebSocketDisconnect:
+                return
+
+        send_task = asyncio.create_task(send_loop())
+        try:
+            await receive_loop()
+        finally:
+            send_task.cancel()
+            await asyncio.gather(send_task, return_exceptions=True)
+            resolved_state.unsubscribe_telemetry(queue)
     @app.get("/stream.mjpg")
     async def stream_mjpeg(once: bool = False) -> StreamingResponse:
         return StreamingResponse(

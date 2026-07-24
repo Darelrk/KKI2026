@@ -96,6 +96,8 @@ class BridgeState:
         self._frame_event = asyncio.Event()
         self._latest_detection: VisionMetadata | None = None
         self._detection_subscribers: set[asyncio.Queue[VisionMetadata]] = set()
+        self._latest_telemetry: dict[str, Any] | None = None
+        self._telemetry_subscribers: set[asyncio.Queue[dict[str, Any]]] = set()
 
     def update_status(self, status: AsvLiveStatus) -> AsvLiveStatus:
         if status.id != self.settings.asv_id:
@@ -121,6 +123,23 @@ class BridgeState:
 
     def unsubscribe_detections(self, queue: asyncio.Queue[VisionMetadata]) -> None:
         self._detection_subscribers.discard(queue)
+
+    def publish_telemetry(self, payload: dict[str, Any]) -> None:
+        self._latest_telemetry = payload
+        for queue in tuple(self._telemetry_subscribers):
+            if queue.full():
+                queue.get_nowait()
+            queue.put_nowait(payload)
+
+    def subscribe_telemetry(self) -> asyncio.Queue[dict[str, Any]]:
+        queue: asyncio.Queue[dict[str, Any]] = asyncio.Queue(maxsize=1)
+        self._telemetry_subscribers.add(queue)
+        if self._latest_telemetry is not None:
+            queue.put_nowait(self._latest_telemetry)
+        return queue
+
+    def unsubscribe_telemetry(self, queue: asyncio.Queue[dict[str, Any]]) -> None:
+        self._telemetry_subscribers.discard(queue)
 
     def update_surface_frame(self, jpeg_bytes: bytes) -> None:
         if not jpeg_bytes.startswith(b"\xff\xd8") or b"\xff\xd9" not in jpeg_bytes:

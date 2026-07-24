@@ -4,7 +4,7 @@ import { getAsvDataMode } from './asv-data-mode'
 import { fetchDirectTelemetry } from './direct-live'
 import { asvTelemetrySchema } from './asv-telemetry'
 import { fixtureTelemetry } from './fixture-data'
-import { asvBridgeUrl } from './stream-urls'
+import { asvBridgeUrl, asvTelemetryWsUrl } from './stream-urls'
 import { getSupabaseBrowser } from './supabase-browser'
 import { ensureSupabaseRealtimeAuth } from './supabase-realtime-auth'
 
@@ -40,35 +40,82 @@ export function useTelemetryBroadcast(
     setRealtimeStatus('connecting')
 
     if (mode === 'direct') {
-      const controller = new AbortController()
       let cancelled = false
+      let socket: WebSocket | null = null
       let pollTimer = 0
+      let pollingStarted = false
+      const controller = new AbortController()
 
-      async function poll() {
-        try {
-          const nextTelemetry = await fetchDirectTelemetry(
-            asvBridgeUrl,
-            controller.signal,
-          )
-          if (!cancelled) {
-            setTelemetry(nextTelemetry)
-            setRealtimeStatus('connected')
-          }
-        } catch {
-          if (!cancelled && !controller.signal.aborted) {
-            setRealtimeStatus('error')
-          }
-        } finally {
-          if (!cancelled) {
-            pollTimer = window.setTimeout(poll, 1000)
+      function startPollingFallback() {
+        if (pollingStarted || cancelled) {
+          return
+        }
+        pollingStarted = true
+        async function poll() {
+          try {
+            const nextTelemetry = await fetchDirectTelemetry(
+              asvBridgeUrl,
+              controller.signal,
+            )
+            if (!cancelled) {
+              setTelemetry(nextTelemetry)
+              setRealtimeStatus('connected')
+            }
+          } catch {
+            if (!cancelled && !controller.signal.aborted) {
+              setRealtimeStatus('error')
+            }
+          } finally {
+            if (!cancelled) {
+              pollTimer = window.setTimeout(poll, 1000)
+            }
           }
         }
+        void poll()
       }
 
-      void poll()
+      try {
+        const wsUrl = `${asvTelemetryWsUrl.replace(/\/+$/, '')}/ws/telemetry/${asvId}`
+        socket = new WebSocket(wsUrl)
+        socket.onopen = () => {
+          if (!cancelled) {
+            setRealtimeStatus('connected')
+          }
+        }
+        socket.onmessage = (event) => {
+          if (cancelled) {
+            return
+          }
+          try {
+            const parsed = asvTelemetrySchema.safeParse(JSON.parse(event.data))
+            if (parsed.success) {
+              setTelemetry(parsed.data)
+              setRealtimeStatus('connected')
+            }
+          } catch {
+            // Ignore malformed message
+          }
+        }
+        socket.onerror = () => {
+          if (!cancelled) {
+            startPollingFallback()
+          }
+        }
+        socket.onclose = () => {
+          if (!cancelled) {
+            startPollingFallback()
+          }
+        }
+      } catch {
+        startPollingFallback()
+      }
+
       return () => {
         cancelled = true
         controller.abort()
+        if (socket) {
+          socket.close()
+        }
         window.clearTimeout(pollTimer)
       }
     }

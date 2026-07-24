@@ -244,6 +244,34 @@ def test_vision_websocket_rejects_wrong_asv_id() -> None:
 
     assert getattr(error.value, "code", None) == 1008
 
+def test_telemetry_broadcasts_to_websocket() -> None:
+    state = BridgeState(settings())
+    app = create_app(settings=settings(), publisher=NullPublisher(), state=state)
+    payload = {
+        "connected": True,
+        "position": {"latitude": 3.5, "longitude": 98.7, "captured_at": "2026-07-25T00:00:00Z"},
+        "heading_deg": 90.0,
+        "speed_mps": 1.5,
+        "captured_at": "2026-07-25T00:00:00Z",
+        "heartbeat_at": "2026-07-25T00:00:00Z",
+        "track": [],
+    }
+
+    with TestClient(app) as client:
+        with client.websocket_connect("/ws/telemetry/default") as socket:
+            state.publish_telemetry(payload)
+            assert socket.receive_json() == payload
+
+
+def test_telemetry_websocket_rejects_wrong_asv_id() -> None:
+    app = create_app(settings=settings(), publisher=NullPublisher())
+
+    with TestClient(app) as client:
+        with pytest.raises(WebSocketDisconnect) as error:
+            with client.websocket_connect("/ws/telemetry/other"):
+                pass
+
+    assert getattr(error.value, "code", None) == 1008
 
 class FakeSupabaseQuery:
     def __init__(self) -> None:
