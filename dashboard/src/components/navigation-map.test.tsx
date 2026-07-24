@@ -52,6 +52,32 @@ describe('NavigationMap', () => {
     )
   })
 
+  it('connects the current position to the end of the GPS path', () => {
+    render(
+      <NavigationMap
+        telemetry={{
+          ...emptyNavigationTelemetry,
+          position: {
+            latitude: -2,
+            longitude: 102,
+            captured_at: '2026-07-20T09:32:00.000Z',
+          },
+          track: [
+            { latitude: -1, longitude: 100, captured_at: '2026-07-20T09:30:00.000Z' },
+            { latitude: -2, longitude: 101, captured_at: '2026-07-20T09:31:00.000Z' },
+          ],
+        }}
+      />,
+    )
+
+    const polyline = screen
+      .getByRole('img', { name: 'GPS track plot' })
+      .querySelector('polyline')
+
+    expect(polyline).not.toBeNull()
+    expect(polyline?.getAttribute('points')?.trim().split(/\s+/)).toHaveLength(3)
+  })
+
   it('renders one current position without inventing a path', () => {
     render(
       <NavigationMap

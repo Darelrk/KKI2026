@@ -29,7 +29,7 @@ export function SignalRail({
       <div className="signal-rail__status">
         {isRunning ? <CheckCircle weight="fill" /> : <WarningCircle weight="fill" />}
         <div>
-          <p className="eyebrow">Autonomy model</p>
+          <p className="eyebrow">MODEL MONITORING</p>
           <strong>MODEL {modelStatus.toUpperCase()}</strong>
         </div>
       </div>
@@ -60,6 +60,10 @@ export function SignalRail({
                 ? 'Pixhawk connected'
                 : 'Pixhawk offline'}
           </dd>
+        </div>
+        <div>
+          <dt>Control source</dt>
+          <dd>RC MANUAL</dd>
         </div>
         <div>
           <dt>Telemetry channel</dt>

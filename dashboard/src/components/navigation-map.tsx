@@ -9,9 +9,16 @@ type NavigationMapProps = {
 export function NavigationMap({ telemetry }: NavigationMapProps) {
   const lastTrackPoint = telemetry.track.at(-1)
   const boatPosition = telemetry.position ?? lastTrackPoint
-  const projectionPoints = boatPosition
-    ? [...telemetry.track, boatPosition]
-    : telemetry.track
+  const currentIsAlreadyLastPoint =
+    boatPosition !== undefined &&
+    lastTrackPoint !== undefined &&
+    boatPosition.latitude === lastTrackPoint.latitude &&
+    boatPosition.longitude === lastTrackPoint.longitude
+  const pathPoints =
+    boatPosition && !currentIsAlreadyLastPoint
+      ? [...telemetry.track, boatPosition]
+      : telemetry.track
+  const projectionPoints = pathPoints
   const longitudes = projectionPoints.map((point) => point.longitude)
   const latitudes = projectionPoints.map((point) => point.latitude)
   const minLongitude = longitudes.length > 0 ? Math.min(...longitudes) : 0
@@ -24,14 +31,14 @@ export function NavigationMap({ telemetry }: NavigationMapProps) {
     x: 10 + ((point.longitude - minLongitude) / longitudeRange) * 80,
     y: 90 - ((point.latitude - minLatitude) / latitudeRange) * 80,
   })
-  const trackPoints = telemetry.track.length >= 2
-    ? telemetry.track.map((point) => {
+  const trackPoints = pathPoints.length >= 2
+    ? pathPoints.map((point) => {
         const projected = projectPoint(point)
         return `${projected.x},${projected.y}`
       }).join(' ')
     : ''
   const projectedBoat = boatPosition ? projectPoint(boatPosition) : null
-  const hasTrackPlot = telemetry.track.length >= 2
+  const hasTrackPlot = pathPoints.length >= 2
   const plotLabel = hasTrackPlot ? 'GPS track plot' : 'Current boat position'
 
   return (
