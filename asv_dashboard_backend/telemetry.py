@@ -219,7 +219,7 @@ class PixhawkTelemetryReader:
         self._connection_started_monotonic = None
         self._last_stream_target = None
         self._last_heartbeat_monotonic = None
-        self._next_reconnect = time.monotonic() + self.settings.pixhawk_reconnect_seconds
+        self._next_reconnect = time.monotonic() + 0.5
         if connection is not None:
             try:
                 await asyncio.to_thread(connection.close)
@@ -304,20 +304,25 @@ class PixhawkTelemetryReader:
 
 
 def _resolve_pixhawk_endpoint(endpoint: str) -> str:
-    """Prefer stable ArduPilot USB names while retaining configured fallbacks."""
+    """Prefer stable ArduPilot USB names and dynamic /dev/ttyACM* re-enumerations."""
     if endpoint.startswith(("tcp:", "udp:", "udpin:", "udpout:")):
         return endpoint
 
     import glob
 
+    stable_matches = sorted(glob.glob("/dev/serial/by-id/*ArduPilot*"))
+    if stable_matches:
+        return stable_matches[0]
+
     configured_matches = sorted(glob.glob(endpoint))
     if configured_matches:
         return configured_matches[0]
-    if endpoint != "/dev/ttyACM0":
-        return endpoint
 
-    stable_matches = sorted(glob.glob("/dev/serial/by-id/*ArduPilot*"))
-    return stable_matches[0] if stable_matches else endpoint
+    acm_matches = sorted(glob.glob("/dev/ttyACM*"))
+    if acm_matches:
+        return acm_matches[0]
+
+    return endpoint
 
 
 def _finite_number(value: Any) -> float | None:
