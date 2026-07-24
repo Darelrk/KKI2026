@@ -2,9 +2,11 @@ import { useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { getAsvDataMode } from './asv-data-mode'
+import { fetchDirectAsvLive } from './direct-live'
 import { fetchAsvLive } from './asv-live-query'
 import { asvLiveSchema } from './asv-types'
 import { getFixtureAsvLive } from './fixture-data'
+import { asvBridgeUrl } from './stream-urls'
 import { getSupabaseBrowser } from './supabase-browser'
 import { ensureSupabaseRealtimeAuth } from './supabase-realtime-auth'
 
@@ -25,16 +27,19 @@ export function useAsvLive(
   const queryKey = ['asv-live', asvId] as const
   const query = useQuery({
     queryKey,
-    queryFn: () =>
+    queryFn: ({ signal }) =>
       mode === 'fixture'
         ? Promise.resolve(getFixtureAsvLive(asvId))
-        : fetchAsvLive(getSupabaseBrowser(), asvId),
+        : mode === 'direct'
+          ? fetchDirectAsvLive(asvBridgeUrl, asvId, signal)
+          : fetchAsvLive(getSupabaseBrowser(), asvId),
     staleTime: mode === 'fixture' ? Number.POSITIVE_INFINITY : 0,
+    refetchInterval: mode === 'direct' ? 2000 : false,
   })
 
   useEffect(() => {
-    if (mode === 'fixture') {
-      setRealtimeStatus('fixture')
+    if (mode === 'fixture' || mode === 'direct') {
+      setRealtimeStatus(mode === 'fixture' ? 'fixture' : 'connecting')
       return
     }
 
@@ -86,5 +91,15 @@ export function useAsvLive(
     }
   }, [asvId, mode, queryClient])
 
-  return { ...query, realtimeStatus }
+  const directRealtimeStatus: AsvRealtimeStatus =
+    query.isError ? 'error' : query.isSuccess ? 'connected' : 'connecting'
+  return {
+    ...query,
+    realtimeStatus:
+      mode === 'fixture'
+        ? 'fixture'
+        : mode === 'direct'
+          ? directRealtimeStatus
+          : realtimeStatus,
+  }
 }

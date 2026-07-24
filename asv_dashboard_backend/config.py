@@ -19,6 +19,7 @@ class BridgeSettings:
     host: str = "0.0.0.0"
     port: int = 8080
     stream_url: str | None = None
+    cors_origins: tuple[str, ...] = ()
     supabase_url: str | None = None
     supabase_service_role_key: str | None = None
     max_base64_length: int = 180_000
@@ -39,6 +40,8 @@ class BridgeSettings:
             raise ConfigError("ASV_BACKEND_PORT must be between 1 and 65535")
         if self.stream_url is not None:
             _require_https_url(self.stream_url, "ASV_STREAM_URL")
+        for origin in self.cors_origins:
+            _require_cors_origin(origin)
         if bool(self.supabase_url) != bool(self.supabase_service_role_key):
             raise ConfigError(
                 "SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be configured together"
@@ -75,6 +78,7 @@ class BridgeSettings:
             host=environ.get("ASV_BACKEND_HOST", "0.0.0.0"),
             port=_int_env("ASV_BACKEND_PORT", 8080),
             stream_url=_optional_env("ASV_STREAM_URL"),
+            cors_origins=_csv_env("ASV_CORS_ORIGINS"),
             supabase_url=_optional_env("SUPABASE_URL"),
             supabase_service_role_key=_optional_env("SUPABASE_SERVICE_ROLE_KEY"),
             max_base64_length=_int_env("ASV_FALLBACK_MAX_BASE64", 180_000),
@@ -97,6 +101,14 @@ class BridgeSettings:
 def _optional_env(name: str) -> str | None:
     value = environ.get(name)
     return value.strip() if value and value.strip() else None
+
+
+def _csv_env(name: str) -> tuple[str, ...]:
+    return tuple(
+        item.strip()
+        for item in environ.get(name, "").split(",")
+        if item.strip()
+    )
 
 
 def _int_env(name: str, default: int) -> int:
@@ -129,6 +141,21 @@ def _bool_env(name: str, default: bool) -> bool:
     if normalized in {"0", "false", "no", "off"}:
         return False
     raise ConfigError(f"{name} must be a boolean")
+
+
+def _require_cors_origin(value: str) -> None:
+    parsed = urlparse(value)
+    if (
+        parsed.scheme not in {"http", "https"}
+        or not parsed.netloc
+        or parsed.path not in {"", "/"}
+        or parsed.params
+        or parsed.query
+        or parsed.fragment
+    ):
+        raise ConfigError(
+            "ASV_CORS_ORIGINS entries must be absolute HTTP(S) origins"
+        )
 
 
 def _require_https_url(value: str, name: str) -> None:

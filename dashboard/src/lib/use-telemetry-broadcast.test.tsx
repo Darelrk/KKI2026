@@ -1,10 +1,12 @@
 import { renderHook, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
+import { fetchDirectTelemetry } from './direct-live'
 import { getSupabaseBrowser } from './supabase-browser'
 import { ensureSupabaseRealtimeAuth } from './supabase-realtime-auth'
 import { useTelemetryBroadcast } from './use-telemetry-broadcast'
 
+vi.mock('./direct-live', () => ({ fetchDirectTelemetry: vi.fn() }))
 vi.mock('./supabase-browser', () => ({ getSupabaseBrowser: vi.fn() }))
 vi.mock('./supabase-realtime-auth', () => ({
   ensureSupabaseRealtimeAuth: vi.fn(),
@@ -104,5 +106,37 @@ describe('useTelemetryBroadcast', () => {
     unmount()
 
     expect(client.removeChannel).toHaveBeenCalledWith(channel)
+  })
+
+  it('polls direct telemetry without creating a Supabase channel', async () => {
+    vi.mocked(getSupabaseBrowser).mockClear()
+    vi.mocked(fetchDirectTelemetry).mockResolvedValue({
+      connected: true,
+      position: {
+        latitude: -6.2,
+        longitude: 106.8,
+        captured_at: '2026-07-24T10:00:00.000Z',
+      },
+      heading_deg: 90,
+      speed_mps: 1.2,
+      captured_at: '2026-07-24T10:00:00.000Z',
+      heartbeat_at: '2026-07-24T10:00:00.000Z',
+      track: [],
+    })
+
+    const { result, unmount } = renderHook(() =>
+      useTelemetryBroadcast('default', 'direct'),
+    )
+
+    await waitFor(() => {
+      expect(result.current.realtimeStatus).toBe('connected')
+    })
+
+    expect(fetchDirectTelemetry).toHaveBeenCalledWith(
+      'https://monitor-kapal-pora-pora.web.id',
+      expect.any(AbortSignal),
+    )
+    expect(getSupabaseBrowser).not.toHaveBeenCalled()
+    unmount()
   })
 })

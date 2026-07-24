@@ -43,21 +43,25 @@ IMPORTANT ARCHITECTURE:
    ASV_ID=default
    ASV_BACKEND_HOST=0.0.0.0
    ASV_BACKEND_PORT=8080
+   ASV_CORS_ORIGINS=https://YOUR_VERCEL_DOMAIN.vercel.app,http://localhost:3000
    ASV_STREAM_URL=
    ASV_FALLBACK_MAX_BASE64=180000
    ASV_FALLBACK_MAX_FPS=1
    ASV_FRAME_WAIT_TIMEOUT=1
-   SUPABASE_URL=https://YOUR_PROJECT.supabase.co
-   SUPABASE_SERVICE_ROLE_KEY=YOUR_REAL_SERVICE_ROLE_KEY
+   SUPABASE_URL=
+   SUPABASE_SERVICE_ROLE_KEY=
 
+   ASV_CORS_ORIGINS must contain the exact Vercel origin and may include
+   http://localhost:3000 for local browser testing. The live dashboard uses
+   the Pi tunnel directly for /api/status, /api/telemetry, raw camera URLs,
+   and /ws/vision/{asv_id}; it does not require Supabase.
    ASV_STREAM_URL is the browser-compatible raw surface camera URL only when
    that source has been verified at 20–30 FPS. Leave it empty otherwise.
    The bridge's /stream.mjpg endpoint is bounded fallback/debug only and must
    never be configured as the dashboard's primary camera source.
-   Replace every placeholder. If Supabase is not ready, set BOTH Supabase variables to empty values:
-   SUPABASE_URL=
-   SUPABASE_SERVICE_ROLE_KEY=
-   Never leave the example URL or replace-me value. Do not show the service-role key in any output. Confirm permission is 600.
+   Leave both Supabase variables empty for direct live mode. If optional
+   rollback publishing is enabled later, set both together and keep the
+   service-role key on the Pi only. Never print it. Confirm permission is 600.
 
 5. Check the service user. The provided service uses User=pi and Group=pi. If the actual runtime user is not pi, make a local copy/adjustment of the installed systemd unit so User and Group match the real user. Do not modify the repository copy for a machine-specific user change.
 

@@ -4,12 +4,14 @@ import type { PropsWithChildren } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 
 import { fetchAsvLive } from './asv-live-query'
+import { fetchDirectAsvLive } from './direct-live'
 import type { AsvLive } from './asv-types'
 import { getSupabaseBrowser } from './supabase-browser'
 import { ensureSupabaseRealtimeAuth } from './supabase-realtime-auth'
 import { useAsvLive } from './use-asv-live'
 
 vi.mock('./asv-live-query', () => ({ fetchAsvLive: vi.fn() }))
+vi.mock('./direct-live', () => ({ fetchDirectAsvLive: vi.fn() }))
 vi.mock('./supabase-browser', () => ({ getSupabaseBrowser: vi.fn() }))
 vi.mock('./supabase-realtime-auth', () => ({
   ensureSupabaseRealtimeAuth: vi.fn(),
@@ -99,5 +101,37 @@ describe('useAsvLive', () => {
     unmount()
 
     expect(client.removeChannel).toHaveBeenCalledWith(channel)
+  })
+
+  it('polls direct bridge status without creating a Supabase client', async () => {
+    vi.mocked(getSupabaseBrowser).mockClear()
+    const liveStatus = {
+      id: 'default',
+      online: true,
+      model_status: 'running',
+      camera: 'surface',
+      stream_url: 'https://camera.example.test/stream.mjpg',
+      run_id: 'run-001',
+      updated_at: '2026-07-24T10:00:00.000Z',
+    } satisfies AsvLive
+
+    vi.mocked(fetchDirectAsvLive).mockResolvedValue(liveStatus)
+
+    const { result, unmount } = renderHook(
+      () => useAsvLive('default', 'direct'),
+      { wrapper: createWrapper() },
+    )
+
+    await waitFor(() => {
+      expect(result.current.data).toEqual(liveStatus)
+    })
+
+    expect(fetchDirectAsvLive).toHaveBeenCalledWith(
+      'https://monitor-kapal-pora-pora.web.id',
+      'default',
+      expect.any(AbortSignal),
+    )
+    expect(getSupabaseBrowser).not.toHaveBeenCalled()
+    unmount()
   })
 })

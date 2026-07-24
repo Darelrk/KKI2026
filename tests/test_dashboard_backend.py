@@ -23,8 +23,21 @@ def settings() -> BridgeSettings:
     return BridgeSettings(
         asv_id="default",
         stream_url="https://camera.example.test/stream.mjpg",
+        cors_origins=("https://dashboard.example.test",),
         max_base64_length=180_000,
         max_fps=1.0,
+    )
+
+
+def test_cors_origins_parse_from_environment(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv(
+        "ASV_CORS_ORIGINS",
+        " https://dashboard.example.test, http://localhost:3000 ",
+    )
+
+    assert BridgeSettings.from_env().cors_origins == (
+        "https://dashboard.example.test",
+        "http://localhost:3000",
     )
 
 
@@ -101,6 +114,24 @@ def test_status_and_frame_endpoints_publish_bounded_payload() -> None:
     assert current.json()["run_id"] == "run-001"
     publisher.publish_status.assert_awaited_once()
     publisher.publish_underwater_frame.assert_awaited_once()
+
+
+def test_read_endpoints_allow_configured_dashboard_origin() -> None:
+    app = create_app(settings=settings(), publisher=NullPublisher())
+
+    with TestClient(app) as client:
+        response = client.options(
+            "/api/status",
+            headers={
+                "Origin": "https://dashboard.example.test",
+                "Access-Control-Request-Method": "GET",
+            },
+        )
+
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == (
+        "https://dashboard.example.test"
+    )
 
 
 def test_status_endpoint_rejects_wrong_asv_id() -> None:

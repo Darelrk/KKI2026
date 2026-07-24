@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 
 import { getAsvDataMode } from './asv-data-mode'
+import { fetchDirectTelemetry } from './direct-live'
 import { asvTelemetrySchema } from './asv-telemetry'
 import { fixtureTelemetry } from './fixture-data'
+import { asvBridgeUrl } from './stream-urls'
 import { getSupabaseBrowser } from './supabase-browser'
 import { ensureSupabaseRealtimeAuth } from './supabase-realtime-auth'
 
@@ -36,6 +38,40 @@ export function useTelemetryBroadcast(
 
     setTelemetry(null)
     setRealtimeStatus('connecting')
+
+    if (mode === 'direct') {
+      const controller = new AbortController()
+      let cancelled = false
+      let pollTimer = 0
+
+      async function poll() {
+        try {
+          const nextTelemetry = await fetchDirectTelemetry(
+            asvBridgeUrl,
+            controller.signal,
+          )
+          if (!cancelled) {
+            setTelemetry(nextTelemetry)
+            setRealtimeStatus('connected')
+          }
+        } catch {
+          if (!cancelled && !controller.signal.aborted) {
+            setRealtimeStatus('error')
+          }
+        } finally {
+          if (!cancelled) {
+            pollTimer = window.setTimeout(poll, 1000)
+          }
+        }
+      }
+
+      void poll()
+      return () => {
+        cancelled = true
+        controller.abort()
+        window.clearTimeout(pollTimer)
+      }
+    }
 
     const supabase = getSupabaseBrowser()
     let cancelled = false

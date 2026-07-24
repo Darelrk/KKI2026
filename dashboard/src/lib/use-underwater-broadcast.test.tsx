@@ -75,4 +75,18 @@ describe('useUnderwaterBroadcast', () => {
 
     expect(client.removeChannel).toHaveBeenCalledWith(channel)
   })
+
+  it('keeps direct mode on the raw tunnel stream without Supabase', async () => {
+    vi.mocked(getSupabaseBrowser).mockClear()
+    const { result } = renderHook(() =>
+      useUnderwaterBroadcast('default', 'direct'),
+    )
+
+    await waitFor(() => {
+      expect(result.current.realtimeStatus).toBe('connected')
+    })
+
+    expect(result.current.frame).toBeNull()
+    expect(getSupabaseBrowser).not.toHaveBeenCalled()
+  })
 })

@@ -34,6 +34,12 @@ export function useUnderwaterBroadcast(
       return
     }
 
+    if (mode === 'direct') {
+      setFrame(null)
+      setRealtimeStatus('connected')
+      return
+    }
+
     const supabase = getSupabaseBrowser()
     let cancelled = false
     let channel: RealtimeChannel | undefined

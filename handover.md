@@ -40,6 +40,39 @@ QGroundControl. Backend secara otomatis:
 
 Transmitter RC tetap langsung terhubung ke receiver/Pixhawk untuk mengendalikan servo dan throttle.
 Backend tidak pernah mengirimkan perintah arming, disarm, mode change, atau RC override.
+
+## Dashboard live direct via tunnel
+
+Set the Vercel environment to:
+
+```text
+VITE_ASV_DATA_MODE=direct
+VITE_ASV_BRIDGE_URL=https://monitor-kapal-pora-pora.web.id
+VITE_ASV_SURFACE_STREAM_URL=https://monitor-kapal-pora-pora.web.id/stream/atas
+VITE_ASV_UNDERWATER_STREAM_URL=https://monitor-kapal-pora-pora.web.id/stream/bawah
+VITE_ASV_VISION_WS_URL=wss://monitor-kapal-pora-pora.web.id
+```
+
+Set `ASV_CORS_ORIGINS` in `/etc/asv-dashboard.env` to the exact Vercel
+origin plus `http://localhost:3000` when local testing is needed. The
+browser reads `/api/status` and `/api/telemetry` directly through the tunnel,
+opens the raw camera URLs directly, and receives vision metadata from
+`/ws/vision/default`. Supabase is not part of this live path; leave both
+server-side Supabase variables empty unless rollback publishing is explicitly
+needed.
+
+Verify from a browser origin and from the Pi:
+
+```bash
+curl -fsS http://127.0.0.1:8080/api/status
+curl -fsS http://127.0.0.1:8080/api/telemetry
+curl -fsS https://monitor-kapal-pora-pora.web.id/api/status
+curl -fsS https://monitor-kapal-pora-pora.web.id/api/telemetry
+```
+
+Keep exactly one process attached to the Pixhawk serial endpoint. Mission
+Planner and QGroundControl must not open the same `/dev/ttyACM0` endpoint while
+`ASV_PIXHAWK_ENABLED=true`.
 ## Menjalankan model manual RC
 
 ```bash
