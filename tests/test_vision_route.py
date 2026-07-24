@@ -1,3 +1,4 @@
+import pytest
 from types import SimpleNamespace
 
 from vision_route import (
@@ -9,6 +10,10 @@ from vision_route import (
     RouteConfig,
     RouteController,
     RouteState,
+    ThrottleConfig,
+    VisualTargetTracker,
+    VisualThrottleController,
+    compute_visual_throttle_pwm,
     signed_heading_error,
 )
 from vision_test import vfr_hud_heading
@@ -176,3 +181,226 @@ def test_select_target_x_pair_and_single_buoy_offset():
     # Single green buoy -> steer left (-offset)
     green_only = [det("green_buoy", 400, 300)] # width=20, default offset = 20 * 1.5 = 30
     assert select_target_x(green_only) == 370.0
+
+
+def throttle_det(width: float, height: float, label: str = "red_buoy") -> Detection:
+    return Detection(label, 0.9, 320.0, 240.0, width, height)
+
+
+def test_visual_throttle_maps_area_and_steering_boost() -> None:
+    assert (
+        compute_visual_throttle_pwm(
+            [throttle_det(40.0, 40.0)],
+            640,
+            480,
+            1500,
+        )
+        == 1600
+    )
+    assert (
+        compute_visual_throttle_pwm(
+            [throttle_det(160.0, 120.0)],
+            640,
+            480,
+            1500,
+        )
+        == 1560
+    )
+    assert (
+        compute_visual_throttle_pwm(
+            [throttle_det(400.0, 160.0)],
+            640,
+            480,
+            1500,
+        )
+        == 1540
+    )
+    assert (
+        compute_visual_throttle_pwm(
+            [throttle_det(160.0, 120.0)],
+            640,
+            480,
+            1750,
+        )
+        == 1585
+    )
+    assert (
+        compute_visual_throttle_pwm(
+            [throttle_det(160.0, 120.0, label="boat")],
+            640,
+            480,
+            1500,
+        )
+        == 1500
+    )
+
+
+@pytest.mark.parametrize(
+    ("frame_width", "frame_height"),
+    [(0, 480), (640, 0), (-1, 480)],
+)
+def test_visual_throttle_rejects_non_positive_frame(
+    frame_width: int,
+    frame_height: int,
+) -> None:
+    with pytest.raises(ValueError, match="frame"):
+        compute_visual_throttle_pwm([], frame_width, frame_height, 1500)
+
+
+def test_visual_throttle_rejects_out_of_range_steering() -> None:
+    with pytest.raises(ValueError, match="steering_pwm"):
+        compute_visual_throttle_pwm([], 640, 480, 999)
+
+
+def test_throttle_config_rejects_invalid_pwm_order() -> None:
+    with pytest.raises(ValueError, match="near_pwm"):
+        ThrottleConfig(near_pwm=1600, cruise_pwm=1550)
+
+
+def test_visual_throttle_controller_ramps_holds_and_decays() -> None:
+    controller = VisualThrottleController(
+        ThrottleConfig(hold_s=0.8, ramp_pwm_per_s=200.0)
+    )
+    far = [throttle_det(40.0, 40.0)]
+
+    assert (
+        controller.update(
+            far,
+            frame_width=640,
+            frame_height=480,
+            steering_pwm=1500,
+            now=0.0,
+        )
+        == 1500
+    )
+    assert (
+        controller.update(
+            far,
+            frame_width=640,
+            frame_height=480,
+            steering_pwm=1500,
+            now=0.25,
+        )
+        == 1550
+    )
+    assert (
+        controller.update(
+            far,
+            frame_width=640,
+            frame_height=480,
+            steering_pwm=1500,
+            now=0.50,
+        )
+        == 1600
+    )
+    assert (
+        controller.update(
+            [],
+            frame_width=640,
+            frame_height=480,
+            steering_pwm=1500,
+            now=1.00,
+        )
+        == 1600
+    )
+    assert (
+        controller.update(
+            [],
+            frame_width=640,
+            frame_height=480,
+            steering_pwm=1500,
+            now=1.40,
+        )
+        == 1520
+    )
+    assert (
+        controller.update(
+            [],
+            frame_width=640,
+            frame_height=480,
+            steering_pwm=1500,
+            now=1.50,
+        )
+        == 1500
+    )
+    assert controller.reset(now=2.0) == 1500
+    assert (
+        controller.update(
+            [],
+            frame_width=640,
+            frame_height=480,
+            steering_pwm=1500,
+            now=2.1,
+        )
+        == 1500
+    )
+
+
+def test_route_config_visual_throttle_is_above_neutral() -> None:
+    assert RouteConfig().visual_throttle_pwm == 1560
+
+
+def test_visual_throttle_keeps_ramping_last_target_during_hold() -> None:
+    controller = VisualThrottleController(
+        ThrottleConfig(hold_s=0.8, ramp_pwm_per_s=200.0)
+    )
+    far = [throttle_det(40.0, 40.0)]
+
+    assert (
+        controller.update(
+            far,
+            frame_width=640,
+            frame_height=480,
+            steering_pwm=1500,
+            now=0.0,
+        )
+        == 1500
+    )
+    assert (
+        controller.update(
+            [],
+            frame_width=640,
+            frame_height=480,
+            steering_pwm=1500,
+            now=0.25,
+        )
+        == 1550
+    )
+    assert (
+        controller.update(
+            [],
+            frame_width=640,
+            frame_height=480,
+            steering_pwm=1500,
+            now=0.50,
+        )
+        == 1600
+    )
+
+
+def test_visual_target_tracker_holds_pair_midpoint_when_buoy_is_missing() -> None:
+    tracker = VisualTargetTracker(hold_s=0.8, smoothing_alpha=1.0)
+    pair = [
+        Detection("red_buoy", 0.9, 200.0, 240.0, 40.0, 40.0),
+        Detection("green_buoy", 0.9, 440.0, 240.0, 40.0, 40.0),
+    ]
+
+    assert tracker.update(pair, now=0.0) == 320.0
+    assert tracker.update([pair[0]], now=0.2) == 320.0
+    assert tracker.update([pair[1]], now=0.4) == 320.0
+    assert tracker.update([pair[0]], now=0.9) == 260.0
+
+
+def test_visual_target_tracker_smooths_pair_midpoint_motion() -> None:
+    tracker = VisualTargetTracker(hold_s=0.8, smoothing_alpha=0.5)
+    first_pair = [
+        Detection("red_buoy", 0.9, 200.0, 240.0, 40.0, 40.0),
+        Detection("green_buoy", 0.9, 440.0, 240.0, 40.0, 40.0),
+    ]
+    second_pair = [
+        Detection("red_buoy", 0.9, 240.0, 240.0, 40.0, 40.0),
+        Detection("green_buoy", 0.9, 480.0, 240.0, 40.0, 40.0),
+    ]
+
+    assert tracker.update(first_pair, now=0.0) == 320.0
+    assert tracker.update(second_pair, now=0.2) == 340.0

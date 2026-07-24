@@ -30,6 +30,9 @@ from vision_route import (
     NEUTRAL_PWM,
     PWM_MAX,
     PWM_MIN,
+    ThrottleConfig,
+    VisualTargetTracker,
+    VisualThrottleController,
     clamp,
     PatternMatcher,
     PatternSignature,
@@ -39,7 +42,6 @@ from vision_route import (
     RouteState,
     STEERING_MAX_DELTA,
     compute_steering_pwm,
-    select_target_x,
 )
 from asv_dashboard_backend.vision_publisher import BridgeFramePublisher
 
@@ -489,9 +491,25 @@ class PixhawkLink:
                     self.connection.close()
                 except Exception:
                     pass
+
+def create_pixhawk_link(
+    *,
+    manual_rc: bool,
+    endpoint: str,
+) -> PixhawkLink | None:
+    """Create the control link only for the legacy control path."""
+    if manual_rc:
+        return None
+    return PixhawkLink(endpoint)
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Deteksi buoy webcam dan kirim steering ke Pixhawk."
+        description="Deteksi buoy webcam dengan opsi model monitoring manual RC."
+    )
+    parser.add_argument(
+        "--manual-rc",
+        action="store_true",
+        help="Model monitoring only; never open Pixhawk or send MAVLink commands",
     )
     parser.add_argument(
         "--model",
@@ -535,10 +553,52 @@ def parse_args() -> argparse.Namespace:
         help="Balik arah rudder jika gerak servo terbalik",
     )
     parser.add_argument(
+        "--target-hold-s",
+        type=float,
+        default=0.8,
+        help="Durasi tahan target visual setelah buoy hilang",
+    )
+    parser.add_argument(
+        "--target-smoothing",
+        type=float,
+        default=0.5,
+        help="Alpha smoothing target visual, 1 berarti tanpa smoothing",
+    )
+    parser.add_argument(
         "--throttle-pwm",
         type=int,
-        default=1520,
-        help="Throttle saat buoy terdeteksi; default 1520 untuk uji aman",
+        default=1560,
+        help="Throttle cruise saat jarak sedang; default 1560",
+    )
+    parser.add_argument(
+        "--throttle-near-pwm",
+        type=int,
+        default=1540,
+        help="Throttle saat buoy dekat",
+    )
+    parser.add_argument(
+        "--throttle-far-pwm",
+        type=int,
+        default=1600,
+        help="Throttle saat buoy jauh",
+    )
+    parser.add_argument(
+        "--throttle-hold-s",
+        type=float,
+        default=0.8,
+        help="Durasi tahan throttle setelah deteksi hilang",
+    )
+    parser.add_argument(
+        "--throttle-ramp-pwm-per-s",
+        type=float,
+        default=200.0,
+        help="Batas perubahan throttle PWM per detik",
+    )
+    parser.add_argument(
+        "--throttle-steering-boost-pwm",
+        type=int,
+        default=25,
+        help="Tambahan throttle saat belok tajam",
     )
     parser.add_argument(
         "--bridge-url",
@@ -609,18 +669,31 @@ def main() -> None:
         raise ValueError("--conf harus berada di antara 0 dan 1")
     if not 0.0 < args.vision_fps:
         raise ValueError("--vision-fps harus positif")
-    if not 1500 <= args.throttle_pwm <= 1700:
-        raise ValueError("--throttle-pwm harus 1500..1700 untuk uji awal")
     if args.duration < 0:
         raise ValueError("--duration tidak boleh negatif")
+    throttle_config = ThrottleConfig(
+        near_pwm=args.throttle_near_pwm,
+        cruise_pwm=args.throttle_pwm,
+        far_pwm=args.throttle_far_pwm,
+        hold_s=args.throttle_hold_s,
+        ramp_pwm_per_s=args.throttle_ramp_pwm_per_s,
+        steering_boost_pwm=args.throttle_steering_boost_pwm,
+    )
+    throttle_controller = VisualThrottleController(throttle_config)
+    target_tracker = VisualTargetTracker(
+        hold_s=args.target_hold_s,
+        smoothing_alpha=args.target_smoothing,
+    )
 
     try:
         from ultralytics import YOLO
         import cv2
     except ImportError as exc:
+        dependencies = "ultralytics opencv-python"
+        if not args.manual_rc:
+            dependencies += " pymavlink pyserial"
         raise RuntimeError(
-            "Dependensi belum lengkap. Jalankan: "
-            "python -m pip install ultralytics opencv-python pymavlink"
+            f"Dependensi belum lengkap. Jalankan: python -m pip install {dependencies}"
         ) from exc
 
     model_path = Path(args.model)
@@ -629,7 +702,10 @@ def main() -> None:
 
     print(f"Memuat model: {model_path}")
     model = YOLO(str(model_path))
-    link = PixhawkLink(args.endpoint)
+    link = create_pixhawk_link(
+        manual_rc=args.manual_rc,
+        endpoint=args.endpoint,
+    )
     logger = JsonlLogger(args.log)
     run_id = datetime.now(timezone.utc).strftime("vision-%Y%m%dT%H%M%SZ")
     logger.write(
@@ -647,13 +723,16 @@ def main() -> None:
     camera = cv2.VideoCapture(camera_source)
     if not camera.isOpened():
         logger.close()
-        link.close()
+        if link is not None:
+            link.close()
         raise RuntimeError(f"Webcam {args.camera} tidak dapat dibuka")
 
     print("Tekan Q atau ESC untuk berhenti.")
     print(
-        f"Throttle aktif ({args.throttle_pwm}) saat buoy terdeteksi, "
-        "netral saat tidak ada target."
+        f"Throttle dinamis: near={throttle_config.near_pwm} "
+        f"cruise={throttle_config.cruise_pwm} far={throttle_config.far_pwm} "
+        f"hold={throttle_config.hold_s:.2f}s "
+        f"ramp={throttle_config.ramp_pwm_per_s:.0f} PWM/s"
     )
     bridge = (
         BridgeFramePublisher(
@@ -734,30 +813,59 @@ def main() -> None:
             if now >= next_inference_at:
                 result = model.predict(frame, conf=args.conf, verbose=False)[0]
                 last_detections = detections_from_result(result)
-                target_x = select_target_x(last_detections)
-                steering_pwm = (
-                    compute_steering_pwm(
-                        target_x,
-                        frame.shape[1],
-                        gain=args.gain,
-                        invert=args.invert_steering,
+                target_x = target_tracker.update(last_detections, now=now)
+                if args.manual_rc:
+                    steering_pwm = NEUTRAL_PWM
+                    throttle_pwm = NEUTRAL_PWM
+                    mode = "RC_MANUAL"
+                    telemetry = {
+                        "mode": "RC_MANUAL",
+                        "armed": None,
+                        "rc1": None,
+                        "rc3": None,
+                        "servo1": None,
+                        "servo3": None,
+                    }
+                else:
+                    steering_pwm = (
+                        compute_steering_pwm(
+                            target_x,
+                            frame.shape[1],
+                            gain=args.gain,
+                            invert=args.invert_steering,
+                        )
+                        if target_x is not None
+                        else NEUTRAL_PWM
                     )
-                    if target_x is not None
-                    else NEUTRAL_PWM
-                )
-                target_found = target_x is not None
-                throttle_pwm = args.throttle_pwm if target_found else NEUTRAL_PWM
+                    throttle_pwm = throttle_controller.update(
+                        last_detections,
+                        frame_width=int(frame.shape[1]),
+                        frame_height=int(frame.shape[0]),
+                        steering_pwm=steering_pwm,
+                        now=now,
+                    )
 
-                try:
-                    mode = link.mode()
-                    if mode == "MANUAL":
-                        link.send_override(steering_pwm, throttle_pwm)
-                    else:
+                    try:
+                        assert link is not None
+                        mode = link.mode()
+                        if mode == "MANUAL":
+                            link.send_override(steering_pwm, throttle_pwm)
+                        else:
+                            throttle_pwm = throttle_controller.reset(now)
+                            target_tracker.reset()
+                            link.release_override()
+                        telemetry = link.telemetry()
+                    except Exception as exc:
+                        throttle_pwm = throttle_controller.reset(now)
+                        target_tracker.reset()
                         link.release_override()
-                    telemetry = link.telemetry()
-                except Exception as exc:
-                    mode = "MAVLINK_ERROR"
-                    telemetry = {"servo1": None, "servo3": None, "armed": False, "error": str(exc)}
+                        mode = "MAVLINK_ERROR"
+                        telemetry = {
+                            "servo1": None,
+                            "servo3": None,
+                            "armed": False,
+                            "error": str(exc),
+                        }
 
                 if bridge is not None:
                     metadata_published = bridge.publish_detection_metadata(
@@ -844,27 +952,31 @@ def main() -> None:
         producer.join()
         camera.release()
         cv2.destroyAllWindows()
-        try:
-            link.send_override(NEUTRAL_PWM, NEUTRAL_PWM)
-            time.sleep(0.1)
-            link.release_override()
-            logger.write(
-                {
-                    "event": "stop",
-                    "timestamp_utc": datetime.now(timezone.utc).isoformat(),
-                }
+        if link is not None:
+            try:
+                link.send_override(NEUTRAL_PWM, NEUTRAL_PWM)
+                time.sleep(0.1)
+                link.release_override()
+            finally:
+                link.close()
+        logger.write(
+            {
+                "event": "stop",
+                "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+            }
+        )
+        logger.close()
+        if bridge is not None:
+            bridge.publish_status(
+                online=False,
+                model_status="offline",
+                run_id=run_id,
             )
-        finally:
-            link.close()
-            logger.close()
-            if bridge is not None:
-                bridge.publish_status(
-                    online=False,
-                    model_status="offline",
-                    run_id=run_id,
-                )
-                bridge.close()
-        print("Override dilepas; script berhenti dengan throttle netral.")
+            bridge.close()
+        if link is None:
+            print("Model monitoring berhenti; Pixhawk tidak diakses.")
+        else:
+            print("Override dilepas; script berhenti dengan throttle netral.")
 
 
 if __name__ == "__main__":

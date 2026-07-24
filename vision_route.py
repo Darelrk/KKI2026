@@ -72,6 +72,73 @@ def select_target_x(
     best = max(relevant, key=lambda d: (d.confidence, d.area))
     return best.x_center
 
+
+class VisualTargetTracker:
+    """Stabilize buoy targets across brief one-buoy detection gaps."""
+
+    def __init__(self, *, hold_s: float = 0.8, smoothing_alpha: float = 0.5) -> None:
+        if hold_s < 0.0:
+            raise ValueError("hold_s must be non-negative")
+        if not 0.0 < smoothing_alpha <= 1.0:
+            raise ValueError("smoothing_alpha must be between 0 and 1")
+        self.hold_s = hold_s
+        self.smoothing_alpha = smoothing_alpha
+        self._last_pair_target_x: float | None = None
+        self._last_pair_at: float | None = None
+        self._last_target_x: float | None = None
+        self._last_target_at: float | None = None
+
+    def reset(self) -> None:
+        """Forget stale visual targets."""
+        self._last_pair_target_x = None
+        self._last_pair_at = None
+        self._last_target_x = None
+        self._last_target_at = None
+
+    def update(
+        self,
+        detections: Sequence[Detection],
+        *,
+        now: float,
+    ) -> float | None:
+        """Return a smoothed target while tolerating brief detection gaps."""
+        has_red = any(detection.label == "red_buoy" for detection in detections)
+        has_green = any(detection.label == "green_buoy" for detection in detections)
+        has_target = has_red or has_green
+        target_x = select_target_x(detections)
+
+        if has_red and has_green:
+            self._last_pair_target_x = target_x
+            self._last_pair_at = now
+        elif (
+            has_target
+            and self._last_pair_target_x is not None
+            and self._last_pair_at is not None
+            and now - self._last_pair_at <= self.hold_s
+        ):
+            target_x = self._last_pair_target_x
+        elif not has_target:
+            if (
+                self._last_target_x is None
+                or self._last_target_at is None
+                or now - self._last_target_at > self.hold_s
+            ):
+                return None
+            target_x = self._last_target_x
+
+        if target_x is None:
+            return None
+        if self._last_target_x is None:
+            smoothed_target_x = target_x
+        else:
+            smoothed_target_x = self._last_target_x + self.smoothing_alpha * (
+                target_x - self._last_target_x
+            )
+        self._last_target_x = smoothed_target_x
+        if has_target:
+            self._last_target_at = now
+        return smoothed_target_x
+
 def compute_steering_pwm(
     target_x: float,
     frame_width: int,
@@ -99,6 +166,146 @@ def compute_steering_pwm(
 
     pwm = center_pwm + correction * max_delta
     return int(round(clamp(pwm, PWM_MIN, PWM_MAX)))
+
+
+@dataclass(frozen=True)
+class ThrottleConfig:
+    near_pwm: int = 1540
+    cruise_pwm: int = 1560
+    far_pwm: int = 1600
+    far_area_ratio: float = 0.03
+    near_area_ratio: float = 0.15
+    steering_boost_threshold_pwm: int = 200
+    steering_boost_pwm: int = 25
+    hold_s: float = 0.8
+    ramp_pwm_per_s: float = 200.0
+
+    def __post_init__(self) -> None:
+        if not (
+            NEUTRAL_PWM < self.near_pwm
+            <= self.cruise_pwm
+            <= self.far_pwm
+            <= 1700
+        ):
+            raise ValueError(
+                "near_pwm, cruise_pwm, and far_pwm must be ordered above neutral and <= 1700"
+            )
+        if not 0.0 <= self.far_area_ratio < self.near_area_ratio <= 1.0:
+            raise ValueError(
+                "far_area_ratio must be >= 0 and less than near_area_ratio <= 1"
+            )
+        if self.steering_boost_threshold_pwm < 0:
+            raise ValueError("steering_boost_threshold_pwm must be non-negative")
+        if self.steering_boost_pwm < 0:
+            raise ValueError("steering_boost_pwm must be non-negative")
+        if self.hold_s < 0.0:
+            raise ValueError("hold_s must be non-negative")
+        if self.ramp_pwm_per_s <= 0.0:
+            raise ValueError("ramp_pwm_per_s must be positive")
+
+
+def compute_visual_throttle_pwm(
+    detections: Sequence[Detection],
+    frame_width: int,
+    frame_height: int,
+    steering_pwm: int,
+    *,
+    config: ThrottleConfig = ThrottleConfig(),
+) -> int:
+    """Map buoy size and steering demand to a bounded throttle PWM."""
+    if frame_width <= 0 or frame_height <= 0:
+        raise ValueError("frame dimensions must be positive")
+    if not PWM_MIN <= steering_pwm <= PWM_MAX:
+        raise ValueError("steering_pwm must be between 1000 and 2000")
+
+    relevant = [detection for detection in detections if detection.label in TARGET_LABELS]
+    if not relevant:
+        return NEUTRAL_PWM
+
+    area_ratio = max(detection.area for detection in relevant) / (
+        frame_width * frame_height
+    )
+    if area_ratio <= config.far_area_ratio:
+        pwm = config.far_pwm
+    elif area_ratio >= config.near_area_ratio:
+        pwm = config.near_pwm
+    else:
+        pwm = config.cruise_pwm
+
+    if abs(steering_pwm - NEUTRAL_PWM) > config.steering_boost_threshold_pwm:
+        pwm += config.steering_boost_pwm
+    return int(round(clamp(pwm, PWM_MIN, PWM_MAX)))
+
+
+class VisualThrottleController:
+    """Apply visual throttle targets with hold and rate-limited transitions."""
+
+    def __init__(self, config: ThrottleConfig = ThrottleConfig()) -> None:
+        self.config = config
+        self._current_pwm = NEUTRAL_PWM
+        self._last_target_pwm: int | None = None
+        self._last_target_at: float | None = None
+        self._last_update_at: float | None = None
+
+    def reset(self, now: float | None = None) -> int:
+        """Clear target state and return neutral throttle."""
+        self._current_pwm = NEUTRAL_PWM
+        self._last_target_pwm = None
+        self._last_target_at = None
+        self._last_update_at = now
+        return NEUTRAL_PWM
+
+    def update(
+        self,
+        detections: Sequence[Detection],
+        *,
+        frame_width: int,
+        frame_height: int,
+        steering_pwm: int,
+        now: float,
+    ) -> int:
+        """Return the next smoothed throttle command."""
+        desired_pwm = compute_visual_throttle_pwm(
+            detections,
+            frame_width,
+            frame_height,
+            steering_pwm,
+            config=self.config,
+        )
+        has_target = any(
+            detection.label in TARGET_LABELS for detection in detections
+        )
+
+        elapsed = (
+            0.0
+            if self._last_update_at is None
+            else max(0.0, now - self._last_update_at)
+        )
+        self._last_update_at = now
+
+        if has_target:
+            self._last_target_at = now
+            self._last_target_pwm = desired_pwm
+            target_pwm = desired_pwm
+        elif (
+            self._last_target_at is not None
+            and now - self._last_target_at <= self.config.hold_s
+        ):
+            target_pwm = (
+                self._last_target_pwm
+                if self._last_target_pwm is not None
+                else self._current_pwm
+            )
+        else:
+            target_pwm = NEUTRAL_PWM
+
+        max_step = self.config.ramp_pwm_per_s * elapsed
+        if self._current_pwm < target_pwm:
+            self._current_pwm = min(target_pwm, self._current_pwm + max_step)
+        elif self._current_pwm > target_pwm:
+            self._current_pwm = max(target_pwm, self._current_pwm - max_step)
+        self._current_pwm = clamp(self._current_pwm, PWM_MIN, PWM_MAX)
+        return int(round(self._current_pwm))
 
 
 @dataclass(frozen=True)
@@ -303,7 +510,7 @@ class RouteConfig:
     turn_angle_deg: float = 90.0
     turn_direction: int = 1
     heading_tolerance_deg: float = 8.0
-    visual_throttle_pwm: int = 1520
+    visual_throttle_pwm: int = 1560
     blind_turn_throttle_pwm: int = 1500
     survey_throttle_pwm: int = 1500
     survey_sweep_deg: float = 35.0

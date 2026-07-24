@@ -138,20 +138,11 @@ def create_app(
                 return
 
         send_task = asyncio.create_task(send_loop())
-        receive_task = asyncio.create_task(receive_loop())
         try:
-            await asyncio.wait(
-                (send_task, receive_task),
-                return_when=asyncio.FIRST_COMPLETED,
-            )
+            await receive_loop()
         finally:
             send_task.cancel()
-            receive_task.cancel()
-            await asyncio.gather(
-                send_task,
-                receive_task,
-                return_exceptions=True,
-            )
+            await asyncio.gather(send_task, return_exceptions=True)
             resolved_state.unsubscribe_detections(queue)
 
     @app.get("/stream.mjpg")
