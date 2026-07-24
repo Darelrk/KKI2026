@@ -30,10 +30,16 @@ curl -fsS http://127.0.0.1:8080/api/status
 curl -fsS http://127.0.0.1:8080/api/telemetry
 ```
 
-`ASV_PIXHAWK_ENABLED=false` adalah pilihan aman jika Pixhawk sedang digunakan
-oleh transmitter/QGroundControl/Mission Planner melalui port yang sama.
-Aktifkan hanya jika jalur telemetry terpisah dan tetap read-only.
+`ASV_PIXHAWK_ENABLED=true` membaca telemetry MAVLink secara otomatis tanpa perlu membuka
+QGroundControl. Backend secara otomatis:
+1. Mendeteksi `/dev/serial/by-id/*ArduPilot*` atau `/dev/ttyACM0`.
+2. Mengirim `request_data_stream_send` (`MAV_DATA_STREAM_ALL`) agar Pixhawk terus mengirimkan
+   data GPS (`GLOBAL_POSITION_INT`), kompas (`VFR_HUD`), dan heartbeat.
+3. Melakukan reconnect otomatis jika kabel USB Pixhawk dicopot/dipasang kembali atau koneksi terputus,
+   tanpa mengganggu fungsi kamera dan backend.
 
+Transmitter RC tetap langsung terhubung ke receiver/Pixhawk untuk mengendalikan servo dan throttle.
+Backend tidak pernah mengirimkan perintah arming, disarm, mode change, atau RC override.
 ## Menjalankan model manual RC
 
 ```bash

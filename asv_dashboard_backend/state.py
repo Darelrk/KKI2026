@@ -136,7 +136,7 @@ class BridgeState:
         """Yield a browser-compatible MJPEG stream without buffering history."""
         last_version = -1
         while True:
-            if self._surface_frame is None:
+            if self._surface_frame_version == last_version:
                 try:
                     await asyncio.wait_for(
                         self._frame_event.wait(),
@@ -148,9 +148,9 @@ class BridgeState:
                 self._frame_event.clear()
 
             if self._surface_frame is not None:
-                frame = self._surface_frame
                 if self._surface_frame_version != last_version or not once:
                     last_version = self._surface_frame_version
+                    frame = self._surface_frame
                     yield (
                         b"--frame\r\n"
                         b"Content-Type: image/jpeg\r\n"
@@ -161,4 +161,4 @@ class BridgeState:
                     if once:
                         return
 
-            await asyncio.sleep(1.0 / self.settings.max_fps)
+            await asyncio.sleep(0.01)

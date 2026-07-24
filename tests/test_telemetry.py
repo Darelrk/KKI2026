@@ -87,3 +87,51 @@ def test_reader_rejects_zero_zero_position_without_gps_fix() -> None:
 
     assert snapshot.position is None
     assert snapshot.track == []
+
+def test_resolve_pixhawk_endpoint_prefers_by_id(monkeypatch) -> None:
+    from asv_dashboard_backend.telemetry import _resolve_pixhawk_endpoint
+
+    def fake_glob(pattern: str) -> list[str]:
+        if "by-id" in pattern:
+            return ["/dev/serial/by-id/usb-ArduPilot_fmuv3_123-if00"]
+        return []
+
+    monkeypatch.setattr("glob.glob", fake_glob)
+    assert (
+        _resolve_pixhawk_endpoint("/dev/ttyACM0")
+        == "/dev/serial/by-id/usb-ArduPilot_fmuv3_123-if00"
+    )
+
+
+def test_request_telemetry_streams_sends_stream_all() -> None:
+    reader = make_reader()
+
+    class FakeMav:
+        def __init__(self) -> None:
+            self.sent: list[tuple[object, ...]] = []
+
+        def request_data_stream_send(self, sys: int, comp: int, stream: int, rate: int, start: int) -> None:
+            self.sent.append((sys, comp, stream, rate, start))
+
+    class FakeApi:
+        MAV_DATA_STREAM_ALL = 0
+
+    class FakeConnection:
+        target_system = 1
+        target_component = 1
+
+        def __init__(self) -> None:
+            self.mav = FakeMav()
+
+    conn = FakeConnection()
+    reader._connection = conn
+    reader._mavlink_api = FakeApi()
+
+    reader._request_telemetry_streams()
+
+    assert len(conn.mav.sent) == 1
+    assert conn.mav.sent[0] == (1, 1, 0, 4, 1)
+
+    # Calling again with same target does not re-send
+    reader._request_telemetry_streams()
+    assert len(conn.mav.sent) == 1

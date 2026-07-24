@@ -44,7 +44,7 @@ class GpsPoint(BaseModel):
 
 
 class PixhawkTelemetry(BaseModel):
-    """Small dashboard contract; no RC, mode, or autopilot command data."""
+    """Small dashboard contract; no RC, mode, or autopilot control data."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -58,7 +58,7 @@ class PixhawkTelemetry(BaseModel):
 
 
 class PixhawkTelemetryReader:
-    """Poll MAVLink messages without ever sending a MAVLink command."""
+    """Poll MAVLink messages without ever sending a vehicle-control command."""
 
     _MESSAGE_TYPES = [
         "HEARTBEAT",
@@ -70,6 +70,8 @@ class PixhawkTelemetryReader:
     def __init__(self, settings: BridgeSettings) -> None:
         self.settings = settings
         self._connection: Any | None = None
+        self._mavlink_api: Any | None = None
+        self._connection_started_monotonic: float | None = None
         self._stop = False
         self._last_heartbeat_monotonic: float | None = None
         self._heartbeat_at: datetime | None = None
@@ -81,6 +83,7 @@ class PixhawkTelemetryReader:
         self._last_position_key: tuple[float, float] | None = None
         self._next_reconnect = 0.0
         self._last_error: str | None = None
+        self._last_stream_target: tuple[int, int] | None = None
 
     def snapshot(self) -> PixhawkTelemetry:
         now = time.monotonic()
@@ -111,8 +114,24 @@ class PixhawkTelemetryReader:
                 else:
                     try:
                         await asyncio.to_thread(self._drain_messages)
+                    except OSError as exc:
+                        await self._reset_connection(exc)
                     except Exception as exc:  # pragma: no cover - hardware-specific
-                        self._record_connection_error(exc)
+                        await self._reset_connection(exc)
+
+                    if self._connection is not None:
+                        heartbeat_reference = (
+                            self._last_heartbeat_monotonic
+                            or self._connection_started_monotonic
+                        )
+                        if (
+                            heartbeat_reference is not None
+                            and time.monotonic() - heartbeat_reference
+                            > self.settings.pixhawk_heartbeat_timeout
+                        ):
+                            await self._reset_connection(
+                                TimeoutError("heartbeat Pixhawk tidak diterima")
+                            )
 
                 now = time.monotonic()
                 if now >= next_publish:
@@ -146,20 +165,66 @@ class PixhawkTelemetryReader:
         try:
             from pymavlink import mavutil
 
-            self._connection = await asyncio.to_thread(
+            endpoint = _resolve_pixhawk_endpoint(self.settings.pixhawk_endpoint)
+            connection = await asyncio.to_thread(
                 mavutil.mavlink_connection,
-                self.settings.pixhawk_endpoint,
+                endpoint,
                 baud=self.settings.pixhawk_baud,
                 autoreconnect=True,
                 source_system=255,
                 source_component=190,
             )
+            self._connection = connection
+            self._mavlink_api = mavutil.mavlink
+            self._connection_started_monotonic = time.monotonic()
+            self._last_heartbeat_monotonic = None
+            self._last_stream_target = None
+            self._request_telemetry_streams()
             self._last_error = None
-            logger.info("Pixhawk MAVLink reader connected to %s", self.settings.pixhawk_endpoint)
+            logger.info("Pixhawk MAVLink reader connected to %s", endpoint)
         except Exception as exc:  # pragma: no cover - hardware-specific
             self._connection = None
+            self._mavlink_api = None
+            self._connection_started_monotonic = None
             self._record_connection_error(exc)
+    def _request_telemetry_streams(self) -> None:
+        """Ask ArduPilot for continuous read-only telemetry without QGroundControl."""
+        if self._connection is None or self._mavlink_api is None:
+            return
+        target = (
+            getattr(self._connection, "target_system", 0) or 0,
+            getattr(self._connection, "target_component", 0) or 0,
+        )
+        if target == self._last_stream_target:
+            return
+        try:
+            stream_all = self._mavlink_api.MAV_DATA_STREAM_ALL
+            self._connection.mav.request_data_stream_send(
+                target[0],
+                target[1],
+                stream_all,
+                4,
+                1,
+            )
+            self._last_stream_target = target
+        except Exception as exc:  # pragma: no cover - hardware-specific
+            logger.warning("Gagal meminta stream telemetry Pixhawk (%s)", exc)
 
+    async def _reset_connection(self, exc: Exception) -> None:
+        """Close a broken serial link so the next cycle creates a fresh one."""
+        self._record_connection_error(exc)
+        connection = self._connection
+        self._connection = None
+        self._mavlink_api = None
+        self._connection_started_monotonic = None
+        self._last_stream_target = None
+        self._last_heartbeat_monotonic = None
+        self._next_reconnect = time.monotonic() + self.settings.pixhawk_reconnect_seconds
+        if connection is not None:
+            try:
+                await asyncio.to_thread(connection.close)
+            except Exception:  # pragma: no cover - hardware-specific
+                logger.debug("Gagal menutup koneksi Pixhawk rusak", exc_info=True)
     def _drain_messages(self) -> None:
         if self._connection is None:
             return
@@ -177,6 +242,7 @@ class PixhawkTelemetryReader:
         if message_type == "HEARTBEAT":
             self._last_heartbeat_monotonic = now
             self._heartbeat_at = datetime.now(timezone.utc)
+            self._request_telemetry_streams()
             return
 
         if message_type == "VFR_HUD":
@@ -235,6 +301,23 @@ class PixhawkTelemetryReader:
         if message != self._last_error:
             logger.warning("Pixhawk belum tersedia (%s); retry otomatis", message)
             self._last_error = message
+
+
+def _resolve_pixhawk_endpoint(endpoint: str) -> str:
+    """Prefer stable ArduPilot USB names while retaining configured fallbacks."""
+    if endpoint.startswith(("tcp:", "udp:", "udpin:", "udpout:")):
+        return endpoint
+
+    import glob
+
+    configured_matches = sorted(glob.glob(endpoint))
+    if configured_matches:
+        return configured_matches[0]
+    if endpoint != "/dev/ttyACM0":
+        return endpoint
+
+    stable_matches = sorted(glob.glob("/dev/serial/by-id/*ArduPilot*"))
+    return stable_matches[0] if stable_matches else endpoint
 
 
 def _finite_number(value: Any) -> float | None:
