@@ -186,6 +186,7 @@ class PixhawkTelemetryReader:
             self._connection = None
             self._mavlink_api = None
             self._connection_started_monotonic = None
+            self._next_reconnect = time.monotonic() + 0.5
             self._record_connection_error(exc)
     def _request_telemetry_streams(self) -> None:
         """Ask ArduPilot for continuous read-only telemetry without QGroundControl."""

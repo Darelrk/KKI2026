@@ -29,9 +29,9 @@ class BridgeSettings:
     pixhawk_endpoint: str = "/dev/ttyACM0"
     pixhawk_baud: int = 115_200
     pixhawk_update_hz: float = 1.0
-    pixhawk_heartbeat_timeout: float = 3.0
+    pixhawk_heartbeat_timeout: float = 1.0
     pixhawk_track_max_points: int = 500
-    pixhawk_reconnect_seconds: float = 3.0
+    pixhawk_reconnect_seconds: float = 0.5
 
     def __post_init__(self) -> None:
         if not self.asv_id.strip():
