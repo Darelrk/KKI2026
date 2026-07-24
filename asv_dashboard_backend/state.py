@@ -109,11 +109,19 @@ class BridgeState:
         if metadata.asv_id != self.settings.asv_id:
             raise ValueError(f"metadata asv_id must be {self.settings.asv_id}")
         self._latest_detection = metadata
+        if not self.status.online or self.status.model_status != "running":
+            self.status = AsvLiveStatus(
+                id=self.settings.asv_id,
+                online=True,
+                model_status="running",
+                camera="surface",
+                stream_url=self.settings.stream_url,
+                run_id=self.status.run_id or "vision-live",
+            )
         for queue in tuple(self._detection_subscribers):
             if queue.full():
                 queue.get_nowait()
             queue.put_nowait(metadata)
-
     def subscribe_detections(self) -> asyncio.Queue[VisionMetadata]:
         queue: asyncio.Queue[VisionMetadata] = asyncio.Queue(maxsize=1)
         self._detection_subscribers.add(queue)
