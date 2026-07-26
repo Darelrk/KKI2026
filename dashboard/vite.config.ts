@@ -12,6 +12,7 @@ const nitroPreset = process.env.NITRO_PRESET ?? (
 )
 
 const config = defineConfig({
+  server: { port: 3000, strictPort: true },
   resolve: { tsconfigPaths: true },
   plugins: [
     devtools(),

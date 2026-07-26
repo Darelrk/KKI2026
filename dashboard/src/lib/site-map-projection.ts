@@ -27,8 +27,8 @@ export type SiteMapOverlayCalibration = {
 export const kolamDeliOverlayCalibration: SiteMapOverlayCalibration = {
   courseAnchor: { x: 85.1, y: 85.8 },
   mapAnchor: { x: 50, y: 49 },
-  scaleX: 0.145,
-  scaleY: -0.35,
+  scaleX: 0.093,
+  scaleY: -0.224,
   rotationDeg: -20,
 }
 

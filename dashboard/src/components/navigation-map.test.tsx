@@ -159,6 +159,50 @@ describe('NavigationMap', () => {
     expect(screen.queryByTestId('simulation-boat')).not.toBeInTheDocument()
   })
 
+  it('lets the operator drag the mission overlay onto the pool', () => {
+    window.localStorage.clear()
+    render(
+      <NavigationMap
+        telemetry={emptyNavigationTelemetry}
+        simulation={simulation}
+        previewMode
+      />,
+    )
+
+    const layer = screen.getByTestId(
+      'overlay-drag-layer',
+    ) as unknown as SVGGElement
+    Object.defineProperty(layer.ownerSVGElement!, 'getBoundingClientRect', {
+      configurable: true,
+      value: () => ({ width: 500, height: 500 }),
+    })
+
+    fireEvent.pointerDown(layer, { clientX: 200, clientY: 200 })
+    fireEvent.pointerMove(layer, { clientX: 250, clientY: 180 })
+    fireEvent.pointerUp(layer, { clientX: 250, clientY: 180 })
+
+    expect(layer.getAttribute('transform')).toContain('translate(10 -4)')
+  })
+
+  it('lets the operator scale the mission overlay with the wheel', () => {
+    window.localStorage.clear()
+    render(
+      <NavigationMap
+        telemetry={emptyNavigationTelemetry}
+        simulation={simulation}
+        previewMode
+      />,
+    )
+
+    const layer = screen.getByTestId('overlay-drag-layer')
+
+    fireEvent.wheel(layer, { deltaY: -100 })
+    expect(layer.getAttribute('transform')).toContain('scale(1.08)')
+
+    fireEvent.wheel(layer, { deltaY: 100 })
+    expect(layer.getAttribute('transform')).toContain('scale(1)')
+  })
+
   it('shows the Kolam Deli site context for the on-site fixture', () => {
     render(
       <NavigationMap
@@ -185,7 +229,7 @@ describe('NavigationMap', () => {
     )
     expect(screen.getByTitle('Kolam Deli satellite base map')).toHaveAttribute(
       'src',
-      expect.stringContaining('z=21'),
+      expect.stringContaining('z=22'),
     )
     expect(
       screen.queryByRole('link', {

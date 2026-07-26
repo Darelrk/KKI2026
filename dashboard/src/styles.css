@@ -605,6 +605,16 @@ h2 {
   pointer-events: none;
 }
 
+/* Only the painted route/buoys grab the pointer, so the base map stays usable. */
+.site-map__drag {
+  pointer-events: visiblePainted;
+  cursor: grab;
+}
+
+.site-map__drag--active {
+  cursor: grabbing;
+}
+
 .site-map__route {
   stroke: rgba(224, 252, 255, 0.9);
   stroke-width: 0.75;

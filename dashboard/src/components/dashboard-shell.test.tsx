@@ -75,6 +75,23 @@ describe('DashboardShell', () => {
     ).toBeInTheDocument()
   })
 
+  it('runs the mission route preview while telemetry is still missing', () => {
+    render(
+      <DashboardShell
+        asvId="default"
+        live={liveStatus}
+        liveRealtimeStatus="connecting"
+        telemetry={null}
+        telemetryRealtimeStatus="connecting"
+        underwaterFrame={null}
+        underwaterRealtimeStatus="connecting"
+      />,
+    )
+
+    expect(screen.queryByText('Waiting for GPS fix.')).not.toBeInTheDocument()
+    expect(screen.getByTestId('simulation-boat')).toBeInTheDocument()
+  })
+
   it('renders raw main and underwater camera streams instead of model output', () => {
     render(
       <DashboardShell
