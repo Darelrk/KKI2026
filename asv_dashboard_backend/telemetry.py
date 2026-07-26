@@ -95,8 +95,10 @@ class PixhawkTelemetryReader:
         return PixhawkTelemetry(
             connected=connected,
             position=self._position,
-            heading_deg=self._heading_deg,
-            speed_mps=self._speed_mps,
+            # Heading dan speed terakhir tetap terlihat seperti gerakan live di
+            # dashboard, jadi laporkan sebagai tidak diketahui selama link mati.
+            heading_deg=self._heading_deg if connected else None,
+            speed_mps=self._speed_mps if connected else None,
             captured_at=datetime.now(timezone.utc),
             heartbeat_at=self._heartbeat_at,
             track=list(self._track),

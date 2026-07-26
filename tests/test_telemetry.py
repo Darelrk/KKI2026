@@ -58,6 +58,17 @@ def test_reader_extracts_gps_heading_speed_and_bounded_track() -> None:
 
 def test_reader_marks_heartbeat_stale_without_dropping_last_position() -> None:
     reader = make_reader()
+    reader._consume_message(
+        FakeMavlinkMessage(
+            "GLOBAL_POSITION_INT",
+            lat=-612345678,
+            lon=1068456789,
+            hdg=9123,
+            vx=300,
+            vy=400,
+        ),
+        time.monotonic(),
+    )
     reader._last_heartbeat_monotonic = (
         time.monotonic() - reader.settings.pixhawk_heartbeat_timeout - 0.1
     )
@@ -65,8 +76,30 @@ def test_reader_marks_heartbeat_stale_without_dropping_last_position() -> None:
     snapshot = reader.snapshot()
 
     assert snapshot.connected is False
-    assert snapshot.position is None
-    assert snapshot.track == []
+    assert snapshot.position is not None
+    assert snapshot.position.latitude == -61.2345678
+    assert len(snapshot.track) == 1
+
+
+def test_reader_hides_stale_heading_and_speed_while_link_is_down() -> None:
+    reader = make_reader()
+    now = time.monotonic()
+    reader._consume_message(FakeMavlinkMessage("HEARTBEAT"), now)
+    reader._consume_message(
+        FakeMavlinkMessage("VFR_HUD", heading=346, groundspeed=0.0),
+        now,
+    )
+
+    assert reader.snapshot().heading_deg == 346
+
+    reader._last_heartbeat_monotonic = (
+        now - reader.settings.pixhawk_heartbeat_timeout - 0.1
+    )
+    snapshot = reader.snapshot()
+
+    assert snapshot.connected is False
+    assert snapshot.heading_deg is None
+    assert snapshot.speed_mps is None
 
 
 def test_reader_rejects_zero_zero_position_without_gps_fix() -> None:
