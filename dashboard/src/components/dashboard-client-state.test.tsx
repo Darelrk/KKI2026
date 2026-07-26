@@ -40,7 +40,7 @@ describe('DashboardClient states', () => {
       realtimeStatus: 'error',
     })
 
-    render(<DashboardClient asvId="default" mode="supabase" />)
+    render(<DashboardClient asvId="default" mode="direct" />)
 
     expect(screen.getByRole('alert')).toHaveTextContent('Telemetry link unavailable')
     const retry = screen.getByRole('button', { name: 'Retry connection' })

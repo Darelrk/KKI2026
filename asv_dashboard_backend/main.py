@@ -12,7 +12,6 @@ from fastapi.responses import StreamingResponse
 
 from .config import BridgeSettings
 from .frames import FrameTooLargeError, build_underwater_payload
-from .publisher import Publisher, create_publisher
 from .state import AsvLiveStatus, BridgeState, VisionMetadata
 from .telemetry import PixhawkTelemetry, PixhawkTelemetryReader
 
@@ -20,21 +19,18 @@ from .telemetry import PixhawkTelemetry, PixhawkTelemetryReader
 def create_app(
     *,
     settings: BridgeSettings | None = None,
-    publisher: Publisher | None = None,
     state: BridgeState | None = None,
     telemetry_reader: PixhawkTelemetryReader | None = None,
 ) -> FastAPI:
-    """Create an app with injectable state and publisher for deterministic tests."""
+    """Create an app with injectable local state for deterministic tests."""
     resolved_settings = settings or BridgeSettings.from_env()
     resolved_state = state or BridgeState(resolved_settings)
-    resolved_publisher = publisher or create_publisher(resolved_settings)
     resolved_telemetry = telemetry_reader or PixhawkTelemetryReader(resolved_settings)
 
     @asynccontextmanager
     async def lifespan(_: FastAPI):
         async def publish_telemetry_payload(payload: dict[str, object]) -> None:
             resolved_state.publish_telemetry(payload)
-            await resolved_publisher.publish_telemetry(payload)
 
         telemetry_task = None
         if resolved_settings.pixhawk_enabled:
@@ -48,7 +44,6 @@ def create_app(
             if telemetry_task is not None:
                 telemetry_task.cancel()
                 await asyncio.gather(telemetry_task, return_exceptions=True)
-            await resolved_publisher.close()
 
     app = FastAPI(
         title="ASV Raspberry Pi Bridge",
@@ -66,7 +61,6 @@ def create_app(
     )
     app.state.settings = resolved_settings
     app.state.bridge_state = resolved_state
-    app.state.publisher = resolved_publisher
 
     @app.get("/healthz")
     async def healthz() -> dict[str, object]:
@@ -85,7 +79,6 @@ def create_app(
         if status.id != resolved_settings.asv_id:
             raise HTTPException(status_code=409, detail="ASV id does not match bridge")
         resolved_state.update_status(status)
-        await resolved_publisher.publish_status(status.model_dump(mode="json"))
         return status
 
     @app.post("/api/frame/surface")
@@ -115,7 +108,6 @@ def create_app(
         except (TypeError, ValueError) as exc:
             raise HTTPException(status_code=415, detail=str(exc)) from exc
 
-        await resolved_publisher.publish_underwater_frame(payload)
         return payload
 
     @app.post("/api/vision/metadata", response_model=VisionMetadata)

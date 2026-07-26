@@ -41,7 +41,7 @@ const validPayload = {
   detections: [],
 }
 
-function Probe({ mode }: { mode: 'fixture' | 'supabase' }) {
+function Probe({ mode }: { mode: 'fixture' | 'direct' }) {
   const { cache, realtimeStatus } = useVisionMetadata('default', mode, 'wss://bridge.test')
   return createElement(
     'output',
@@ -71,7 +71,7 @@ describe('useVisionMetadata', () => {
   })
 
   it('keeps the last valid payload when an invalid message arrives', () => {
-    render(createElement(Probe, { mode: 'supabase' }))
+    render(createElement(Probe, { mode: 'direct' }))
     const socket = FakeWebSocket.instances[0]
     act(() => socket.open())
     act(() => socket.message(validPayload))
@@ -84,7 +84,7 @@ describe('useVisionMetadata', () => {
   })
 
   it('clears stale metadata and retries with one socket timer', () => {
-    const { unmount } = render(createElement(Probe, { mode: 'supabase' }))
+    const { unmount } = render(createElement(Probe, { mode: 'direct' }))
     const firstSocket = FakeWebSocket.instances[0]
     act(() => firstSocket.open())
     act(() => firstSocket.message(validPayload))

@@ -10,11 +10,10 @@ describe('getAsvDataMode', () => {
     expect(getAsvDataMode('direct')).toBe('direct')
   })
 
-  it('defaults to direct when mode is undefined, null, empty, or supabase', () => {
+  it('defaults to direct when mode is undefined, null, empty, or unknown', () => {
     expect(getAsvDataMode(undefined)).toBe('direct')
     expect(getAsvDataMode(null)).toBe('direct')
     expect(getAsvDataMode('')).toBe('direct')
-    expect(getAsvDataMode('supabase')).toBe('direct')
     expect(getAsvDataMode('unrecognised')).toBe('direct')
   })
 })

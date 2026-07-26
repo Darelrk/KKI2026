@@ -57,9 +57,8 @@ Set `ASV_CORS_ORIGINS` in `/etc/asv-dashboard.env` to the exact Vercel
 origin plus `http://localhost:3000` when local testing is needed. The
 browser reads `/api/status` and `/api/telemetry` directly through the tunnel,
 opens the raw camera URLs directly, and receives vision metadata from
-`/ws/vision/default`. Supabase is not part of this live path; leave both
-server-side Supabase variables empty unless rollback publishing is explicitly
-needed.
+`/ws/vision/default`. This live path uses only the Raspberry Pi bridge and
+the configured HTTPS/WSS tunnel.
 
 Verify from a browser origin and from the Pi:
 
