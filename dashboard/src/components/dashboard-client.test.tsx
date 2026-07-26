@@ -24,7 +24,7 @@ describe('DashboardClient', () => {
     expect(await screen.findByText('MODEL RUNNING')).toBeInTheDocument()
     expect(screen.getByText('MODEL MONITORING')).toBeInTheDocument()
     expect(screen.getByText('AUTO / ONBOARD')).toBeInTheDocument()
-    expect(screen.getByText('RC MANUAL')).toBeInTheDocument()
+    expect(screen.queryByText(/RC MANUAL/i)).not.toBeInTheDocument()
     expect(screen.getByRole('img', { name: 'Live surface camera' })).toHaveAttribute(
       'src',
       'https://monitor-kapal-pora-pora.web.id/stream/atas',

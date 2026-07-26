@@ -66,10 +66,6 @@ export function SignalRail({
           <dd>AUTO / ONBOARD</dd>
         </div>
         <div>
-          <dt>Control source</dt>
-          <dd>RC MANUAL</dd>
-        </div>
-        <div>
           <dt>Telemetry channel</dt>
           <dd>{telemetryStatusCopy[telemetryStatus]}</dd>
         </div>

@@ -1,25 +1,33 @@
 import { MapPin } from '@phosphor-icons/react'
 
+import { missionRoute } from '../lib/mission-simulation'
+
 import type { NavigationTelemetry } from '../lib/navigation-types'
+import type { MissionSimulationController } from '../lib/use-mission-simulation'
 
 type NavigationMapProps = {
   telemetry: NavigationTelemetry
+  simulation?: MissionSimulationController
 }
 
+
 const buoyPairs = [
-  { x: 15, y: 77 },
-  { x: 21, y: 68 },
-  { x: 28, y: 59 },
-  { x: 35, y: 51 },
-  { x: 43, y: 43 },
-  { x: 51, y: 36 },
-  { x: 59, y: 30 },
-  { x: 67, y: 25 },
-  { x: 75, y: 21 },
-  { x: 83, y: 17 },
+  { x: 19, y: 75 },
+  { x: 15, y: 59 },
+  { x: 18, y: 42 },
+  { x: 29, y: 25 },
+  { x: 42, y: 19 },
+  { x: 54, y: 18 },
+  { x: 64, y: 21 },
+  { x: 69, y: 34 },
+  { x: 64, y: 51 },
+  { x: 70, y: 69 },
 ] as const
 
-export function NavigationMap({ telemetry }: NavigationMapProps) {
+const simulationTrackPoints = missionRoute.map((point) => `${point.x},${point.y}`).join(' ')
+
+
+export function NavigationMap({ telemetry, simulation }: NavigationMapProps) {
   const lastTrackPoint = telemetry.track.at(-1)
   const boatPosition = telemetry.position ?? lastTrackPoint
   const currentIsAlreadyLastPoint =
@@ -39,7 +47,7 @@ export function NavigationMap({ telemetry }: NavigationMapProps) {
   const maxLatitude = latitudes.length > 0 ? Math.max(...latitudes) : 1
   const longitudeRange = maxLongitude - minLongitude || 1
   const latitudeRange = maxLatitude - minLatitude || 1
-  const projectPoint = (point: typeof pathPoints[number]) => ({
+  const projectPoint = (point: (typeof pathPoints)[number]) => ({
     x: 10 + ((point.longitude - minLongitude) / longitudeRange) * 80,
     y: 90 - ((point.latitude - minLatitude) / latitudeRange) * 80,
   })
@@ -53,6 +61,7 @@ export function NavigationMap({ telemetry }: NavigationMapProps) {
           .join(' ')
       : ''
   const projectedBoat = boatPosition ? projectPoint(boatPosition) : null
+  const simulationActive = simulation !== undefined && simulation.status !== 'idle'
   const hasTrackPlot = pathPoints.length >= 2
 
   return (
@@ -72,15 +81,36 @@ export function NavigationMap({ telemetry }: NavigationMapProps) {
             className="navigation-map__plot"
             viewBox="0 0 100 100"
             role="img"
-            aria-label={hasTrackPlot ? 'GPS track plot' : 'Mission route plan'}
+            aria-label={simulationActive ? 'Simulation route replay' : hasTrackPlot ? 'GPS track plot' : 'Mission route plan'}
           >
             <path
               className="navigation-map__route-plan"
-              d="M 8 82 C 19 72, 25 64, 35 53 S 56 31, 86 14"
+              d="M 78 80 C 66 87, 52 89, 33 84 S 12 72, 14 53 S 22 27, 39 20 S 61 16, 66 24 S 70 43, 61 56 S 65 69, 78 80"
               fill="none"
             />
-            <rect className="navigation-map__zone navigation-map__zone--surface" x="43" y="47" width="15" height="12" />
-            <rect className="navigation-map__zone navigation-map__zone--underwater" x="62" y="24" width="15" height="12" />
+            {!simulationActive && hasTrackPlot ? (
+              <polyline
+                className="navigation-map__track"
+                points={trackPoints}
+                fill="none"
+              />
+            ) : null}
+            <rect
+              className="navigation-map__zone navigation-map__zone--surface"
+              data-testid="surface-zone"
+              x="20"
+              y="67"
+              width="18"
+              height="12"
+            />
+            <rect
+              className="navigation-map__zone navigation-map__zone--underwater"
+              data-testid="underwater-zone"
+              x="61"
+              y="61"
+              width="17"
+              height="13"
+            />
 
             {buoyPairs.map((pair, index) => (
               <g
@@ -95,29 +125,38 @@ export function NavigationMap({ telemetry }: NavigationMapProps) {
             ))}
 
             <g className="navigation-map__dock navigation-map__dock--start">
-              <circle cx="8" cy="82" r="2.2" />
-              <text x="8" y="88">START</text>
+              <circle cx="78" cy="80" r="2.2" />
+              <text x="78" y="87">START</text>
             </g>
             <g className="navigation-map__dock navigation-map__dock--finish">
-              <circle cx="86" cy="14" r="2.2" />
-              <text x="86" y="10">FINISH</text>
+              <circle cx="78" cy="80" r="2.2" />
+              <text x="78" y="74">DOCK</text>
             </g>
             <g className="navigation-map__docking-balls">
-              <circle cx="82" cy="14" r="1.25" />
-              <circle cx="84" cy="14" r="1.25" />
-              <circle cx="86" cy="14" r="1.25" />
+              <circle cx="74" cy="80" r="1.25" />
+              <circle cx="76" cy="80" r="1.25" />
+              <circle cx="78" cy="80" r="1.25" />
             </g>
 
-            {hasTrackPlot ? (
-              <polyline
-                className="navigation-map__track"
-                points={trackPoints}
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.6"
-              />
-            ) : null}
-            {projectedBoat ? (
+            {simulationActive ? (
+              <>
+                <polyline
+                  className="navigation-map__simulation-track"
+                  data-testid="simulation-track"
+                  points={simulationTrackPoints}
+                  fill="none"
+                />
+                <g
+                  className="navigation-map__simulation-boat"
+                  data-testid="simulation-boat"
+                  data-progress={simulation?.progress}
+                  aria-hidden="true"
+                  transform={`translate(${simulation?.position.x} ${simulation?.position.y})`}
+                >
+                  <path d="M 0 -5 L 3 4 L 0 2 L -3 4 Z" />
+                </g>
+              </>
+            ) : projectedBoat ? (
               <g
                 className="navigation-map__boat"
                 data-testid="boat-marker"
@@ -134,7 +173,7 @@ export function NavigationMap({ telemetry }: NavigationMapProps) {
               </g>
             ) : null}
           </svg>
-          {!projectedBoat ? (
+          {!projectedBoat && !simulationActive ? (
             <div className="navigation-map__empty">
               <MapPin aria-hidden="true" size={28} />
               <strong>Waiting for GPS fix.</strong>
@@ -142,33 +181,23 @@ export function NavigationMap({ telemetry }: NavigationMapProps) {
             </div>
           ) : null}
           <div className="navigation-map__readout">
-            <span>{telemetry.position ? 'GPS position available' : 'GPS position unavailable'}</span>
-            <span>{telemetry.track.length > 0 ? `GPS track · ${telemetry.track.length} points` : 'GPS track unavailable'}</span>
+            <span>
+              {simulationActive
+                ? `Simulation route · ${Math.round((simulation?.progress ?? 0) * 100)}%`
+                : telemetry.position
+                  ? 'GPS position available'
+                  : 'GPS position unavailable'}
+            </span>
+            <span>
+              {simulationActive
+                ? 'Local replay · no Pixhawk command'
+                : telemetry.track.length > 0
+                  ? `GPS track · ${telemetry.track.length} points`
+                  : 'GPS track unavailable'}
+            </span>
           </div>
         </div>
 
-        <aside className="route-legend" aria-label="Mission route legend">
-          <div className="route-legend__heading">
-            <span>Course layout</span>
-            <strong>ASV KKI 2026</strong>
-          </div>
-          <div className="route-legend__item">
-            <span className="route-legend__swatch route-legend__swatch--buoys" aria-hidden="true" />
-            <div><strong>Navigation</strong><span>10 red + green buoy pairs</span></div>
-          </div>
-          <div className="route-legend__item">
-            <span className="route-legend__swatch route-legend__swatch--surface" aria-hidden="true" />
-            <div><strong>Surface imaging</strong><span>Green mission zone</span></div>
-          </div>
-          <div className="route-legend__item">
-            <span className="route-legend__swatch route-legend__swatch--underwater" aria-hidden="true" />
-            <div><strong>Underwater imaging</strong><span>Blue mission zone</span></div>
-          </div>
-          <div className="route-legend__item">
-            <span className="route-legend__swatch route-legend__swatch--dock" aria-hidden="true" />
-            <div><strong>Finish dock</strong><span>3 blue docking balls</span></div>
-          </div>
-        </aside>
       </div>
     </section>
   )

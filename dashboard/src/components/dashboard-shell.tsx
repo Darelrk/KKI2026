@@ -10,6 +10,7 @@ import { UnderwaterFallback } from './underwater-fallback'
 
 import { emptyNavigationTelemetry } from '../lib/navigation-types'
 import { asvStreamUrls } from '../lib/stream-urls'
+import { useMissionSimulation } from '../lib/use-mission-simulation'
 
 import type { AsvLive, UnderwaterFrame } from '../lib/asv-types'
 import type { AsvTelemetry } from '../lib/asv-telemetry'
@@ -44,6 +45,7 @@ export function DashboardShell({
   surfaceStreamUrl = asvStreamUrls.surface,
   underwaterStreamUrl = asvStreamUrls.underwater,
 }: DashboardShellProps) {
+  const simulation = useMissionSimulation()
   const isUnavailable = !telemetry || !telemetry.connected
   const navigation = telemetry ?? emptyNavigationTelemetry
 
@@ -87,8 +89,8 @@ export function DashboardShell({
         </div>
       </section>
 
-      <NavigationMap telemetry={navigation} />
-      <MissionStage />
+      <NavigationMap telemetry={navigation} simulation={simulation} />
+      <MissionStage simulation={simulation} />
 
       <footer className="dashboard-shell__footer">
         <span>Surface channel: {liveRealtimeStatus}</span>

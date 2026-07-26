@@ -2,9 +2,24 @@ import { cleanup, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 
 import { emptyNavigationTelemetry } from '../lib/navigation-types'
+import { missionRoutePosition } from '../lib/mission-simulation'
+import type { MissionSimulationController } from '../lib/use-mission-simulation'
 import { NavigationMap } from './navigation-map'
 
 afterEach(cleanup)
+
+const simulation = {
+  status: 'running',
+  elapsedMs: 15_000,
+  progress: 0.5,
+  stageIndex: 3,
+  position: missionRoutePosition(0.5),
+  start: () => undefined,
+  pause: () => undefined,
+  stop: () => undefined,
+  reset: () => undefined,
+  selectStage: () => undefined,
+} as MissionSimulationController
 
 describe('NavigationMap', () => {
   it('keeps the official mission route visible while GPS is unavailable', () => {
@@ -16,10 +31,26 @@ describe('NavigationMap', () => {
     expect(screen.getByText('GPS track unavailable')).toBeInTheDocument()
     expect(screen.getByRole('img', { name: 'Mission route plan' })).toBeInTheDocument()
     expect(screen.getAllByTestId('buoy-pair')).toHaveLength(10)
-    expect(screen.getByText('10 red + green buoy pairs')).toBeInTheDocument()
-    expect(screen.getByText('Green mission zone')).toBeInTheDocument()
-    expect(screen.getByText('Blue mission zone')).toBeInTheDocument()
-    expect(screen.getByText('3 blue docking balls')).toBeInTheDocument()
+    expect(screen.queryByRole('complementary', { name: 'Mission route legend' })).not.toBeInTheDocument()
+    expect(screen.queryByText('Course layout')).not.toBeInTheDocument()
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument()
+  })
+
+  it('shows the local replay boat on the simulation route', () => {
+    render(<NavigationMap telemetry={emptyNavigationTelemetry} simulation={simulation} />)
+
+    expect(screen.getByRole('img', { name: 'Simulation route replay' })).toBeInTheDocument()
+    expect(screen.getByTestId('simulation-boat')).toHaveAttribute('data-progress', '0.5')
+    expect(screen.getByText('Simulation route · 50%')).toBeInTheDocument()
+  })
+
+  it('keeps mission graphics visible without course layout options', () => {
+    render(<NavigationMap telemetry={emptyNavigationTelemetry} />)
+
+    expect(screen.getByTestId('surface-zone')).toBeInTheDocument()
+    expect(screen.getByTestId('underwater-zone')).toBeInTheDocument()
+    expect(screen.getAllByTestId('buoy-pair')).toHaveLength(10)
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument()
   })
 
   it('plots GPS points and rotates the current boat marker by heading', () => {

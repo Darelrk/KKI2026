@@ -1,16 +1,25 @@
 import { Flag } from '@phosphor-icons/react'
 
-const missionStages = [
-  { id: 'ready', label: 'Ready / Preparation', detail: 'Preflight checks' },
-  { id: 'start', label: 'Start', detail: 'Departure dock' },
-  { id: 'navigation', label: 'Navigation', detail: '10 buoy pairs' },
-  { id: 'surface', label: 'Surface imaging', detail: 'Green mission zone' },
-  { id: 'underwater', label: 'Underwater imaging', detail: 'Blue mission zone' },
-  { id: 'docking', label: 'Docking', detail: '3 blue docking balls' },
-  { id: 'finish', label: 'Finish', detail: 'Run complete' },
-] as const
+import {
+  formatMissionTime,
+  missionStages,
+} from '../lib/mission-simulation'
 
-export function MissionStage() {
+import type { MissionSimulationController } from '../lib/use-mission-simulation'
+
+type MissionStageProps = {
+  simulation: MissionSimulationController
+}
+
+export function MissionStage({ simulation }: MissionStageProps) {
+  const currentStage = missionStages[simulation.stageIndex]
+  const statusCopy = {
+    idle: 'Standby',
+    running: 'Simulation replay running',
+    paused: 'Simulation paused',
+    complete: 'Simulation replay complete',
+  }[simulation.status]
+
   return (
     <section className="mission-stage" aria-labelledby="mission-stage-title">
       <div className="mission-stage__header">
@@ -21,32 +30,69 @@ export function MissionStage() {
             <h2 id="mission-stage-title">Mission sequence</h2>
           </div>
         </div>
+        <div className="mission-stage__demo-badge">
+          <strong>SIMULATION / DEMO</strong>
+        </div>
       </div>
 
       <div className="mission-stage__summary">
         <div>
-          <span className="mission-stage__label">Current phase</span>
-          <strong>Ready / Preparation</strong>
-          <small>Autonomous sequence available</small>
+          <span className="mission-stage__label">Preview phase</span>
+          <strong>{currentStage.label}</strong>
+          <small>{statusCopy}</small>
         </div>
         <div>
-          <span className="mission-stage__label">Run timer</span>
-          <strong>--:--</strong>
-          <small>Awaiting start event</small>
+          <span className="mission-stage__label">Replay timer</span>
+          <strong>{formatMissionTime(simulation.elapsedMs)}</strong>
         </div>
+      </div>
+
+      <div className="mission-stage__controls" aria-label="Simulation controls">
+        <button
+          type="button"
+          onClick={simulation.start}
+          disabled={simulation.status === 'running'}
+        >
+          Start simulation
+        </button>
+        <button
+          type="button"
+          onClick={simulation.pause}
+          disabled={simulation.status !== 'running'}
+        >
+          Pause simulation
+        </button>
+        <button
+          type="button"
+          onClick={simulation.stop}
+          disabled={simulation.status === 'idle'}
+        >
+          Stop simulation
+        </button>
+        <button type="button" onClick={simulation.reset}>
+          Reset simulation
+        </button>
       </div>
 
       <ol className="mission-stage__timeline">
         {missionStages.map((stage, index) => (
-          <li
-            key={stage.id}
-            className={index === 0 ? 'mission-stage__item mission-stage__item--current' : 'mission-stage__item'}
-          >
-            <span className="mission-stage__step">{String(index + 1).padStart(2, '0')}</span>
-            <div>
-              <strong>{stage.label}</strong>
-              <span>{stage.detail}</span>
-            </div>
+          <li key={stage.id} className="mission-stage__item">
+            <button
+              type="button"
+              className={
+                index === simulation.stageIndex
+                  ? 'mission-stage__step-button mission-stage__step-button--current'
+                  : 'mission-stage__step-button'
+              }
+              onClick={() => simulation.selectStage(index)}
+              aria-pressed={index === simulation.stageIndex}
+            >
+              <span className="mission-stage__step">{String(index + 1).padStart(2, '0')}</span>
+              <span>
+                <strong>{stage.label}</strong>
+                <span>{stage.detail}</span>
+              </span>
+            </button>
           </li>
         ))}
       </ol>
@@ -69,7 +115,7 @@ export function MissionStage() {
       <div className="mission-stage__readout" role="status">
         <span className="mission-stage__pulse" aria-hidden="true" />
         <span>Operational state</span>
-        <strong>Standby</strong>
+        <strong>{statusCopy}</strong>
       </div>
     </section>
   )

@@ -463,8 +463,7 @@ h2 {
 
 .navigation-map__layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(16rem, 0.28fr);
-  gap: 0.875rem;
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .navigation-map__canvas {
@@ -588,6 +587,27 @@ h2 {
   stroke: currentColor;
   filter: drop-shadow(0 0 0.18rem rgba(111, 229, 183, 0.48));
 }
+.navigation-map__simulation-track {
+  stroke: var(--color-mission-active);
+  stroke-width: 1.1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.78;
+  filter: drop-shadow(0 0 0.22rem rgba(237, 196, 107, 0.5));
+  vector-effect: non-scaling-stroke;
+}
+
+.navigation-map__simulation-boat {
+  color: var(--color-mission-active);
+  filter: drop-shadow(0 0 0.3rem rgba(237, 196, 107, 0.65));
+}
+
+.navigation-map__simulation-boat path {
+  fill: currentColor;
+  stroke: var(--color-bg-inset);
+  stroke-width: 0.7;
+  vector-effect: non-scaling-stroke;
+}
 
 .navigation-map__boat {
   color: var(--color-boat);
@@ -625,82 +645,6 @@ h2 {
   text-transform: uppercase;
 }
 
-.route-legend {
-  display: grid;
-  align-content: start;
-  gap: 0.85rem;
-  padding: 0.85rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-bg-inset);
-}
-
-.route-legend__heading {
-  display: grid;
-  gap: 0.25rem;
-  padding-bottom: 0.7rem;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.route-legend__heading span,
-.route-legend__item span {
-  color: var(--color-text-muted);
-  font-size: 0.7rem;
-}
-
-.route-legend__heading strong {
-  color: var(--color-text-bright);
-  font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 0.68rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.route-legend__item {
-  display: grid;
-  grid-template-columns: 0.85rem minmax(0, 1fr);
-  gap: 0.55rem;
-  align-items: start;
-}
-
-.route-legend__item div {
-  display: grid;
-  gap: 0.2rem;
-}
-
-.route-legend__item strong {
-  color: var(--color-text-secondary);
-  font-size: 0.72rem;
-  font-weight: 650;
-}
-
-.route-legend__swatch {
-  width: 0.78rem;
-  height: 0.78rem;
-  margin-top: 0.08rem;
-  border: 1px solid var(--color-border-strong);
-  border-radius: 50%;
-}
-
-.route-legend__swatch--buoys {
-  background: linear-gradient(90deg, #d56d66 0 50%, var(--color-track) 50%);
-}
-
-.route-legend__swatch--surface {
-  border-radius: 2px;
-  border-color: var(--color-track);
-  background: rgba(111, 229, 183, 0.12);
-}
-
-.route-legend__swatch--underwater {
-  border-radius: 2px;
-  border-color: var(--color-accent);
-  background: rgba(50, 213, 232, 0.12);
-}
-
-.route-legend__swatch--dock {
-  background: #4f9eb1;
-}
 
 
 .mission-stage {
@@ -711,6 +655,72 @@ h2 {
   display: flex;
   align-items: center;
   margin-bottom: 0.8rem;
+}
+.mission-stage__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.mission-stage__demo-badge {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid rgba(237, 196, 107, 0.32);
+  border-radius: var(--radius-sm);
+  background: rgba(237, 196, 107, 0.08);
+  text-align: right;
+}
+
+.mission-stage__demo-badge strong {
+  color: var(--color-mission-active);
+  font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+}
+
+.mission-stage__demo-badge span {
+  color: var(--color-text-muted);
+  font-size: 0.61rem;
+}
+
+.mission-stage__controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-bottom: 0.9rem;
+}
+
+.mission-stage__controls button,
+.mission-stage__step-button {
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-inset);
+  color: var(--color-text-secondary);
+  font: inherit;
+  cursor: pointer;
+}
+
+.mission-stage__controls button {
+  padding: 0.45rem 0.65rem;
+  font-size: 0.66rem;
+}
+
+.mission-stage__controls button:first-child {
+  border-color: rgba(237, 196, 107, 0.55);
+  color: var(--color-mission-active);
+}
+
+.mission-stage__controls button:hover:not(:disabled),
+.mission-stage__step-button:hover {
+  border-color: var(--color-accent);
+  color: var(--color-text-bright);
+}
+
+.mission-stage__controls button:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
 }
 
 .mission-stage__summary {
@@ -761,17 +771,35 @@ h2 {
 }
 
 .mission-stage__item {
-  position: relative;
-  display: grid;
-  gap: 0.48rem;
   min-width: 0;
-  padding: 0.65rem 0.55rem;
-  border-top: 2px solid var(--color-border-strong);
+  padding: 0;
 }
 
-.mission-stage__item--current {
+.mission-stage__step-button {
+  display: grid;
+  grid-template-columns: 1.4rem minmax(0, 1fr);
+  gap: 0.45rem;
+  width: 100%;
+  min-height: 5.4rem;
+  padding: 0.65rem 0.55rem;
+  border-top: 2px solid var(--color-border-strong);
+  text-align: left;
+}
+
+.mission-stage__step-button > span:last-child {
+  display: grid;
+  align-content: start;
+  gap: 0.25rem;
+}
+
+.mission-stage__step-button--current {
   border-top-color: var(--color-mission-active);
   background: linear-gradient(180deg, rgba(237, 196, 107, 0.08), transparent);
+}
+
+.mission-stage__step-button--current .mission-stage__step,
+.mission-stage__step-button--current strong {
+  color: var(--color-mission-active);
 }
 
 .mission-stage__step {
@@ -781,15 +809,6 @@ h2 {
   font-weight: 700;
 }
 
-.mission-stage__item--current .mission-stage__step,
-.mission-stage__item--current strong {
-  color: var(--color-mission-active);
-}
-
-.mission-stage__item div {
-  display: grid;
-  gap: 0.25rem;
-}
 
 .mission-stage__item strong {
   overflow-wrap: anywhere;
@@ -798,7 +817,7 @@ h2 {
   line-height: 1.25;
 }
 
-.mission-stage__item div span {
+.mission-stage__step-button > span:last-child > span {
   color: var(--color-text-muted);
   font-size: 0.64rem;
   line-height: 1.35;
@@ -969,24 +988,68 @@ h2 {
 }
 
 @media (min-width: 60.0625rem) {
+  html,
+  body,
+  #app {
+    height: 100%;
+    overflow: hidden;
+  }
+
   .dashboard-shell {
-    box-sizing: border-box;
-    min-height: 100vh;
-    height: auto;
-    overflow: visible;
+    position: relative;
+    width: 100%;
+    height: 100dvh;
+    min-height: 0;
+    margin: 0;
+    padding: 0.5rem;
+    overflow: hidden;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+    grid-template-rows: auto minmax(0, 1fr) auto auto;
+    grid-template-areas:
+      "connection connection"
+      "overview map"
+      "mission mission"
+      "footer footer";
+    gap: 0.5rem;
   }
-
-  .dashboard-grid,
-  .navigation-map,
-  .mission-stage,
-  .dashboard-shell__footer {
-    grid-row: auto;
-  }
-
 
   .connection-bar {
-    min-height: 3.125rem;
-    padding: 0.55rem 0.8rem;
+    grid-area: connection;
+    min-height: 2.5rem;
+    padding: 0.35rem 0.65rem;
+  }
+
+  .dashboard-grid {
+    grid-area: overview;
+  }
+
+  .navigation-map {
+    grid-area: map;
+  }
+
+  .mission-stage {
+    grid-area: mission;
+    display: grid;
+    grid-template-columns: minmax(15rem, 0.9fr) minmax(18rem, 1.2fr) minmax(17rem, 1fr);
+    grid-template-areas:
+      "mission-header mission-summary mission-controls"
+      "mission-timeline mission-timeline mission-timeline"
+      "mission-targets mission-readout mission-readout";
+    gap: 0.35rem 0.5rem;
+  }
+
+  .dashboard-shell__footer {
+    grid-area: footer;
+  }
+
+  .dashboard-shell__alert {
+    position: absolute;
+    z-index: 4;
+    top: 3.35rem;
+    right: 0.5rem;
+    left: 0.5rem;
+    padding: 0.45rem 0.65rem;
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.32);
   }
 
   .dashboard-grid,
@@ -995,44 +1058,201 @@ h2 {
   .camera-stage,
   .underwater-fallback,
   .signal-rail,
-  .telemetry-panel {
+  .telemetry-panel,
+  .navigation-map,
+  .navigation-map__layout,
+  .navigation-map__canvas {
+    min-width: 0;
     min-height: 0;
+  }
+
+  .dashboard-grid {
+    height: 100%;
+    grid-template-columns: minmax(0, 1.75fr) minmax(11rem, 0.65fr);
+    gap: 0.5rem;
+    overflow: hidden;
+  }
+
+  .dashboard-grid__cameras {
+    height: 100%;
+    grid-template-columns: minmax(0, 1.6fr) minmax(10rem, 0.8fr);
+    gap: 0.5rem;
+    overflow: hidden;
+  }
+
+  .dashboard-grid__side {
+    height: 100%;
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+    align-content: stretch;
+    gap: 0.5rem;
+    overflow: hidden;
   }
 
   .camera-stage,
   .underwater-fallback,
-  .underwater-fallback__frame {
+  .signal-rail,
+  .telemetry-panel,
+  .navigation-map,
+  .mission-stage {
+    overflow: hidden;
+  }
+
+  .camera-stage,
+  .underwater-fallback,
+  .underwater-fallback__frame,
+  .navigation-map {
     display: flex;
-    flex: 1;
     flex-direction: column;
   }
 
+  .camera-stage,
+  .underwater-fallback,
+  .navigation-map,
+  .mission-stage,
+  .telemetry-panel {
+    padding: 0.55rem;
+  }
+
+  .panel-heading {
+    margin-bottom: 0.4rem;
+  }
+
+  .camera-stage__media,
   .camera-stage__placeholder,
+  .underwater-fallback__stream,
   .underwater-fallback__empty,
-  .underwater-fallback__frame {
+  .underwater-fallback__frame,
+  .underwater-fallback__frame img,
+  .navigation-map__layout,
+  .navigation-map__canvas {
+    flex: 1;
     min-height: 0;
   }
 
-  .camera-stage__placeholder,
-  .underwater-fallback__empty,
-  .underwater-fallback__frame img {
-    flex: 1;
+  .camera-stage__media {
+    display: flex;
   }
 
   .camera-stage__stream,
   .underwater-fallback__stream,
   .underwater-fallback__frame img {
+    width: 100%;
+    height: 100%;
     min-height: 0;
+    aspect-ratio: auto;
+    object-fit: contain;
+  }
+
+  .camera-stage__metadata-bar {
+    margin-top: 0.35rem;
+  }
+
+  .underwater-fallback__frame img {
+    flex: 1;
+  }
+
+  .underwater-fallback figcaption {
+    padding-top: 0.3rem;
+  }
+
+  .navigation-map__layout {
+    display: flex;
+  }
+
+  .navigation-map__canvas {
+    height: 100%;
+  }
+
+  .signal-rail {
+    min-height: 0;
+    padding: 0.55rem;
   }
 
   .signal-list {
-    margin-top: 0.75rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 0.45rem;
+    margin-top: 0.45rem;
   }
 
   .signal-list div {
-    padding: 0.55rem 0;
+    gap: 0.18rem;
+    padding: 0.35rem 0;
   }
 
+  .telemetry-card {
+    padding: 0.45rem;
+  }
+
+  .telemetry-card dd {
+    margin-top: 0.25rem;
+  }
+
+  .mission-stage__header {
+    grid-area: mission-header;
+    align-items: center;
+  }
+
+  .mission-stage__header .panel-heading {
+    margin-bottom: 0;
+  }
+
+  .mission-stage__demo-badge {
+    padding: 0.3rem 0.45rem;
+  }
+
+  .mission-stage__summary {
+    grid-area: mission-summary;
+    gap: 0.4rem;
+    margin-bottom: 0;
+  }
+
+  .mission-stage__summary > div {
+    gap: 0.15rem;
+    padding: 0.35rem 0.5rem;
+  }
+
+  .mission-stage__controls {
+    grid-area: mission-controls;
+    align-content: center;
+    justify-content: flex-end;
+    gap: 0.35rem;
+    margin-bottom: 0;
+  }
+
+  .mission-stage__controls button {
+    padding: 0.3rem 0.5rem;
+  }
+
+  .mission-stage__timeline {
+    grid-area: mission-timeline;
+    gap: 0.3rem;
+  }
+
+  .mission-stage__step-button {
+    grid-template-columns: 1.2rem minmax(0, 1fr);
+    gap: 0.3rem;
+    min-height: 4rem;
+    padding: 0.4rem;
+  }
+
+  .mission-stage__targets {
+    grid-area: mission-targets;
+    gap: 0.4rem;
+    margin-top: 0;
+    padding-top: 0.35rem;
+  }
+
+  .mission-stage__readout {
+    grid-area: mission-readout;
+    align-self: center;
+    justify-content: flex-end;
+    margin-top: 0;
+  }
+
+  .dashboard-shell__footer {
+    padding: 0.3rem 0.65rem;
+    font-size: 0.58rem;
+  }
 }
 
 @media (min-width: 60.0625rem) and (max-height: 40rem) {
