@@ -368,10 +368,6 @@ export function NavigationMap({
         </div>
         {previewMode ? (
           <div className="navigation-map__heading-tools">
-            <div className="navigation-map__site-heading">
-              <strong>{kolamDeliSite.name}</strong>
-              <span>{kolamDeliSite.locality}</span>
-            </div>
             <div
               className="navigation-map__view-switch"
               role="group"
@@ -423,9 +419,6 @@ export function NavigationMap({
                   data-testid="site-context"
                 >
                   <div className="navigation-map__site-hud-copy">
-                    <span className="navigation-map__site-kicker">
-                      ON-SITE TEST
-                    </span>
                     <strong>{kolamDeliSite.name.toUpperCase()}</strong>
                     <small>{kolamDeliSite.locality.toUpperCase()}</small>
                   </div>

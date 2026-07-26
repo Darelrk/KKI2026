@@ -480,38 +480,6 @@ h2 {
   margin-left: auto;
 }
 
-.navigation-map__site-heading {
-  display: grid;
-  min-width: 0;
-  gap: 0.08rem;
-  text-align: right;
-}
-
-.navigation-map__site-heading strong,
-.navigation-map__site-heading span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.navigation-map__site-heading strong {
-  color: var(--color-accent);
-  font-family:
-    'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 0.62rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.navigation-map__site-heading span {
-  color: var(--color-text-muted);
-  font-family:
-    'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 0.52rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
 .navigation-map__view-switch {
   display: inline-flex;
   flex: none;
@@ -775,20 +743,10 @@ h2 {
 }
 
 .navigation-map__site-hud-copy strong,
-.navigation-map__site-hud-copy small,
-.navigation-map__site-kicker {
+.navigation-map__site-hud-copy small {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.navigation-map__site-kicker {
-  color: var(--color-success);
-  font-family:
-    'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 0.46rem;
-  font-weight: 800;
-  letter-spacing: 0.12em;
 }
 
 .navigation-map__site-hud-copy strong {
@@ -1138,10 +1096,6 @@ h2 {
 @media (max-width: 38rem) {
   .navigation-map__heading-tools {
     gap: 0.35rem;
-  }
-
-  .navigation-map__site-heading {
-    display: none;
   }
 
   .navigation-map__readout {
