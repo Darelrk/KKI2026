@@ -11,7 +11,9 @@ function createWrapper() {
   })
 
   return function QueryWrapper({ children }: PropsWithChildren) {
-    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    return (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    )
   }
 }
 
@@ -23,22 +25,33 @@ describe('DashboardClient', () => {
 
     expect(await screen.findByText('MODEL RUNNING')).toBeInTheDocument()
     expect(screen.getByText('MODEL MONITORING')).toBeInTheDocument()
+    expect(screen.getByText('Autonomy target')).toBeInTheDocument()
     expect(screen.getByText('AUTO / ONBOARD')).toBeInTheDocument()
-    expect(screen.queryByText(/RC MANUAL/i)).not.toBeInTheDocument()
-    expect(screen.getByRole('img', { name: 'Live surface camera' })).toHaveAttribute(
+    expect(screen.queryByText(/RC MANUAL|MAVLink/i)).not.toBeInTheDocument()
+    expect(
+      screen.getByRole('img', { name: 'Live surface camera' }),
+    ).toHaveAttribute(
       'src',
       'https://monitor-kapal-pora-pora.web.id/stream/atas',
     )
-    expect(screen.getByRole('img', { name: 'Live underwater action camera' })).toHaveAttribute(
+    expect(
+      screen.getByRole('img', { name: 'Live underwater action camera' }),
+    ).toHaveAttribute(
       'src',
       'https://monitor-kapal-pora-pora.web.id/stream/bawah',
     )
-    expect(screen.getByRole('heading', { name: 'Mission route' })).toBeInTheDocument()
-    expect(screen.getByText('GPS position available')).toBeInTheDocument()
-    expect(screen.getByText('GPS track · 3 points')).toBeInTheDocument()
     expect(
-      within(screen.getByRole('region', { name: 'Mission route' })).queryByText('MISSION MOCKUP'),
+      screen.getByRole('heading', { name: 'Mission route' }),
+    ).toBeInTheDocument()
+    expect(screen.getByText(/Lintasan A · \d+%/)).toBeInTheDocument()
+    expect(
+      screen.getByText('ASV navigation · mission active'),
+    ).toBeInTheDocument()
+    expect(
+      within(screen.getByRole('region', { name: 'Mission route' })).queryByText(
+        'MISSION MOCKUP',
+      ),
     ).not.toBeInTheDocument()
-    expect(screen.getByRole('status')).toHaveTextContent('Standby')
+    expect(screen.getByRole('status')).toHaveTextContent('Mission route active')
   })
 })

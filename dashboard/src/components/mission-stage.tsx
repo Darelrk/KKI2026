@@ -1,9 +1,7 @@
 import { Flag } from '@phosphor-icons/react'
 
-import {
-  formatMissionTime,
-  missionStages,
-} from '../lib/mission-simulation'
+import { formatMissionTime, missionStages } from '../lib/mission-simulation'
+import { kolamDeliSite } from '../lib/mission-site'
 
 import type { MissionSimulationController } from '../lib/use-mission-simulation'
 
@@ -15,9 +13,9 @@ export function MissionStage({ simulation }: MissionStageProps) {
   const currentStage = missionStages[simulation.stageIndex]
   const statusCopy = {
     idle: 'Standby',
-    running: 'Simulation replay running',
-    paused: 'Simulation paused',
-    complete: 'Simulation replay complete',
+    running: 'Mission route active',
+    paused: 'Mission route paused',
+    complete: 'Mission complete',
   }[simulation.status]
 
   return (
@@ -31,46 +29,47 @@ export function MissionStage({ simulation }: MissionStageProps) {
           </div>
         </div>
         <div className="mission-stage__demo-badge">
-          <strong>SIMULATION / DEMO</strong>
+          <strong>ASV MISSION CONTROL</strong>
+          <span>{kolamDeliSite.name.toUpperCase()} · LINTASAN A</span>
         </div>
       </div>
 
       <div className="mission-stage__summary">
         <div>
-          <span className="mission-stage__label">Preview phase</span>
+          <span className="mission-stage__label">Mission phase</span>
           <strong>{currentStage.label}</strong>
           <small>{statusCopy}</small>
         </div>
         <div>
-          <span className="mission-stage__label">Replay timer</span>
+          <span className="mission-stage__label">Mission timer</span>
           <strong>{formatMissionTime(simulation.elapsedMs)}</strong>
         </div>
       </div>
 
-      <div className="mission-stage__controls" aria-label="Simulation controls">
+      <div className="mission-stage__controls" aria-label="Mission controls">
         <button
           type="button"
           onClick={simulation.start}
           disabled={simulation.status === 'running'}
         >
-          Start simulation
+          Start mission
         </button>
         <button
           type="button"
           onClick={simulation.pause}
           disabled={simulation.status !== 'running'}
         >
-          Pause simulation
+          Pause mission
         </button>
         <button
           type="button"
           onClick={simulation.stop}
           disabled={simulation.status === 'idle'}
         >
-          Stop simulation
+          Stop mission
         </button>
         <button type="button" onClick={simulation.reset}>
-          Reset simulation
+          Reset mission
         </button>
       </div>
 
@@ -79,15 +78,21 @@ export function MissionStage({ simulation }: MissionStageProps) {
           <li key={stage.id} className="mission-stage__item">
             <button
               type="button"
-              className={
+              className={`mission-stage__step-button${
                 index === simulation.stageIndex
-                  ? 'mission-stage__step-button mission-stage__step-button--current'
-                  : 'mission-stage__step-button'
-              }
+                  ? ' mission-stage__step-button--current'
+                  : simulation.progress > stage.routeProgress &&
+                      index !== simulation.stageIndex
+                    ? ' mission-stage__step-button--complete'
+                    : ''
+              }`}
               onClick={() => simulation.selectStage(index)}
               aria-pressed={index === simulation.stageIndex}
+              aria-label={`Jump to ${stage.label}`}
             >
-              <span className="mission-stage__step">{String(index + 1).padStart(2, '0')}</span>
+              <span className="mission-stage__step">
+                {String(index + 1).padStart(2, '0')}
+              </span>
               <span>
                 <strong>{stage.label}</strong>
                 <span>{stage.detail}</span>

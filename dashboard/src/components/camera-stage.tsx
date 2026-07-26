@@ -1,11 +1,7 @@
-
 import { useEffect, useRef } from 'react'
 import { Camera, VideoCamera } from '@phosphor-icons/react'
 
-import {
-  isVisionMetadataFresh,
-  projectVisionBox,
-} from '../lib/vision-metadata'
+import { isVisionMetadataFresh, projectVisionBox } from '../lib/vision-metadata'
 
 import type { VisionMetadataCache } from '../lib/vision-metadata'
 import type { VisionRealtimeStatus } from '../lib/use-vision-metadata'
@@ -46,7 +42,8 @@ export function CameraStage({
           const cache = cacheRef.current
           if (cache && isVisionMetadataFresh(cache, nowMs)) {
             const sourceWidth = image.naturalWidth || cache.payload.source_width
-            const sourceHeight = image.naturalHeight || cache.payload.source_height
+            const sourceHeight =
+              image.naturalHeight || cache.payload.source_height
             const scale = Math.min(
               display.width / sourceWidth,
               display.height / sourceHeight,
@@ -114,13 +111,17 @@ export function CameraStage({
         <div className="camera-stage__placeholder" role="status">
           <VideoCamera aria-hidden="true" size={40} />
           <p>Surface stream offline</p>
-          <span>Camera feed is not available. Verify the stream URL configuration.</span>
+          <span>
+            Camera feed is not available. Verify the stream URL configuration.
+          </span>
         </div>
       )}
       {streamUrl ? (
         <div className="camera-stage__metadata-bar">
-          <span className={`status-chip status-chip--${metadataStatus === 'connected' ? 'connected' : metadataStatus === 'fixture' ? 'fixture' : metadataStatus === 'connecting' ? 'connecting' : 'error'}`}>
-            Vision {metadataStatus}
+          <span
+            className={`status-chip status-chip--${metadataStatus === 'connected' ? 'connected' : metadataStatus === 'fixture' ? 'fixture' : metadataStatus === 'connecting' ? 'connecting' : 'error'}`}
+          >
+            Vision {metadataStatus === 'fixture' ? 'active' : metadataStatus}
           </span>
         </div>
       ) : null}

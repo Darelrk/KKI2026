@@ -9,7 +9,7 @@ type ConnectionBarProps = {
 }
 
 const statusCopy: Record<ConnectionStatus, string> = {
-  fixture: 'Local mode',
+  fixture: 'On-site test',
   connecting: 'Connecting',
   connected: 'Live realtime',
   error: 'Realtime delayed',
@@ -25,10 +25,18 @@ export function ConnectionBar({ asvId, online, status }: ConnectionBarProps) {
         <span>ASV / {asvId}</span>
       </div>
       <div className="connection-bar__signals">
-        <span className={online ? 'status-chip status-chip--online' : 'status-chip status-chip--offline'}>
+        <span
+          className={
+            online
+              ? 'status-chip status-chip--online'
+              : 'status-chip status-chip--offline'
+          }
+        >
           {online ? 'ASV online' : 'ASV offline'}
         </span>
-        <span className={`status-chip status-chip--${status}`}>{statusCopy[status]}</span>
+        <span className={`status-chip status-chip--${status}`}>
+          {statusCopy[status]}
+        </span>
       </div>
     </section>
   )

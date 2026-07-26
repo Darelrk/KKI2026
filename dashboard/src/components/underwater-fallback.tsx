@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Waves } from '@phosphor-icons/react'
 
 import type { UnderwaterFrame } from '../lib/asv-types'
@@ -7,9 +8,23 @@ type UnderwaterFallbackProps = {
   streamUrl: string | null
 }
 
-export function UnderwaterFallback({ frame, streamUrl }: UnderwaterFallbackProps) {
+export function UnderwaterFallback({
+  frame,
+  streamUrl,
+}: UnderwaterFallbackProps) {
+  const [streamFailed, setStreamFailed] = useState(false)
+
+  useEffect(() => {
+    setStreamFailed(false)
+  }, [streamUrl])
+
+  const activeStreamUrl = streamUrl && !streamFailed ? streamUrl : null
+
   return (
-    <section className="underwater-fallback" aria-labelledby="underwater-camera-title">
+    <section
+      className="underwater-fallback"
+      aria-labelledby="underwater-camera-title"
+    >
       <div className="panel-heading">
         <Waves aria-hidden="true" />
         <div>
@@ -18,11 +33,12 @@ export function UnderwaterFallback({ frame, streamUrl }: UnderwaterFallbackProps
         </div>
       </div>
 
-      {streamUrl ? (
+      {activeStreamUrl ? (
         <img
           className="underwater-fallback__stream"
-          src={streamUrl}
+          src={activeStreamUrl}
           alt="Live underwater action camera"
+          onError={() => setStreamFailed(true)}
         />
       ) : frame ? (
         <figure className="underwater-fallback__frame">
@@ -32,14 +48,18 @@ export function UnderwaterFallback({ frame, streamUrl }: UnderwaterFallbackProps
           />
           <figcaption>
             <span>{frame.frame_id}</span>
-            <time dateTime={frame.captured_at}>{new Date(frame.captured_at).toLocaleTimeString()}</time>
+            <time dateTime={frame.captured_at}>
+              {new Date(frame.captured_at).toLocaleTimeString()}
+            </time>
           </figcaption>
         </figure>
       ) : (
         <div className="underwater-fallback__empty" role="status">
           <Waves aria-hidden="true" size={32} />
           <p>Underwater feed offline</p>
-          <span>Waiting for the latest underwater frame from the realtime channel.</span>
+          <span>
+            Waiting for the latest underwater frame from the realtime channel.
+          </span>
         </div>
       )}
     </section>

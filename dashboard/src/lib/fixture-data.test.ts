@@ -6,6 +6,8 @@ import {
   fixtureVisionMetadata,
   getFixtureAsvLive,
 } from './fixture-data'
+import { missionRouteHeading } from './mission-simulation'
+import { kolamDeliSite } from './mission-site'
 
 describe('ASV fixture data', () => {
   it('returns a running surface status for the requested ASV', () => {
@@ -17,7 +19,6 @@ describe('ASV fixture data', () => {
       stream_url: null,
     })
   })
-
 
   it('provides a valid deterministic vision metadata fixture', () => {
     expect(fixtureVisionMetadata).toMatchObject({
@@ -32,7 +33,9 @@ describe('ASV fixture data', () => {
       mime: 'image/jpeg',
       frame_id: 'fixture-underwater-001',
     })
-    expect(fixtureUnderwaterFrame.data_base64.length).toBeLessThanOrEqual(180_000)
+    expect(fixtureUnderwaterFrame.data_base64.length).toBeLessThanOrEqual(
+      180_000,
+    )
     const jpeg = Buffer.from(fixtureUnderwaterFrame.data_base64, 'base64')
     expect(jpeg.subarray(0, 2).toString('hex')).toBe('ffd8')
     expect(jpeg.subarray(-2).toString('hex')).toBe('ffd9')
@@ -40,8 +43,15 @@ describe('ASV fixture data', () => {
   it('provides a synthetic three-point GPS fixture path', () => {
     expect(fixtureTelemetry.track).toHaveLength(3)
     expect(fixtureTelemetry.position).toEqual(fixtureTelemetry.track.at(-1))
-    expect(fixtureTelemetry.heading_deg).toBe(144)
-    expect(fixtureTelemetry.speed_mps).toBeGreaterThanOrEqual(0)
+    expect(fixtureTelemetry.heading_deg).toBe(missionRouteHeading(1))
+    expect(fixtureTelemetry.speed_mps).toBe(0)
+    expect(fixtureTelemetry.position.latitude).toBeCloseTo(
+      kolamDeliSite.center.latitude,
+      3,
+    )
+    expect(fixtureTelemetry.position.longitude).toBeCloseTo(
+      kolamDeliSite.center.longitude,
+      3,
+    )
   })
-
 })

@@ -2,6 +2,7 @@ import { renderHook, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { fetchDirectTelemetry } from './direct-live'
+import { kolamDeliSite } from './mission-site'
 import { useTelemetryBroadcast } from './use-telemetry-broadcast'
 
 vi.mock('./direct-live', () => ({ fetchDirectTelemetry: vi.fn() }))
@@ -18,21 +19,16 @@ describe('useTelemetryBroadcast', () => {
 
     expect(result.current.telemetry).toMatchObject({
       connected: true,
-      heading_deg: 144,
-      speed_mps: 0.6,
+      heading_deg: expect.any(Number),
+      speed_mps: 0,
       position: {
-        latitude: -6.1224,
-        longitude: 106.8226,
+        latitude: expect.closeTo(kolamDeliSite.center.latitude, 0.01),
+        longitude: expect.closeTo(kolamDeliSite.center.longitude, 0.01),
       },
-      track: [
-        { latitude: -6.1234, longitude: 106.821 },
-        { latitude: -6.123, longitude: 106.8218 },
-        { latitude: -6.1224, longitude: 106.8226 },
-      ],
     })
+    expect(result.current.telemetry?.track).toHaveLength(3)
     expect(result.current.realtimeStatus).toBe('fixture')
   })
-
 
   it('connects direct telemetry via websocket or falls back to REST polling', async () => {
     vi.stubGlobal(

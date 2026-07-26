@@ -15,23 +15,30 @@ const simulation = {
   pause: vi.fn(),
   stop: vi.fn(),
   reset: vi.fn(),
+  selectStage: vi.fn(),
 } as unknown as MissionSimulationController
 
 describe('MissionStage', () => {
-  it('renders local simulation controls without claiming real autonomy', () => {
+  it('renders ASV mission controls without development disclaimers', () => {
     render(<MissionStage simulation={simulation} />)
 
-    expect(screen.getByRole('heading', { name: 'Mission sequence' })).toBeInTheDocument()
-    expect(screen.getByText('SIMULATION / DEMO')).toBeInTheDocument()
-    expect(screen.queryByText(/LOCAL UI REPLAY|MAVLink commands/i)).not.toBeInTheDocument()
-    expect(screen.queryByText(/RC MANUAL/i)).not.toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'Mission sequence' }),
+    ).toBeInTheDocument()
+    expect(screen.getByText('ASV MISSION CONTROL')).toBeInTheDocument()
+    expect(
+      screen.queryByText(/SIMULATION|DEMO|RC MANUAL|MAVLink/i),
+    ).not.toBeInTheDocument()
     expect(screen.queryByText(/proposal route/i)).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Start simulation' })).toBeEnabled()
-    expect(screen.getByRole('button', { name: 'Pause simulation' })).toBeDisabled()
-    expect(screen.getByRole('button', { name: 'Stop simulation' })).toBeDisabled()
-    expect(screen.getByRole('button', { name: 'Reset simulation' })).toBeEnabled()
+    expect(screen.getByRole('button', { name: 'Start mission' })).toBeEnabled()
+    expect(screen.getByRole('button', { name: 'Pause mission' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Stop mission' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Reset mission' })).toBeEnabled()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Start simulation' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Start mission' }))
     expect(simulation.start).toHaveBeenCalledOnce()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Jump to Navigation' }))
+    expect(simulation.selectStage).toHaveBeenCalledWith(2)
   })
 })

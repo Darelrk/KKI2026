@@ -54,6 +54,7 @@ export function DashboardClient({ asvId, mode }: DashboardClientProps) {
   return (
     <DashboardShell
       asvId={asvId}
+      mode={mode}
       live={liveQuery.data}
       liveRealtimeStatus={liveQuery.realtimeStatus}
       underwaterFrame={underwater.frame}

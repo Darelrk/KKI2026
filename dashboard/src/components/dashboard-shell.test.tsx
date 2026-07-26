@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, render, screen, within } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 
 import { DashboardShell } from './dashboard-shell'
@@ -46,6 +46,35 @@ const telemetry = {
 } satisfies AsvTelemetry
 
 describe('DashboardShell', () => {
+  it('binds the on-site fixture to the Kolam Deli coordinate stream', () => {
+    render(
+      <DashboardShell
+        asvId="default"
+        mode="fixture"
+        live={liveStatus}
+        liveRealtimeStatus="fixture"
+        telemetry={telemetry}
+        telemetryRealtimeStatus="fixture"
+        underwaterFrame={underwaterFrame}
+        underwaterRealtimeStatus="fixture"
+      />,
+    )
+
+    expect(
+      screen.queryByRole('link', {
+        name: 'Open Kolam Deli test location in Google Maps',
+      }),
+    ).not.toBeInTheDocument()
+    expect(
+      within(
+        screen.getByRole('region', { name: 'Attitude telemetry' }),
+      ).getByText(/^3\.\d{6}, 98\.\d{6}$/),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText('Test site: Kolam Deli · Lintasan A'),
+    ).toBeInTheDocument()
+  })
+
   it('renders raw main and underwater camera streams instead of model output', () => {
     render(
       <DashboardShell
@@ -57,15 +86,21 @@ describe('DashboardShell', () => {
       />,
     )
 
-    expect(screen.getByRole('img', { name: 'Live surface camera' })).toHaveAttribute(
+    expect(
+      screen.getByRole('img', { name: 'Live surface camera' }),
+    ).toHaveAttribute(
       'src',
       'https://monitor-kapal-pora-pora.web.id/stream/atas',
     )
-    expect(screen.getByRole('img', { name: 'Live underwater action camera' })).toHaveAttribute(
+    expect(
+      screen.getByRole('img', { name: 'Live underwater action camera' }),
+    ).toHaveAttribute(
       'src',
       'https://monitor-kapal-pora-pora.web.id/stream/bawah',
     )
-    expect(screen.queryByRole('img', { name: 'Latest underwater frame' })).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('img', { name: 'Latest underwater frame' }),
+    ).not.toBeInTheDocument()
   })
 
   it('uses the Realtime underwater frame when no raw stream is configured', () => {
@@ -80,7 +115,9 @@ describe('DashboardShell', () => {
       />,
     )
 
-    expect(screen.getByRole('img', { name: 'Latest underwater frame' })).toHaveAttribute(
+    expect(
+      screen.getByRole('img', { name: 'Latest underwater frame' }),
+    ).toHaveAttribute(
       'src',
       `data:image/jpeg;base64,${underwaterFrame.data_base64}`,
     )

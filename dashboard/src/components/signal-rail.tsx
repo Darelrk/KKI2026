@@ -1,5 +1,7 @@
 import { CheckCircle, WarningCircle } from '@phosphor-icons/react'
 
+import { formatSiteTime } from '../lib/format-site-time'
+
 import type { AsvLive } from '../lib/asv-types'
 import type { ConnectionStatus } from './connection-bar'
 
@@ -9,7 +11,6 @@ type SignalRailProps = {
   telemetryStatus: ConnectionStatus
 }
 
-
 export function SignalRail({
   live,
   telemetryConnected,
@@ -18,7 +19,7 @@ export function SignalRail({
   const modelStatus = live?.model_status ?? 'offline'
   const isRunning = live?.online && modelStatus === 'running'
   const telemetryStatusCopy = {
-    fixture: 'Local mode',
+    fixture: 'Connected',
     connecting: 'Connecting',
     connected: 'Connected',
     error: 'Error',
@@ -27,7 +28,11 @@ export function SignalRail({
   return (
     <aside className="signal-rail" aria-label="Operational signal summary">
       <div className="signal-rail__status">
-        {isRunning ? <CheckCircle weight="fill" /> : <WarningCircle weight="fill" />}
+        {isRunning ? (
+          <CheckCircle weight="fill" />
+        ) : (
+          <WarningCircle weight="fill" />
+        )}
         <div>
           <p className="eyebrow">MODEL MONITORING</p>
           <strong>MODEL {modelStatus.toUpperCase()}</strong>
@@ -45,11 +50,7 @@ export function SignalRail({
         </div>
         <div>
           <dt>Last update</dt>
-          <dd>
-            {live
-              ? live.updated_at.replace('T', ' ').replace(/\.\d+Z$/, ' UTC')
-              : 'Awaiting status'}
-          </dd>
+          <dd>{live ? formatSiteTime(live.updated_at) : 'Awaiting status'}</dd>
         </div>
         <div>
           <dt>Navigation feed</dt>
