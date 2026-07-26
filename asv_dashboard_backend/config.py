@@ -77,11 +77,11 @@ class BridgeSettings:
             pixhawk_baud=_int_env("ASV_PIXHAWK_BAUD", 115_200),
             pixhawk_update_hz=_float_env("ASV_PIXHAWK_UPDATE_HZ", 1.0),
             pixhawk_heartbeat_timeout=_float_env(
-                "ASV_PIXHAWK_HEARTBEAT_TIMEOUT", 3.0
+                "ASV_PIXHAWK_HEARTBEAT_TIMEOUT", 1.0
             ),
             pixhawk_track_max_points=_int_env("ASV_PIXHAWK_TRACK_MAX_POINTS", 500),
             pixhawk_reconnect_seconds=_float_env(
-                "ASV_PIXHAWK_RECONNECT_SECONDS", 3.0
+                "ASV_PIXHAWK_RECONNECT_SECONDS", 0.5
             ),
         )
 
