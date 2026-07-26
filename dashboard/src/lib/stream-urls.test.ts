@@ -60,3 +60,4 @@ describe('resolveAsvStreamUrls', () => {
     ).toBe('wss://telemetry.example.test')
     expect(resolveAsvTelemetryWsUrl({})).toBe('wss://monitor-kapal-pora-pora.web.id')
   })
+})
