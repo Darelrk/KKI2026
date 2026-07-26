@@ -62,6 +62,10 @@ export function SignalRail({
           </dd>
         </div>
         <div>
+          <dt>Autonomy target</dt>
+          <dd>AUTO / ONBOARD</dd>
+        </div>
+        <div>
           <dt>Control source</dt>
           <dd>RC MANUAL</dd>
         </div>

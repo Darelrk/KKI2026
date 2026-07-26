@@ -5,12 +5,9 @@ import { fetchDirectTelemetry } from './direct-live'
 import { asvTelemetrySchema } from './asv-telemetry'
 import { fixtureTelemetry } from './fixture-data'
 import { asvBridgeUrl, asvTelemetryWsUrl } from './stream-urls'
-import { getSupabaseBrowser } from './supabase-browser'
-import { ensureSupabaseRealtimeAuth } from './supabase-realtime-auth'
 
 import type { AsvDataMode } from './asv-data-mode'
 import type { AsvTelemetry } from './asv-telemetry'
-import type { RealtimeChannel } from '@supabase/supabase-js'
 
 export type TelemetryRealtimeStatus =
   | 'fixture'
@@ -119,45 +116,8 @@ export function useTelemetryBroadcast(
         window.clearTimeout(pollTimer)
       }
     }
-
-    const supabase = getSupabaseBrowser()
-    let cancelled = false
-    let channel: RealtimeChannel | undefined
-
-    async function subscribe() {
-      try {
-        await ensureSupabaseRealtimeAuth(supabase)
-        if (cancelled) {
-          return
-        }
-
-        channel = supabase
-          .channel(`asv-telemetry:${asvId}`, { config: { private: true } })
-          .on('broadcast', { event: 'telemetry' }, ({ payload }) => {
-            const parsed = asvTelemetrySchema.safeParse(payload)
-            if (parsed.success) {
-              setTelemetry(parsed.data)
-            }
-          })
-          .subscribe((status) => {
-            setRealtimeStatus(status === 'SUBSCRIBED' ? 'connected' : 'error')
-          })
-      } catch {
-        if (!cancelled) {
-          setRealtimeStatus('error')
-        }
-      }
-    }
-
-    void subscribe()
-
-    return () => {
-      cancelled = true
-      if (channel) {
-        void supabase.removeChannel(channel)
-      }
-    }
   }, [asvId, mode])
+
 
   return { telemetry, realtimeStatus }
 }

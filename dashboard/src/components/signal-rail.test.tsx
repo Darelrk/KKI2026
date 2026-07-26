@@ -14,7 +14,7 @@ const live = {
 }
 
 describe('SignalRail', () => {
-  it('identifies model monitoring and manual RC control', () => {
+  it('identifies model monitoring and autonomous onboard control', () => {
     render(
       <SignalRail
         live={live}
@@ -25,6 +25,8 @@ describe('SignalRail', () => {
 
     expect(screen.getByText('MODEL MONITORING')).toBeInTheDocument()
     expect(screen.getByText('MODEL RUNNING')).toBeInTheDocument()
+    expect(screen.getByText('Autonomy target')).toBeInTheDocument()
+    expect(screen.getByText('AUTO / ONBOARD')).toBeInTheDocument()
     expect(screen.getByText('Control source')).toBeInTheDocument()
     expect(screen.getByText('RC MANUAL')).toBeInTheDocument()
   })

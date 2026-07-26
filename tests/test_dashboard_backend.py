@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import base64
 from datetime import datetime, timezone
-from unittest.mock import AsyncMock
 
 import pytest
 from fastapi.testclient import TestClient
@@ -11,7 +10,6 @@ from starlette.websockets import WebSocketDisconnect
 from asv_dashboard_backend.config import BridgeSettings
 from asv_dashboard_backend.frames import FrameTooLargeError, build_underwater_payload
 from asv_dashboard_backend.main import create_app
-from asv_dashboard_backend.publisher import NullPublisher
 from asv_dashboard_backend.state import BridgeState, VisionMetadata
 
 SMALL_JPEG = base64.b64decode(
@@ -80,11 +78,8 @@ def test_build_underwater_payload_rejects_non_jpeg() -> None:
         )
 
 
-def test_status_and_frame_endpoints_publish_bounded_payload() -> None:
-    publisher = NullPublisher()
-    publisher.publish_status = AsyncMock()  # type: ignore[method-assign]
-    publisher.publish_underwater_frame = AsyncMock()  # type: ignore[method-assign]
-    app = create_app(settings=settings(), publisher=publisher)
+def test_status_and_frame_endpoints_keep_local_state() -> None:
+    app = create_app(settings=settings())
 
     with TestClient(app) as client:
         health = client.get("/healthz")
@@ -112,12 +107,10 @@ def test_status_and_frame_endpoints_publish_bounded_payload() -> None:
     assert frame.status_code == 200
     assert frame.json()["frame_id"] == "frame-004"
     assert current.json()["run_id"] == "run-001"
-    publisher.publish_status.assert_awaited_once()
-    publisher.publish_underwater_frame.assert_awaited_once()
 
 
 def test_read_endpoints_allow_configured_dashboard_origin() -> None:
-    app = create_app(settings=settings(), publisher=NullPublisher())
+    app = create_app(settings=settings())
 
     with TestClient(app) as client:
         response = client.options(
@@ -135,7 +128,7 @@ def test_read_endpoints_allow_configured_dashboard_origin() -> None:
 
 
 def test_status_endpoint_rejects_wrong_asv_id() -> None:
-    app = create_app(settings=settings(), publisher=NullPublisher())
+    app = create_app(settings=settings())
 
     with TestClient(app) as client:
         response = client.put(
@@ -156,7 +149,7 @@ def test_status_endpoint_rejects_wrong_asv_id() -> None:
 def test_mjpeg_stream_has_http_multipart_shape() -> None:
     state = BridgeState(settings())
     state.update_surface_frame(SMALL_JPEG)
-    app = create_app(settings=settings(), publisher=NullPublisher(), state=state)
+    app = create_app(settings=settings(), state=state)
 
     with TestClient(app) as client:
         response = client.get("/stream.mjpg?once=true")
@@ -190,7 +183,7 @@ def vision_payload(frame_id: int = 1) -> dict[str, object]:
 
 
 def test_vision_metadata_rejects_invalid_schema_and_out_of_bounds_box() -> None:
-    app = create_app(settings=settings(), publisher=NullPublisher())
+    app = create_app(settings=settings())
     payload = vision_payload()
     payload["schema_version"] = 2
     payload["detections"][0]["x"] = 0.9
@@ -203,7 +196,7 @@ def test_vision_metadata_rejects_invalid_schema_and_out_of_bounds_box() -> None:
 
 
 def test_vision_metadata_post_broadcasts_to_websocket() -> None:
-    app = create_app(settings=settings(), publisher=NullPublisher())
+    app = create_app(settings=settings())
     expected = VisionMetadata.model_validate(vision_payload()).model_dump(mode="json")
 
     with TestClient(app) as client:
@@ -224,7 +217,7 @@ def test_vision_state_keeps_only_newest_payload() -> None:
 
 
 def test_vision_metadata_rejects_wrong_asv_id() -> None:
-    app = create_app(settings=settings(), publisher=NullPublisher())
+    app = create_app(settings=settings())
     payload = vision_payload()
     payload["asv_id"] = "other"
 
@@ -235,7 +228,7 @@ def test_vision_metadata_rejects_wrong_asv_id() -> None:
 
 
 def test_vision_websocket_rejects_wrong_asv_id() -> None:
-    app = create_app(settings=settings(), publisher=NullPublisher())
+    app = create_app(settings=settings())
 
     with TestClient(app) as client:
         with pytest.raises(WebSocketDisconnect) as error:
@@ -246,7 +239,7 @@ def test_vision_websocket_rejects_wrong_asv_id() -> None:
 
 def test_telemetry_broadcasts_to_websocket() -> None:
     state = BridgeState(settings())
-    app = create_app(settings=settings(), publisher=NullPublisher(), state=state)
+    app = create_app(settings=settings(), state=state)
     payload = {
         "connected": True,
         "position": {"latitude": 3.5, "longitude": 98.7, "captured_at": "2026-07-25T00:00:00Z"},
@@ -264,7 +257,7 @@ def test_telemetry_broadcasts_to_websocket() -> None:
 
 
 def test_telemetry_websocket_rejects_wrong_asv_id() -> None:
-    app = create_app(settings=settings(), publisher=NullPublisher())
+    app = create_app(settings=settings())
 
     with TestClient(app) as client:
         with pytest.raises(WebSocketDisconnect) as error:
@@ -273,124 +266,3 @@ def test_telemetry_websocket_rejects_wrong_asv_id() -> None:
 
     assert getattr(error.value, "code", None) == 1008
 
-class FakeSupabaseQuery:
-    def __init__(self) -> None:
-        self.rows: list[dict[str, object]] = []
-
-    def upsert(self, row: dict[str, object]) -> FakeSupabaseQuery:
-        self.rows.append(row)
-        return self
-
-    def execute(self) -> None:
-        return None
-
-
-class FakeSupabaseChannel:
-    def __init__(self) -> None:
-        self.subscriptions = 0
-        self.broadcasts: list[tuple[str, dict[str, object]]] = []
-
-    def subscribe(self) -> None:
-        self.subscriptions += 1
-
-    def send_broadcast(self, event: str, payload: dict[str, object]) -> None:
-        self.broadcasts.append((event, payload))
-
-
-class FakeSupabaseClient:
-    def __init__(self) -> None:
-        self.query = FakeSupabaseQuery()
-        self.channel_instance = FakeSupabaseChannel()
-        self.channel_args: tuple[object, ...] | None = None
-
-    def table(self, name: str) -> FakeSupabaseQuery:
-        assert name == "asv_live"
-        return self.query
-
-    def channel(self, *args: object) -> FakeSupabaseChannel:
-        self.channel_args = args
-        return self.channel_instance
-
-    def remove_all_channels(self) -> None:
-        return None
-
-
-def test_supabase_publisher_uses_async_realtime_client_for_frames() -> None:
-    import asyncio
-
-    from asv_dashboard_backend.publisher import SupabasePublisher
-
-    status_client = FakeSupabaseClient()
-    realtime_client = FakeSupabaseClient()
-    publisher = SupabasePublisher(
-        status_client,
-        "default",
-        realtime_client=realtime_client,
-    )
-    payload = {"mime": "image/jpeg", "data_base64": "/9j/", "frame_id": "f-2"}
-
-    async def exercise() -> None:
-        await publisher.publish_status({"id": "default", "online": True})
-        await publisher.publish_underwater_frame(payload)
-        await publisher.close()
-
-    asyncio.run(exercise())
-
-    assert status_client.query.rows == [{"id": "default", "online": True}]
-    assert status_client.channel_args is None
-    assert realtime_client.channel_args == (
-        "asv-camera:default",
-        {"config": {"private": True}},
-    )
-    assert realtime_client.channel_instance.broadcasts == [
-        ("underwater_frame", payload),
-    ]
-
-
-def test_supabase_publisher_does_not_close_sync_realtime_client() -> None:
-    import asyncio
-
-    from asv_dashboard_backend.publisher import SupabasePublisher
-
-    client = FakeSupabaseClient()
-
-    def fail_sync_realtime_close() -> None:
-        raise NotImplementedError("sync Realtime is unavailable")
-
-    client.remove_all_channels = fail_sync_realtime_close  # type: ignore[method-assign]
-    publisher = SupabasePublisher(
-        client,
-        "default",
-        realtime_url="https://example.test",
-        realtime_key="test-key",
-    )
-
-    asyncio.run(publisher.close())
-
-
-def test_supabase_publisher_targets_status_table_and_private_channel() -> None:
-    import asyncio
-
-    from asv_dashboard_backend.publisher import SupabasePublisher
-
-    client = FakeSupabaseClient()
-    publisher = SupabasePublisher(client, "default")
-    payload = {"mime": "image/jpeg", "data_base64": "/9j/", "frame_id": "f-1"}
-
-    async def exercise() -> None:
-        await publisher.publish_status({"id": "default", "online": True})
-        await publisher.publish_underwater_frame(payload)
-        await publisher.publish_underwater_frame(payload)
-
-    asyncio.run(exercise())
-
-    assert client.query.rows == [{"id": "default", "online": True}]
-    assert client.channel_args == (
-        "asv-camera:default",
-        {"config": {"private": True}},
-    )
-    assert client.channel_instance.subscriptions == 1
-    assert client.channel_instance.broadcasts == [
-        ("underwater_frame", payload),
-        ("underwater_frame", payload),
-    ]

@@ -119,9 +119,7 @@ Installer tidak memasang frontend, Node.js, Bun, npm, atau `requirements-dashboa
 
 ## Catatan deployment frontend
 
-Frontend berada di `dashboard/` dan dideploy dari branch `main` oleh Vercel. Perubahan frontend tidak perlu dipasang sebagai service di Raspberry Pi. Pi hanya perlu menjaga publisher/backend telemetry tetap mengirim kontrak di atas.
-
-Jika URL raw camera sudah dikonfigurasi, jangan menggantinya dengan placeholder. Jangan mencetak secret Supabase atau service-role key saat laporan.
+Frontend berada di `dashboard/` dan dideploy dari branch `main` oleh Vercel. Perubahan frontend tidak perlu dipasang sebagai service di Raspberry Pi. Pi hanya menjaga bridge lokal, kamera, dan telemetry Pixhawk tetap aktif.
 
 ## Jalur kamera raw dan metadata vision
 

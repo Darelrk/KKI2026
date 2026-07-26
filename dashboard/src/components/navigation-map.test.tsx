@@ -7,22 +7,19 @@ import { NavigationMap } from './navigation-map'
 afterEach(cleanup)
 
 describe('NavigationMap', () => {
-  it('shows the GPS empty state without mission mockup markers', () => {
+  it('keeps the official mission route visible while GPS is unavailable', () => {
     render(<NavigationMap telemetry={emptyNavigationTelemetry} />)
 
-    expect(screen.getByRole('heading', { name: 'Live boat track' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Mission route' })).toBeInTheDocument()
     expect(screen.getByText('Waiting for GPS fix.')).toBeInTheDocument()
     expect(screen.getByText('GPS position unavailable')).toBeInTheDocument()
     expect(screen.getByText('GPS track unavailable')).toBeInTheDocument()
-    expect(screen.queryByRole('img', { name: 'GPS track plot' })).not.toBeInTheDocument()
-    expect(screen.queryByText('MAP MOCKUP')).not.toBeInTheDocument()
-    expect(screen.queryByText('Venue coordinates unavailable')).not.toBeInTheDocument()
-    expect(screen.queryByText('START')).not.toBeInTheDocument()
-    expect(screen.queryByText('Finish / docking')).not.toBeInTheDocument()
-    expect(screen.queryByText('10 buoy pairs: red + green')).not.toBeInTheDocument()
-    expect(screen.queryByText('Surface zone / green')).not.toBeInTheDocument()
-    expect(screen.queryByText('Underwater zone / blue')).not.toBeInTheDocument()
-    expect(screen.queryByText('3 docking balls / blue')).not.toBeInTheDocument()
+    expect(screen.getByRole('img', { name: 'Mission route plan' })).toBeInTheDocument()
+    expect(screen.getAllByTestId('buoy-pair')).toHaveLength(10)
+    expect(screen.getByText('10 red + green buoy pairs')).toBeInTheDocument()
+    expect(screen.getByText('Green mission zone')).toBeInTheDocument()
+    expect(screen.getByText('Blue mission zone')).toBeInTheDocument()
+    expect(screen.getByText('3 blue docking balls')).toBeInTheDocument()
   })
 
   it('plots GPS points and rotates the current boat marker by heading', () => {

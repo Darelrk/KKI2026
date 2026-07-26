@@ -23,6 +23,7 @@ describe('DashboardClient', () => {
 
     expect(await screen.findByText('MODEL RUNNING')).toBeInTheDocument()
     expect(screen.getByText('MODEL MONITORING')).toBeInTheDocument()
+    expect(screen.getByText('AUTO / ONBOARD')).toBeInTheDocument()
     expect(screen.getByText('RC MANUAL')).toBeInTheDocument()
     expect(screen.getByRole('img', { name: 'Live surface camera' })).toHaveAttribute(
       'src',
@@ -32,12 +33,12 @@ describe('DashboardClient', () => {
       'src',
       'https://monitor-kapal-pora-pora.web.id/stream/bawah',
     )
-    expect(screen.getByRole('heading', { name: 'Live boat track' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Mission route' })).toBeInTheDocument()
     expect(screen.getByText('GPS position available')).toBeInTheDocument()
     expect(screen.getByText('GPS track · 3 points')).toBeInTheDocument()
     expect(
-      within(screen.getByRole('region', { name: 'Live boat track' })).queryByText('MISSION MOCKUP'),
+      within(screen.getByRole('region', { name: 'Mission route' })).queryByText('MISSION MOCKUP'),
     ).not.toBeInTheDocument()
-    expect(screen.getByRole('status')).toHaveTextContent('Ready / Preparation')
+    expect(screen.getByRole('status')).toHaveTextContent('Standby')
   })
 })

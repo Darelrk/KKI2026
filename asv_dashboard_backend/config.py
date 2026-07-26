@@ -20,8 +20,6 @@ class BridgeSettings:
     port: int = 8080
     stream_url: str | None = None
     cors_origins: tuple[str, ...] = ()
-    supabase_url: str | None = None
-    supabase_service_role_key: str | None = None
     max_base64_length: int = 180_000
     max_fps: float = 1.0
     frame_wait_timeout: float = 1.0
@@ -42,10 +40,6 @@ class BridgeSettings:
             _require_https_url(self.stream_url, "ASV_STREAM_URL")
         for origin in self.cors_origins:
             _require_cors_origin(origin)
-        if bool(self.supabase_url) != bool(self.supabase_service_role_key):
-            raise ConfigError(
-                "SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be configured together"
-            )
         if self.max_base64_length < 4:
             raise ConfigError("ASV_FALLBACK_MAX_BASE64 must be at least 4")
         if self.max_fps <= 0:
@@ -65,10 +59,6 @@ class BridgeSettings:
         if self.pixhawk_reconnect_seconds <= 0:
             raise ConfigError("ASV_PIXHAWK_RECONNECT_SECONDS must be positive")
 
-    @property
-    def supabase_enabled(self) -> bool:
-        """Return whether remote publishing is configured."""
-        return self.supabase_url is not None
 
     @classmethod
     def from_env(cls) -> BridgeSettings:
@@ -79,8 +69,6 @@ class BridgeSettings:
             port=_int_env("ASV_BACKEND_PORT", 8080),
             stream_url=_optional_env("ASV_STREAM_URL"),
             cors_origins=_csv_env("ASV_CORS_ORIGINS"),
-            supabase_url=_optional_env("SUPABASE_URL"),
-            supabase_service_role_key=_optional_env("SUPABASE_SERVICE_ROLE_KEY"),
             max_base64_length=_int_env("ASV_FALLBACK_MAX_BASE64", 180_000),
             max_fps=_float_env("ASV_FALLBACK_MAX_FPS", 1.0),
             frame_wait_timeout=_float_env("ASV_FRAME_WAIT_TIMEOUT", 1.0),
