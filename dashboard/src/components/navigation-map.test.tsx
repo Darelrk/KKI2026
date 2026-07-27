@@ -138,7 +138,7 @@ describe('NavigationMap', () => {
     expect(screen.queryByText('GPS track · 2 points')).not.toBeInTheDocument()
   })
 
-  it('keeps the real GPS track visible when a replay runs outside preview mode', () => {
+  it('shows the moving replay overlay with live telemetry in direct mode', () => {
     render(
       <NavigationMap
         telemetry={{
@@ -165,14 +165,15 @@ describe('NavigationMap', () => {
         simulation={simulation}
       />,
     )
-    fireEvent.click(screen.getByRole('button', { name: 'Course' }))
 
-    expect(
-      screen.getByRole('img', { name: 'GPS track plot' }),
-    ).toBeInTheDocument()
-    expect(screen.getByTestId('boat-marker')).toBeInTheDocument()
-    expect(screen.getByText('GPS track · 2 points')).toBeInTheDocument()
-    expect(screen.queryByTestId('simulation-boat')).not.toBeInTheDocument()
+    expect(screen.getByTestId('simulation-track')).toBeInTheDocument()
+    expect(screen.getByTestId('simulation-boat')).toHaveAttribute(
+      'data-progress',
+      '0.5',
+    )
+    expect(screen.getByText('Lintasan A · 50%')).toBeInTheDocument()
+    expect(screen.queryByTestId('boat-marker')).not.toBeInTheDocument()
+    expect(screen.queryByText('GPS track · 2 points')).not.toBeInTheDocument()
   })
 
   it('lets the operator drag the mission overlay onto the pool', () => {

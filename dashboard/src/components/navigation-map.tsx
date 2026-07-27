@@ -338,12 +338,9 @@ export function NavigationMap({
           .join(' ')
       : ''
   const projectedBoat = boatPosition ? projectPoint(boatPosition) : null
-  const hasRealTelemetry =
-    telemetry.position !== null || telemetry.track.length > 0
-  // Outside the on-site preview the replay must never paint over a real fix.
+  // Direct mode stays live until the operator explicitly starts a replay.
   const simulationActive =
-    simulation !== undefined &&
-    (previewMode || (simulation.status !== 'idle' && !hasRealTelemetry))
+    simulation !== undefined && (previewMode || simulation.status !== 'idle')
   const simulationComplete = simulation?.status === 'complete'
   const simulationTravelledPoints = simulation
     ? missionRouteTravelledPoints(simulation.progress)
