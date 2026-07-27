@@ -24,7 +24,6 @@ const simulation = {
 describe('NavigationMap', () => {
   it('keeps the official mission route visible while GPS is unavailable', () => {
     render(<NavigationMap telemetry={emptyNavigationTelemetry} />)
-    fireEvent.click(screen.getByRole('button', { name: 'Course' }))
 
     expect(
       screen.getByRole('heading', { name: 'Mission route' }),
@@ -33,7 +32,7 @@ describe('NavigationMap', () => {
     expect(screen.getByText('GPS position unavailable')).toBeInTheDocument()
     expect(screen.getByText('GPS track unavailable')).toBeInTheDocument()
     expect(
-      screen.getByRole('img', { name: 'Mission route plan' }),
+      screen.getByRole('img', { name: 'ASV mission route' }),
     ).toBeInTheDocument()
     expect(screen.getAllByTestId('buoy-pair')).toHaveLength(10)
     expect(
@@ -43,7 +42,7 @@ describe('NavigationMap', () => {
     expect(screen.queryByRole('checkbox')).not.toBeInTheDocument()
   })
 
-  it('shows the satellite map and view switch in direct mode', () => {
+  it('shows the satellite map as the only map view', () => {
     render(<NavigationMap telemetry={emptyNavigationTelemetry} />)
 
     expect(screen.getByTitle('Kolam Deli satellite base map')).toHaveAttribute(
@@ -54,7 +53,9 @@ describe('NavigationMap', () => {
       'aria-pressed',
       'true',
     )
-    expect(screen.getByRole('button', { name: 'Course' })).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Course' }),
+    ).not.toBeInTheDocument()
   })
 
   it('shows the local replay boat on the simulation route', () => {
@@ -255,18 +256,10 @@ describe('NavigationMap', () => {
     ).not.toBeInTheDocument()
 
     const mapButton = screen.getByRole('button', { name: 'Map' })
-    const courseButton = screen.getByRole('button', { name: 'Course' })
     expect(mapButton).toHaveAttribute('aria-pressed', 'true')
-
-    fireEvent.click(courseButton)
-
-    expect(courseButton).toHaveAttribute('aria-pressed', 'true')
     expect(
-      screen.queryByTitle('Kolam Deli satellite base map'),
+      screen.queryByRole('button', { name: 'Course' }),
     ).not.toBeInTheDocument()
-    expect(
-      screen.getByRole('img', { name: 'ASV mission route' }),
-    ).toBeInTheDocument()
   })
 
   it('keeps the boat visible at the dock after mission completion', () => {
@@ -291,18 +284,19 @@ describe('NavigationMap', () => {
     )
   })
 
-  it('keeps mission graphics visible with map view controls', () => {
+  it('keeps mission graphics visible with the map view', () => {
     render(<NavigationMap telemetry={emptyNavigationTelemetry} />)
-    fireEvent.click(screen.getByRole('button', { name: 'Course' }))
 
     expect(screen.getByTestId('surface-zone')).toBeInTheDocument()
     expect(screen.getByTestId('underwater-zone')).toBeInTheDocument()
     expect(screen.getAllByTestId('buoy-pair')).toHaveLength(10)
-    expect(screen.getByRole('button', { name: 'Course' })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: 'Map' })).toHaveAttribute(
       'aria-pressed',
       'true',
     )
-    expect(screen.getByRole('button', { name: 'Map' })).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Course' }),
+    ).not.toBeInTheDocument()
   })
 
   it('plots GPS points and rotates the current boat marker by heading', () => {
@@ -331,15 +325,16 @@ describe('NavigationMap', () => {
         }}
       />,
     )
-    fireEvent.click(screen.getByRole('button', { name: 'Course' }))
 
     expect(screen.getByText('GPS track · 2 points')).toBeInTheDocument()
-    expect(
-      screen.getByRole('img', { name: 'GPS track plot' }),
-    ).toBeInTheDocument()
+    expect(screen.getByTestId('gps-track')).toBeInTheDocument()
+    expect(screen.getByTestId('boat-marker')).toHaveAttribute(
+      'data-course-heading',
+      '90',
+    )
     expect(screen.getByTestId('boat-marker')).toHaveAttribute(
       'transform',
-      expect.stringContaining('rotate(90'),
+      expect.stringContaining('rotate('),
     )
   })
 
@@ -368,16 +363,10 @@ describe('NavigationMap', () => {
         }}
       />,
     )
-    fireEvent.click(screen.getByRole('button', { name: 'Course' }))
 
-    const polyline = screen
-      .getByRole('img', { name: 'GPS track plot' })
-      .querySelector('polyline.navigation-map__track')
+    const polyline = screen.getByTestId('gps-track')
 
-    expect(polyline).not.toBeNull()
-    expect(polyline?.getAttribute('points')?.trim().split(/\s+/)).toHaveLength(
-      3,
-    )
+    expect(polyline.getAttribute('points')?.trim().split(/\s+/)).toHaveLength(3)
   })
 
   it('renders one current position without inventing a path', () => {
@@ -402,8 +391,6 @@ describe('NavigationMap', () => {
     )
 
     expect(screen.getByTestId('boat-marker')).toBeInTheDocument()
-    expect(
-      screen.queryByRole('img', { name: 'GPS track plot' }),
-    ).not.toBeInTheDocument()
+    expect(screen.queryByTestId('gps-track')).not.toBeInTheDocument()
   })
 })

@@ -1,5 +1,4 @@
 import { MapPin } from '@phosphor-icons/react'
-import { useState } from 'react'
 
 import {
   missionRoute,
@@ -67,9 +66,6 @@ function projectCourseRectangle(
 const siteMissionRoute = missionRoute.map((point) =>
   coursePointToSiteOverlay(point),
 )
-const courseRoutePoints = missionRoute
-  .map((point) => `${point.x},${point.y}`)
-  .join(' ')
 const siteBuoyPairs = buoyPairs.map((pair) => ({
   red: coursePointToSiteOverlay(pair.red),
   green: coursePointToSiteOverlay(pair.green),
@@ -118,7 +114,18 @@ function SiteMapCanvas({
   simulationComplete,
   simulationHeading,
 }: SiteMapCanvasProps) {
-  const telemetryCoursePoints = telemetry.track.map((point) =>
+  const lastTrackPoint = telemetry.track.at(-1)
+  const boatPosition = telemetry.position ?? lastTrackPoint
+  const currentIsAlreadyLastPoint =
+    boatPosition !== undefined &&
+    lastTrackPoint !== undefined &&
+    boatPosition.latitude === lastTrackPoint.latitude &&
+    boatPosition.longitude === lastTrackPoint.longitude
+  const pathPoints =
+    boatPosition && !currentIsAlreadyLastPoint
+      ? [...telemetry.track, boatPosition]
+      : telemetry.track
+  const telemetryCoursePoints = pathPoints.map((point) =>
     geoPointToCourse(point),
   )
   const telemetryCourseTrack = telemetryCoursePoints.map((point) =>
@@ -251,7 +258,7 @@ function SiteMapCanvas({
           {travelledPoints.length > 1 ? (
             <polyline
               className="site-map__travelled"
-              data-testid={simulationActive ? 'simulation-track' : undefined}
+              data-testid={simulationActive ? 'simulation-track' : 'gps-track'}
               points={travelledPoints.map(formatOverlayPoint).join(' ')}
               fill="none"
             />
@@ -279,6 +286,16 @@ function SiteMapCanvas({
         </g>
       </svg>
 
+      {!currentSitePoint && !simulationActive ? (
+        <div className="navigation-map__empty">
+          <MapPin aria-hidden="true" size={28} />
+          <strong>Waiting for GPS fix.</strong>
+          <span>
+            Mission route loaded. Live track will appear when telemetry is
+            received.
+          </span>
+        </div>
+      ) : null}
       <div className="site-map__course-label">
         <span>COURSE OVERLAY</span>
         <strong>LINTASAN A</strong>
@@ -304,55 +321,14 @@ export function NavigationMap({
   simulation,
   previewMode = false,
 }: NavigationMapProps) {
-  const [viewMode, setViewMode] = useState<'map' | 'course'>('map')
-  const lastTrackPoint = telemetry.track.at(-1)
-  const boatPosition = telemetry.position ?? lastTrackPoint
-  const currentIsAlreadyLastPoint =
-    boatPosition !== undefined &&
-    lastTrackPoint !== undefined &&
-    boatPosition.latitude === lastTrackPoint.latitude &&
-    boatPosition.longitude === lastTrackPoint.longitude
-  const pathPoints =
-    boatPosition && !currentIsAlreadyLastPoint
-      ? [...telemetry.track, boatPosition]
-      : telemetry.track
-  const longitudes = pathPoints.map((point) => point.longitude)
-  const latitudes = pathPoints.map((point) => point.latitude)
-  const minLongitude = longitudes.length > 0 ? Math.min(...longitudes) : 0
-  const maxLongitude = longitudes.length > 0 ? Math.max(...longitudes) : 1
-  const minLatitude = latitudes.length > 0 ? Math.min(...latitudes) : 0
-  const maxLatitude = latitudes.length > 0 ? Math.max(...latitudes) : 1
-  const longitudeRange = maxLongitude - minLongitude || 1
-  const latitudeRange = maxLatitude - minLatitude || 1
-  const projectPoint = (point: (typeof pathPoints)[number]) => ({
-    x: 10 + ((point.longitude - minLongitude) / longitudeRange) * 80,
-    y: 90 - ((point.latitude - minLatitude) / latitudeRange) * 80,
-  })
-  const trackPoints =
-    pathPoints.length >= 2
-      ? pathPoints
-          .map((point) => {
-            const projected = projectPoint(point)
-            return `${projected.x},${projected.y}`
-          })
-          .join(' ')
-      : ''
-  const projectedBoat = boatPosition ? projectPoint(boatPosition) : null
   // Keep the replay boat at the start dock before the operator starts it.
   const simulationActive = simulation !== undefined
   const simulationRunning =
     simulationActive && (previewMode || simulation?.status !== 'idle')
   const simulationComplete = simulation?.status === 'complete'
-  const simulationTravelledPoints = simulation
-    ? missionRouteTravelledPoints(simulation.progress)
-        .map((point) => `${point.x},${point.y}`)
-        .join(' ')
-    : ''
   const simulationHeading = simulation
     ? missionRouteHeading(simulation.progress)
     : 0
-  const hasTrackPlot = pathPoints.length >= 2
-  const showSiteMap = viewMode === 'map'
 
   return (
     <section className="navigation-map" aria-labelledby="navigation-map-title">
@@ -370,275 +346,24 @@ export function NavigationMap({
           >
             <button
               type="button"
-              className={
-                showSiteMap ? 'navigation-map__view-switch--active' : ''
-              }
-              aria-pressed={showSiteMap}
-              onClick={() => setViewMode('map')}
+              className="navigation-map__view-switch--active"
+              aria-pressed="true"
+              disabled
             >
               Map
-            </button>
-            <button
-              type="button"
-              className={
-                !showSiteMap ? 'navigation-map__view-switch--active' : ''
-              }
-              aria-pressed={!showSiteMap}
-              onClick={() => setViewMode('course')}
-            >
-              Course
             </button>
           </div>
         </div>
       </div>
 
       <div className="navigation-map__layout">
-        {showSiteMap ? (
-          <SiteMapCanvas
-            telemetry={telemetry}
-            simulation={simulation}
-            simulationActive={simulationActive}
-            simulationComplete={simulationComplete}
-            simulationHeading={simulationHeading}
-          />
-        ) : (
-          <div
-            className="navigation-map__canvas"
-            aria-label={`Mission route and live boat track${previewMode ? ` at ${kolamDeliSite.name}` : ''}`}
-          >
-            {previewMode ? (
-              <>
-                <div
-                  className="navigation-map__site-hud"
-                  data-testid="site-context"
-                >
-                  <div className="navigation-map__site-hud-copy">
-                    <strong>{kolamDeliSite.name.toUpperCase()}</strong>
-                    <small>{kolamDeliSite.locality.toUpperCase()}</small>
-                  </div>
-                  <a
-                    href={kolamDeliSite.mapsUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    aria-label="Open Kolam Deli in Google Maps"
-                  >
-                    MAP
-                  </a>
-                </div>
-                <div className="navigation-map__north" aria-label="North up">
-                  <span>N</span>
-                  <b>↑</b>
-                </div>
-                <div className="navigation-map__gnss">
-                  <span className="navigation-map__gnss-dot" />
-                  <span>GNSS LOCK · 12 SAT · ±0.8M</span>
-                </div>
-              </>
-            ) : null}
-            <svg
-              className="navigation-map__plot"
-              viewBox="0 0 100 110"
-              role="img"
-              aria-label={
-                simulationActive
-                  ? 'ASV mission route'
-                  : hasTrackPlot
-                    ? 'GPS track plot'
-                    : 'Mission route plan'
-              }
-            >
-              <defs>
-                <pattern
-                  id="mission-grid-pattern"
-                  width="5"
-                  height="5"
-                  patternUnits="userSpaceOnUse"
-                >
-                  <path
-                    className="navigation-map__grid-line"
-                    d="M 5 0 L 0 0 L 0 5"
-                    fill="none"
-                  />
-                </pattern>
-                <marker
-                  id="route-direction-arrow"
-                  markerWidth="5"
-                  markerHeight="5"
-                  refX="4"
-                  refY="2.5"
-                  orient="auto"
-                >
-                  <path
-                    className="navigation-map__route-direction-arrow"
-                    d="M 0 0 L 5 2.5 L 0 5 Z"
-                  />
-                </marker>
-              </defs>
-              <rect
-                className="navigation-map__grid-surface"
-                x="0"
-                y="0"
-                width="100"
-                height="100"
-              />
-              <g className="navigation-map__axes" aria-hidden="true">
-                {['A', 'B', 'C', 'D', 'E'].map((label, index) => (
-                  <text key={label} x={1 + index * 20.25} y="4">
-                    {label}
-                  </text>
-                ))}
-                {['5', '4', '3', '2', '1'].map((label, index) => (
-                  <text key={label} x="2" y={17 + index * 20}>
-                    {label}
-                  </text>
-                ))}
-              </g>
-              <polyline
-                className="navigation-map__route-plan"
-                points={courseRoutePoints}
-                fill="none"
-              />
-              <g
-                className="navigation-map__route-directions"
-                aria-hidden="true"
-              >
-                <path d="M 64 94 L 79 93" />
-              </g>
-              {!simulationActive && hasTrackPlot ? (
-                <polyline
-                  className="navigation-map__track"
-                  points={trackPoints}
-                  fill="none"
-                />
-              ) : null}
-              <g className="navigation-map__mission-zone">
-                <rect
-                  className="navigation-map__zone navigation-map__zone--surface"
-                  data-testid="surface-zone"
-                  x="25"
-                  y="88"
-                  width="5"
-                  height="3"
-                />
-              </g>
-              <g className="navigation-map__mission-zone">
-                <rect
-                  className="navigation-map__zone navigation-map__zone--underwater"
-                  data-testid="underwater-zone"
-                  x="15"
-                  y="78"
-                  width="5"
-                  height="4"
-                />
-              </g>
-
-              {buoyPairs.map((pair, index) => (
-                <g
-                  key={`buoy-pair-${index + 1}`}
-                  className="navigation-map__buoy-pair"
-                  data-testid="buoy-pair"
-                  aria-label={`Buoy pair ${index + 1}`}
-                >
-                  <circle
-                    className="navigation-map__buoy navigation-map__buoy--red"
-                    cx={pair.red.x}
-                    cy={pair.red.y}
-                    r="1.1"
-                  />
-                  <circle
-                    className="navigation-map__buoy navigation-map__buoy--green"
-                    cx={pair.green.x}
-                    cy={pair.green.y}
-                    r="1.1"
-                  />
-                </g>
-              ))}
-
-              <g className="navigation-map__dock navigation-map__dock--start">
-                <path d="M 85.1 84.3 L 86.6 85.8 L 85.1 87.3 L 83.6 85.8 Z" />
-              </g>
-              <g className="navigation-map__course-tag" aria-hidden="true">
-                <rect x="42" y="99.5" width="20" height="7" rx="1.2" />
-                <text x="52" y="104.1">
-                  LINTASAN A
-                </text>
-              </g>
-              <g className="navigation-map__start-finish" aria-hidden="true">
-                <ellipse cx="85" cy="105.2" rx="11" ry="4.1" />
-                <text x="85" y="104.5">
-                  Start /
-                </text>
-                <text x="85" y="107">
-                  Finish
-                </text>
-              </g>
-              <g className="navigation-map__docking-balls">
-                <rect x="82.3" y="88.2" width="4.9" height="8" rx="0.5" />
-                <circle cx="82.2" cy="89.47" r="1.3" />
-                <circle cx="82.2" cy="92.14" r="1.3" />
-                <circle cx="82.2" cy="95.27" r="1.3" />
-              </g>
-
-              {simulationActive ? (
-                <>
-                  <polyline
-                    className="navigation-map__simulation-track"
-                    data-testid="simulation-track"
-                    points={simulationTravelledPoints}
-                    fill="none"
-                  />
-                  <g
-                    className={`navigation-map__simulation-boat${
-                      simulationComplete
-                        ? ' navigation-map__simulation-boat--complete'
-                        : ''
-                    }`}
-                    data-testid="simulation-boat"
-                    data-progress={simulation.progress}
-                    data-heading={simulationHeading}
-                    data-status={simulation.status}
-                    aria-hidden="true"
-                    transform={`translate(${simulation.position.x} ${simulation.position.y}) rotate(${simulationHeading})${
-                      simulationComplete ? ' scale(0.58)' : ''
-                    }`}
-                  >
-                    <path d="M 0 -5 L 3 4 L 0 2 L -3 4 Z" />
-                  </g>
-                </>
-              ) : projectedBoat ? (
-                <g
-                  className="navigation-map__boat"
-                  data-testid="boat-marker"
-                  aria-hidden="true"
-                  transform={`translate(${projectedBoat.x} ${projectedBoat.y})${
-                    telemetry.heading_deg === null
-                      ? ''
-                      : ` rotate(${telemetry.heading_deg})`
-                  }`}
-                >
-                  {telemetry.heading_deg === null ? (
-                    <circle className="navigation-map__boat-dot" r="2.8" />
-                  ) : (
-                    <path
-                      className="navigation-map__boat-arrow"
-                      d="M 0 -5 L 3 4 L 0 2 L -3 4 Z"
-                    />
-                  )}
-                </g>
-              ) : null}
-            </svg>
-            {!projectedBoat && !simulationActive ? (
-              <div className="navigation-map__empty">
-                <MapPin aria-hidden="true" size={28} />
-                <strong>Waiting for GPS fix.</strong>
-                <span>
-                  Mission route loaded. Live track will appear when telemetry is
-                  received.
-                </span>
-              </div>
-            ) : null}
-          </div>
-        )}
+        <SiteMapCanvas
+          telemetry={telemetry}
+          simulation={simulation}
+          simulationActive={simulationActive}
+          simulationComplete={simulationComplete}
+          simulationHeading={simulationHeading}
+        />
         <div className="navigation-map__readout">
           <span>
             {simulationRunning
