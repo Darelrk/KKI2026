@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   defaultAsvBridgeUrl,
   defaultAsvStreamUrls,
+  getGo2rtcUrls,
   resolveAsvBridgeUrl,
   resolveAsvStreamUrls,
   resolveAsvTelemetryWsUrl,
@@ -49,7 +50,9 @@ describe('resolveAsvStreamUrls', () => {
         VITE_ASV_VISION_WS_URL: ' wss://bridge.example.test ',
       }),
     ).toBe('wss://bridge.example.test')
-    expect(resolveAsvVisionWsUrl({})).toBe('wss://monitor-kapal-pora-pora.web.id')
+    expect(resolveAsvVisionWsUrl({})).toBe(
+      'wss://monitor-kapal-pora-pora.web.id',
+    )
   })
 
   it('keeps the telemetry WebSocket URL independent from camera URLs', () => {
@@ -58,6 +61,25 @@ describe('resolveAsvStreamUrls', () => {
         VITE_ASV_TELEMETRY_WS_URL: ' wss://telemetry.example.test ',
       }),
     ).toBe('wss://telemetry.example.test')
-    expect(resolveAsvTelemetryWsUrl({})).toBe('wss://monitor-kapal-pora-pora.web.id')
+    expect(resolveAsvTelemetryWsUrl({})).toBe(
+      'wss://monitor-kapal-pora-pora.web.id',
+    )
+  })
+  it('derives all go2rtc endpoints from a custom HTTPS bridge', () => {
+    expect(getGo2rtcUrls(' https://bridge.example.test/ ', 'atas')).toEqual({
+      webrtcWs: 'wss://bridge.example.test/api/ws?src=atas',
+      webrtcHttp: 'https://bridge.example.test/api/webrtc?src=atas',
+      mse: 'https://bridge.example.test/api/stream.mp4?src=atas',
+      mjpeg: 'https://bridge.example.test/stream/atas',
+    })
+  })
+
+  it('converts HTTP bridges and supports the underwater source', () => {
+    expect(getGo2rtcUrls('http://bridge.example.test/base/', 'bawah')).toEqual({
+      webrtcWs: 'ws://bridge.example.test/base/api/ws?src=bawah',
+      webrtcHttp: 'http://bridge.example.test/base/api/webrtc?src=bawah',
+      mse: 'http://bridge.example.test/base/api/stream.mp4?src=bawah',
+      mjpeg: 'http://bridge.example.test/base/stream/bawah',
+    })
   })
 })
