@@ -50,8 +50,6 @@ export function DashboardShell({
   surfaceStreamUrl = asvStreamUrls.surface,
   underwaterStreamUrl = asvStreamUrls.underwater,
 }: DashboardShellProps) {
-  // Without a live fix the map would otherwise sit on "Waiting for GPS fix",
-  // so the route preview runs until real telemetry arrives and takes over.
   const telemetryMissing = !telemetry || !telemetry.connected
   const simulation = useMissionSimulation({
     autoStart: mode === 'fixture' || telemetryMissing,

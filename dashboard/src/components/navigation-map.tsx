@@ -338,9 +338,10 @@ export function NavigationMap({
           .join(' ')
       : ''
   const projectedBoat = boatPosition ? projectPoint(boatPosition) : null
-  // Direct mode stays live until the operator explicitly starts a replay.
-  const simulationActive =
-    simulation !== undefined && (previewMode || simulation.status !== 'idle')
+  // Keep the replay boat at the start dock before the operator starts it.
+  const simulationActive = simulation !== undefined
+  const simulationRunning =
+    simulationActive && (previewMode || simulation?.status !== 'idle')
   const simulationComplete = simulation?.status === 'complete'
   const simulationTravelledPoints = simulation
     ? missionRouteTravelledPoints(simulation.progress)
@@ -640,14 +641,14 @@ export function NavigationMap({
         )}
         <div className="navigation-map__readout">
           <span>
-            {simulationActive
+            {simulationRunning
               ? `Lintasan A · ${Math.round(simulation.progress * 100)}%`
               : telemetry.position
                 ? 'GPS position available'
                 : 'GPS position unavailable'}
           </span>
           <span>
-            {simulationActive
+            {simulationRunning
               ? 'ASV navigation · mission active'
               : telemetry.track.length > 0
                 ? `GPS track · ${telemetry.track.length} points`

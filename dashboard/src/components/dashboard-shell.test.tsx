@@ -92,6 +92,23 @@ describe('DashboardShell', () => {
     expect(screen.getByTestId('simulation-boat')).toBeInTheDocument()
   })
 
+  it('shows the initial replay marker before mission start in direct mode', () => {
+    render(
+      <DashboardShell
+        asvId="default"
+        live={liveStatus}
+        liveRealtimeStatus="connected"
+        telemetry={telemetry}
+        telemetryRealtimeStatus="connected"
+        underwaterFrame={underwaterFrame}
+        underwaterRealtimeStatus="connected"
+      />,
+    )
+
+    expect(screen.getByTestId('simulation-boat')).toBeInTheDocument()
+    expect(screen.queryByTestId('boat-marker')).not.toBeInTheDocument()
+  })
+
   it('renders raw main and underwater camera streams instead of model output', () => {
     render(
       <DashboardShell
@@ -156,7 +173,9 @@ describe('DashboardShell', () => {
     expect(screen.getByText('GPS position')).toBeInTheDocument()
     expect(screen.getByText('-1.700000, 102.250000')).toBeInTheDocument()
     expect(screen.getByText('144.0°')).toBeInTheDocument()
-    expect(screen.getByText('0.00 m/s')).toBeInTheDocument()
+    expect(screen.getByText('0.00 knot')).toBeInTheDocument()
+    expect(screen.getByText('0.00 km/h')).toBeInTheDocument()
+    expect(screen.getByText('TRIFUSION / ASV / default')).toBeInTheDocument()
     expect(screen.getByText('GPS track · 1 points')).toBeInTheDocument()
     expect(screen.getByText('Pixhawk connected')).toBeInTheDocument()
     expect(screen.getByText('Telemetry channel: connected')).toBeInTheDocument()
