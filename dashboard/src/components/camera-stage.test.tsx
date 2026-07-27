@@ -1,9 +1,12 @@
-import { cleanup, render, screen } from '@testing-library/react'
+import { act, cleanup, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { CameraStage } from './camera-stage'
 
-import type { VisionMetadata, VisionMetadataCache } from '../lib/vision-metadata'
+import type {
+  VisionMetadata,
+  VisionMetadataCache,
+} from '../lib/vision-metadata'
 
 const metadata = {
   schema_version: 1,
@@ -37,8 +40,68 @@ type CanvasContextSpies = {
 }
 let canvasContext: CanvasContextSpies
 
+class CameraFakeSocket {
+  static readonly OPEN = 1
+  static readonly instances: CameraFakeSocket[] = []
+  readonly url: string
+  readyState = 0
+  onopen: ((event: Event) => void) | null = null
+  onmessage: ((event: MessageEvent) => void) | null = null
+  onerror: ((event: Event) => void) | null = null
+  onclose: ((event: CloseEvent) => void) | null = null
+  send = vi.fn()
+  close = vi.fn(() => {
+    this.readyState = 3
+  })
+
+  constructor(url: string) {
+    this.url = url
+    CameraFakeSocket.instances.push(this)
+  }
+
+  open() {
+    this.readyState = CameraFakeSocket.OPEN
+    this.onopen?.(new Event('open'))
+  }
+
+  fail() {
+    this.onerror?.(new Event('error'))
+  }
+}
+
+class CameraFakePeer {
+  static readonly instances: CameraFakePeer[] = []
+  readonly addTransceiver = vi.fn()
+  readonly createOffer = vi
+    .fn()
+    .mockResolvedValue({ type: 'offer', sdp: 'surface-local-sdp' })
+  readonly setLocalDescription = vi.fn(
+    async (description: RTCSessionDescriptionInit) => {
+      this.localDescription = description
+    },
+  )
+  readonly setRemoteDescription = vi.fn()
+  readonly addIceCandidate = vi.fn()
+  readonly close = vi.fn()
+  localDescription: RTCSessionDescriptionInit | null = null
+  iceGatheringState: RTCIceGatheringState = 'complete'
+  connectionState: RTCPeerConnectionState = 'new'
+  onicecandidate: ((event: RTCPeerConnectionIceEvent) => void) | null = null
+  onicegatheringstatechange: (() => void) | null = null
+  ontrack: ((event: RTCTrackEvent) => void) | null = null
+  onconnectionstatechange: (() => void) | null = null
+
+  constructor() {
+    CameraFakePeer.instances.push(this)
+  }
+}
+
 beforeEach(() => {
   frameCallbacks = []
+  CameraFakeSocket.instances.length = 0
+  CameraFakePeer.instances.length = 0
+  vi.stubGlobal('WebSocket', CameraFakeSocket)
+  vi.stubGlobal('RTCPeerConnection', CameraFakePeer)
   canvasContext = {
     clearRect: vi.fn(),
     strokeRect: vi.fn(),
@@ -46,25 +109,31 @@ beforeEach(() => {
     strokeStyle: '',
     lineWidth: 0,
   }
-  vi.stubGlobal('requestAnimationFrame', vi.fn((callback: FrameRequestCallback) => {
-    frameCallbacks.push(callback)
-    return frameCallbacks.length
-  }))
+  vi.stubGlobal(
+    'requestAnimationFrame',
+    vi.fn((callback: FrameRequestCallback) => {
+      frameCallbacks.push(callback)
+      return frameCallbacks.length
+    }),
+  )
   vi.stubGlobal('cancelAnimationFrame', vi.fn())
   vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(
     canvasContext as unknown as CanvasRenderingContext2D,
   )
-  vi.spyOn(HTMLImageElement.prototype, 'getBoundingClientRect').mockReturnValue({
-    x: 0,
-    y: 0,
-    top: 0,
-    right: 800,
-    bottom: 600,
-    left: 0,
-    width: 800,
-    height: 600,
-    toJSON: () => ({}),
-  })
+  vi.spyOn(HTMLVideoElement.prototype, 'getBoundingClientRect').mockReturnValue(
+    {
+      x: 0,
+      y: 0,
+      top: 0,
+      right: 800,
+      bottom: 600,
+      left: 0,
+      width: 800,
+      height: 600,
+      toJSON: () => ({}),
+    },
+  )
+  vi.spyOn(HTMLMediaElement.prototype, 'play').mockResolvedValue(undefined)
 })
 
 afterEach(() => {
@@ -73,8 +142,15 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
+async function flushEffects() {
+  await act(async () => {
+    await Promise.resolve()
+    await Promise.resolve()
+  })
+}
+
 describe('CameraStage', () => {
-  it('keeps the raw image source and layers a non-interactive canvas above it', () => {
+  it('renders an autoplaying WebRTC video with a non-interactive canvas above it', async () => {
     render(
       <CameraStage
         streamUrl="https://camera.example.test/surface"
@@ -82,16 +158,25 @@ describe('CameraStage', () => {
         metadataStatus="connected"
       />,
     )
+    const video = screen.getByLabelText('Live surface camera')
+    const socket = CameraFakeSocket.instances[0]
+    const peer = CameraFakePeer.instances[0]
+    socket.open()
+    await flushEffects()
+    const stream = { id: 'surface-stream' } as unknown as MediaStream
+    act(() => peer.ontrack?.({ streams: [stream] } as unknown as RTCTrackEvent))
 
-    const image = screen.getByRole('img', { name: 'Live surface camera' })
     const canvas = document.querySelector('canvas')
-    expect(image).toHaveAttribute('src', 'https://camera.example.test/surface')
+    expect(video).toHaveAttribute('autoplay')
+    expect(video).toHaveAttribute('playsinline')
+    expect(video).toHaveProperty('muted', true)
+    expect(video).toHaveProperty('srcObject', stream)
     expect(canvas).toHaveClass('camera-stage__overlay')
     expect(canvas).toHaveStyle({ pointerEvents: 'none' })
-    expect(canvas?.parentElement?.firstElementChild).toBe(image)
+    expect(canvas?.parentElement?.firstElementChild).toBe(video)
   })
 
-  it('draws normalized boxes with letterboxing without changing image src', () => {
+  it('draws normalized boxes with letterboxing from video dimensions', () => {
     render(
       <CameraStage
         streamUrl="https://camera.example.test/surface"
@@ -99,18 +184,23 @@ describe('CameraStage', () => {
         metadataStatus="connected"
       />,
     )
-    const image = screen.getByRole('img', { name: 'Live surface camera' })
-    Object.defineProperty(image, 'naturalWidth', { configurable: true, value: 1280 })
-    Object.defineProperty(image, 'naturalHeight', { configurable: true, value: 720 })
+    const video = screen.getByLabelText('Live surface camera')
+    Object.defineProperty(video, 'videoWidth', {
+      configurable: true,
+      value: 1280,
+    })
+    Object.defineProperty(video, 'videoHeight', {
+      configurable: true,
+      value: 720,
+    })
 
     frameCallbacks[0](500)
 
     expect(canvasContext.clearRect).toHaveBeenCalled()
     expect(canvasContext.strokeRect).toHaveBeenCalledWith(320, 255, 160, 90)
-    expect(image).toHaveAttribute('src', 'https://camera.example.test/surface')
   })
 
-  it('clears stale metadata while leaving the raw image mounted', () => {
+  it('clears stale metadata while leaving the raw video mounted', () => {
     render(
       <CameraStage
         streamUrl="https://camera.example.test/surface"
@@ -123,7 +213,22 @@ describe('CameraStage', () => {
 
     expect(canvasContext.clearRect).toHaveBeenCalled()
     expect(canvasContext.strokeRect).not.toHaveBeenCalled()
-    expect(screen.getByRole('img', { name: 'Live surface camera' })).toBeInTheDocument()
+    expect(screen.getByLabelText('Live surface camera')).toBeInTheDocument()
     expect(screen.getByText('Vision error')).toBeInTheDocument()
+  })
+  it('falls back to the configured MJPEG image on WebRTC error', () => {
+    render(
+      <CameraStage
+        streamUrl="https://camera.example.test/surface"
+        metadataCache={cache}
+        metadataStatus="connected"
+      />,
+    )
+
+    act(() => CameraFakeSocket.instances[0].fail())
+
+    expect(
+      screen.getByRole('img', { name: 'Live surface camera' }),
+    ).toHaveAttribute('src', 'https://camera.example.test/surface')
   })
 })

@@ -2,6 +2,8 @@ import { useEffect, useRef } from 'react'
 import { Camera, VideoCamera } from '@phosphor-icons/react'
 
 import { isVisionMetadataFresh, projectVisionBox } from '../lib/vision-metadata'
+import { asvGo2rtcUrls } from '../lib/stream-urls'
+import { useGo2rtcVideo } from '../lib/use-go2rtc-video'
 
 import type { VisionMetadataCache } from '../lib/vision-metadata'
 import type { VisionRealtimeStatus } from '../lib/use-vision-metadata'
@@ -17,9 +19,12 @@ export function CameraStage({
   metadataCache = null,
   metadataStatus = 'error',
 }: CameraStageProps) {
-  const imageRef = useRef<HTMLImageElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const cacheRef = useRef(metadataCache)
+  const player = useGo2rtcVideo({
+    urls: asvGo2rtcUrls.surface,
+    enabled: Boolean(streamUrl),
+  })
 
   useEffect(() => {
     cacheRef.current = metadataCache
@@ -29,10 +34,10 @@ export function CameraStage({
     let animationFrame = 0
 
     const draw = (nowMs: number) => {
-      const image = imageRef.current
+      const video = player.videoRef.current
       const canvas = canvasRef.current
-      if (image && canvas) {
-        const display = image.getBoundingClientRect()
+      if (video && canvas) {
+        const display = video.getBoundingClientRect()
         const dpr = window.devicePixelRatio || 1
         canvas.width = Math.max(1, Math.round(display.width * dpr))
         canvas.height = Math.max(1, Math.round(display.height * dpr))
@@ -41,9 +46,9 @@ export function CameraStage({
           context.clearRect(0, 0, canvas.width, canvas.height)
           const cache = cacheRef.current
           if (cache && isVisionMetadataFresh(cache, nowMs)) {
-            const sourceWidth = image.naturalWidth || cache.payload.source_width
+            const sourceWidth = video.videoWidth || cache.payload.source_width
             const sourceHeight =
-              image.naturalHeight || cache.payload.source_height
+              video.videoHeight || cache.payload.source_height
             const scale = Math.min(
               display.width / sourceWidth,
               display.height / sourceHeight,
@@ -74,13 +79,15 @@ export function CameraStage({
             }
           }
         }
+      } else if (canvas) {
+        canvas.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height)
       }
       animationFrame = requestAnimationFrame(draw)
     }
 
     animationFrame = requestAnimationFrame(draw)
     return () => cancelAnimationFrame(animationFrame)
-  }, [])
+  }, [player.videoRef])
 
   return (
     <section className="camera-stage" aria-labelledby="surface-camera-title">
@@ -94,12 +101,34 @@ export function CameraStage({
 
       {streamUrl ? (
         <div className="camera-stage__media">
-          <img
-            ref={imageRef}
-            className="camera-stage__stream"
-            src={streamUrl}
-            alt="Live surface camera"
-          />
+          {player.mode === 'mjpeg' ? (
+            player.mjpegFailed ? (
+              <div className="camera-stage__placeholder" role="status">
+                <VideoCamera aria-hidden="true" size={40} />
+                <p>Surface stream offline</p>
+                <span>
+                  Camera feed is not available. Verify the stream URL
+                  configuration.
+                </span>
+              </div>
+            ) : (
+              <img
+                className="camera-stage__stream"
+                src={streamUrl || asvGo2rtcUrls.surface.mjpeg}
+                alt="Live surface camera"
+                onError={player.onMjpegError}
+              />
+            )
+          ) : (
+            <video
+              ref={player.videoRef}
+              className="camera-stage__stream"
+              autoPlay
+              playsInline
+              muted
+              aria-label="Live surface camera"
+            />
+          )}
           <canvas
             ref={canvasRef}
             className="camera-stage__overlay"
