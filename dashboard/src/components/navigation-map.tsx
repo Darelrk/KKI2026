@@ -304,9 +304,7 @@ export function NavigationMap({
   simulation,
   previewMode = false,
 }: NavigationMapProps) {
-  const [viewMode, setViewMode] = useState<'map' | 'course'>(
-    previewMode ? 'map' : 'course',
-  )
+  const [viewMode, setViewMode] = useState<'map' | 'course'>('map')
   const lastTrackPoint = telemetry.track.at(-1)
   const boatPosition = telemetry.position ?? lastTrackPoint
   const currentIsAlreadyLastPoint =
@@ -356,7 +354,7 @@ export function NavigationMap({
     ? missionRouteHeading(simulation.progress)
     : 0
   const hasTrackPlot = pathPoints.length >= 2
-  const showSiteMap = previewMode && viewMode === 'map'
+  const showSiteMap = viewMode === 'map'
 
   return (
     <section className="navigation-map" aria-labelledby="navigation-map-title">
@@ -366,36 +364,34 @@ export function NavigationMap({
           <p className="eyebrow">Route telemetry</p>
           <h2 id="navigation-map-title">Mission route</h2>
         </div>
-        {previewMode ? (
-          <div className="navigation-map__heading-tools">
-            <div
-              className="navigation-map__view-switch"
-              role="group"
-              aria-label="Mission map view"
+        <div className="navigation-map__heading-tools">
+          <div
+            className="navigation-map__view-switch"
+            role="group"
+            aria-label="Mission map view"
+          >
+            <button
+              type="button"
+              className={
+                showSiteMap ? 'navigation-map__view-switch--active' : ''
+              }
+              aria-pressed={showSiteMap}
+              onClick={() => setViewMode('map')}
             >
-              <button
-                type="button"
-                className={
-                  showSiteMap ? 'navigation-map__view-switch--active' : ''
-                }
-                aria-pressed={showSiteMap}
-                onClick={() => setViewMode('map')}
-              >
-                Map
-              </button>
-              <button
-                type="button"
-                className={
-                  !showSiteMap ? 'navigation-map__view-switch--active' : ''
-                }
-                aria-pressed={!showSiteMap}
-                onClick={() => setViewMode('course')}
-              >
-                Course
-              </button>
-            </div>
+              Map
+            </button>
+            <button
+              type="button"
+              className={
+                !showSiteMap ? 'navigation-map__view-switch--active' : ''
+              }
+              aria-pressed={!showSiteMap}
+              onClick={() => setViewMode('course')}
+            >
+              Course
+            </button>
           </div>
-        ) : null}
+        </div>
       </div>
 
       <div className="navigation-map__layout">

@@ -24,6 +24,7 @@ const simulation = {
 describe('NavigationMap', () => {
   it('keeps the official mission route visible while GPS is unavailable', () => {
     render(<NavigationMap telemetry={emptyNavigationTelemetry} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Course' }))
 
     expect(
       screen.getByRole('heading', { name: 'Mission route' }),
@@ -40,6 +41,20 @@ describe('NavigationMap', () => {
     ).not.toBeInTheDocument()
     expect(screen.queryByText('Course layout')).not.toBeInTheDocument()
     expect(screen.queryByRole('checkbox')).not.toBeInTheDocument()
+  })
+
+  it('shows the satellite map and view switch in direct mode', () => {
+    render(<NavigationMap telemetry={emptyNavigationTelemetry} />)
+
+    expect(screen.getByTitle('Kolam Deli satellite base map')).toHaveAttribute(
+      'src',
+      expect.stringContaining('maps.google.com/maps'),
+    )
+    expect(screen.getByRole('button', { name: 'Map' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    expect(screen.getByRole('button', { name: 'Course' })).toBeInTheDocument()
   })
 
   it('shows the local replay boat on the simulation route', () => {
@@ -150,6 +165,7 @@ describe('NavigationMap', () => {
         simulation={simulation}
       />,
     )
+    fireEvent.click(screen.getByRole('button', { name: 'Course' }))
 
     expect(
       screen.getByRole('img', { name: 'GPS track plot' }),
@@ -274,13 +290,18 @@ describe('NavigationMap', () => {
     )
   })
 
-  it('keeps mission graphics visible without course layout options', () => {
+  it('keeps mission graphics visible with map view controls', () => {
     render(<NavigationMap telemetry={emptyNavigationTelemetry} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Course' }))
 
     expect(screen.getByTestId('surface-zone')).toBeInTheDocument()
     expect(screen.getByTestId('underwater-zone')).toBeInTheDocument()
     expect(screen.getAllByTestId('buoy-pair')).toHaveLength(10)
-    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Course' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    expect(screen.getByRole('button', { name: 'Map' })).toBeInTheDocument()
   })
 
   it('plots GPS points and rotates the current boat marker by heading', () => {
@@ -309,6 +330,7 @@ describe('NavigationMap', () => {
         }}
       />,
     )
+    fireEvent.click(screen.getByRole('button', { name: 'Course' }))
 
     expect(screen.getByText('GPS track · 2 points')).toBeInTheDocument()
     expect(
@@ -345,6 +367,7 @@ describe('NavigationMap', () => {
         }}
       />,
     )
+    fireEvent.click(screen.getByRole('button', { name: 'Course' }))
 
     const polyline = screen
       .getByRole('img', { name: 'GPS track plot' })
