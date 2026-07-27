@@ -8,6 +8,7 @@ export type Go2rtcPlaybackMode = 'connecting' | 'webrtc' | 'mjpeg'
 type UseGo2rtcVideoOptions = {
   urls: Go2rtcUrls
   enabled: boolean
+  fallbackUrl?: string | null
 }
 
 export type UseGo2rtcVideoResult = {
@@ -60,6 +61,7 @@ function waitForIceGathering(peer: RTCPeerConnection): Promise<void> {
 export function useGo2rtcVideo({
   urls,
   enabled,
+  fallbackUrl,
 }: UseGo2rtcVideoOptions): UseGo2rtcVideoResult {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [mode, setMode] = useState<Go2rtcPlaybackMode>(
@@ -236,7 +238,14 @@ export function useGo2rtcVideo({
       stopped = true
       closeResources()
     }
-  }, [enabled, urls.mjpeg, urls.mse, urls.webrtcHttp, urls.webrtcWs])
+  }, [
+    enabled,
+    fallbackUrl,
+    urls.mjpeg,
+    urls.mse,
+    urls.webrtcHttp,
+    urls.webrtcWs,
+  ])
 
   const onMjpegError = useCallback(() => {
     setMjpegFailed(true)

@@ -1,5 +1,7 @@
-import { useEffect, useState } from 'react'
 import { Waves } from '@phosphor-icons/react'
+
+import { asvGo2rtcUrls } from '../lib/stream-urls'
+import { useGo2rtcVideo } from '../lib/use-go2rtc-video'
 
 import type { UnderwaterFrame } from '../lib/asv-types'
 
@@ -12,13 +14,15 @@ export function UnderwaterFallback({
   frame,
   streamUrl,
 }: UnderwaterFallbackProps) {
-  const [streamFailed, setStreamFailed] = useState(false)
-
-  useEffect(() => {
-    setStreamFailed(false)
-  }, [streamUrl])
-
-  const activeStreamUrl = streamUrl && !streamFailed ? streamUrl : null
+  const player = useGo2rtcVideo({
+    urls: asvGo2rtcUrls.underwater,
+    enabled: Boolean(streamUrl),
+    fallbackUrl: streamUrl,
+  })
+  const activeStreamUrl =
+    streamUrl && player.mode === 'mjpeg' && !player.mjpegFailed
+      ? streamUrl
+      : null
 
   return (
     <section
@@ -33,12 +37,21 @@ export function UnderwaterFallback({
         </div>
       </div>
 
-      {activeStreamUrl ? (
+      {streamUrl && player.mode !== 'mjpeg' ? (
+        <video
+          ref={player.videoRef}
+          className="underwater-fallback__stream"
+          autoPlay
+          playsInline
+          muted
+          aria-label="Live underwater action camera"
+        />
+      ) : activeStreamUrl ? (
         <img
           className="underwater-fallback__stream"
           src={activeStreamUrl}
           alt="Live underwater action camera"
-          onError={() => setStreamFailed(true)}
+          onError={player.onMjpegError}
         />
       ) : frame ? (
         <figure className="underwater-fallback__frame">

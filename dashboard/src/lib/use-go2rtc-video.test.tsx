@@ -80,8 +80,14 @@ class FakePeerConnection {
   }
 }
 
-function Harness({ enabled = true }: { enabled?: boolean }) {
-  const player = useGo2rtcVideo({ urls, enabled })
+function Harness({
+  enabled = true,
+  fallbackUrl = 'legacy-1',
+}: {
+  enabled?: boolean
+  fallbackUrl?: string
+}) {
+  const player = useGo2rtcVideo({ urls, enabled, fallbackUrl })
   return (
     <>
       <video ref={player.videoRef} aria-label="test video" />
@@ -236,5 +242,19 @@ describe('useGo2rtcVideo', () => {
     expect(screen.getByTestId('mjpeg-failed')).toHaveTextContent('false')
     act(() => screen.getByRole('button', { name: 'legacy-error' }).click())
     expect(screen.getByTestId('mjpeg-failed')).toHaveTextContent('true')
+  })
+
+  it('restarts the player when the configured fallback URL changes', () => {
+    const rendered = render(<Harness fallbackUrl="legacy-1" />)
+    const firstSocket = FakeWebSocket.instances[0]
+    const firstPeer = FakePeerConnection.instances[0]
+
+    rendered.rerender(<Harness fallbackUrl="legacy-2" />)
+
+    expect(firstSocket.close).toHaveBeenCalled()
+    expect(firstPeer.close).toHaveBeenCalled()
+    expect(FakeWebSocket.instances).toHaveLength(2)
+    expect(FakePeerConnection.instances).toHaveLength(2)
+    expect(screen.getByTestId('mode')).toHaveTextContent('connecting')
   })
 })
