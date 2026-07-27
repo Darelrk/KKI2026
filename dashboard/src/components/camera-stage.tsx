@@ -20,10 +20,12 @@ export function CameraStage({
   metadataStatus = 'error',
 }: CameraStageProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const imageRef = useRef<HTMLImageElement>(null)
   const cacheRef = useRef(metadataCache)
   const player = useGo2rtcVideo({
     urls: asvGo2rtcUrls.surface,
     enabled: Boolean(streamUrl),
+    fallbackUrl: streamUrl,
   })
 
   useEffect(() => {
@@ -35,9 +37,11 @@ export function CameraStage({
 
     const draw = (nowMs: number) => {
       const video = player.videoRef.current
+      const image = imageRef.current
+      const media = video ?? image
       const canvas = canvasRef.current
-      if (video && canvas) {
-        const display = video.getBoundingClientRect()
+      if (media && canvas) {
+        const display = media.getBoundingClientRect()
         const dpr = window.devicePixelRatio || 1
         canvas.width = Math.max(1, Math.round(display.width * dpr))
         canvas.height = Math.max(1, Math.round(display.height * dpr))
@@ -46,9 +50,14 @@ export function CameraStage({
           context.clearRect(0, 0, canvas.width, canvas.height)
           const cache = cacheRef.current
           if (cache && isVisionMetadataFresh(cache, nowMs)) {
-            const sourceWidth = video.videoWidth || cache.payload.source_width
+            const sourceWidth =
+              video?.videoWidth ||
+              image?.naturalWidth ||
+              cache.payload.source_width
             const sourceHeight =
-              video.videoHeight || cache.payload.source_height
+              video?.videoHeight ||
+              image?.naturalHeight ||
+              cache.payload.source_height
             const scale = Math.min(
               display.width / sourceWidth,
               display.height / sourceHeight,
@@ -114,6 +123,7 @@ export function CameraStage({
             ) : (
               <img
                 className="camera-stage__stream"
+                ref={imageRef}
                 src={streamUrl || asvGo2rtcUrls.surface.mjpeg}
                 alt="Live surface camera"
                 onError={player.onMjpegError}

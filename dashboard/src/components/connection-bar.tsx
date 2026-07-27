@@ -22,7 +22,7 @@ export function ConnectionBar({ asvId, online, status }: ConnectionBarProps) {
     <section className="connection-bar" aria-label="ASV connection status">
       <div className="connection-bar__identity">
         {isProblem ? <WarningCircle weight="fill" /> : <Radio weight="fill" />}
-        <span>ASV / {asvId}</span>
+        <span>TRIFUSION / ASV / {asvId}</span>
       </div>
       <div className="connection-bar__signals">
         <span

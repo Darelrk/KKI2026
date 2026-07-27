@@ -51,6 +51,7 @@ class FakeWebSocket {
 
 class FakePeerConnection {
   static readonly instances: FakePeerConnection[] = []
+  static readonly configs: RTCConfiguration[] = []
   readonly addTransceiver = vi.fn()
   readonly createOffer = vi
     .fn()
@@ -65,7 +66,11 @@ class FakePeerConnection {
       this.remoteDescription = description
     },
   )
-  readonly addIceCandidate = vi.fn()
+  readonly addIceCandidate = vi.fn(async (candidate: RTCIceCandidateInit) => {
+    if (!candidate.sdpMid && candidate.sdpMLineIndex == null) {
+      throw new Error('candidate m-line is required')
+    }
+  })
   readonly close = vi.fn()
   localDescription: RTCSessionDescriptionInit | null = null
   remoteDescription: RTCSessionDescriptionInit | null = null
@@ -75,8 +80,9 @@ class FakePeerConnection {
   ontrack: ((event: RTCTrackEvent) => void) | null = null
   onconnectionstatechange: (() => void) | null = null
 
-  constructor() {
+  constructor(config?: RTCConfiguration) {
     FakePeerConnection.instances.push(this)
+    FakePeerConnection.configs.push(config ?? {})
   }
 }
 
@@ -112,6 +118,7 @@ describe('useGo2rtcVideo', () => {
     vi.useFakeTimers()
     FakeWebSocket.instances.length = 0
     FakePeerConnection.instances.length = 0
+    FakePeerConnection.configs.length = 0
     vi.stubGlobal('WebSocket', FakeWebSocket)
     vi.stubGlobal('RTCPeerConnection', FakePeerConnection)
     vi.spyOn(HTMLMediaElement.prototype, 'play').mockResolvedValue(undefined)
@@ -129,7 +136,16 @@ describe('useGo2rtcVideo', () => {
     const socket = FakeWebSocket.instances[0]
     const peer = FakePeerConnection.instances[0]
 
-    expect(socket.url).toBe(urls.webrtcWs)
+    expect(FakePeerConnection.configs[0]).toEqual({
+      iceServers: [
+        {
+          urls: [
+            'stun:stun.cloudflare.com:3478',
+            'stun:stun.l.google.com:19302',
+          ],
+        },
+      ],
+    })
     socket.open()
     await flushEffects()
 
@@ -170,6 +186,7 @@ describe('useGo2rtcVideo', () => {
     )
     expect(peer.addIceCandidate).toHaveBeenCalledWith({
       candidate: 'candidate:remote',
+      sdpMid: '0',
     })
   })
 
@@ -184,6 +201,11 @@ describe('useGo2rtcVideo', () => {
     await flushEffects()
     const stream = { id: 'remote-stream' } as MediaStream
     act(() => peer.ontrack?.({ streams: [stream] } as unknown as RTCTrackEvent))
+    expect(screen.getByTestId('mode')).toHaveTextContent('connecting')
+    act(() => {
+      peer.connectionState = 'connected'
+      peer.onconnectionstatechange?.()
+    })
 
     expect(peer.setRemoteDescription).toHaveBeenCalledWith({
       type: 'answer',

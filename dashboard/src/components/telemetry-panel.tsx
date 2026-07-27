@@ -9,6 +9,9 @@ type TelemetryPanelProps = {
   updatedAt: string | null
 }
 
+const metersPerSecondToKnots = 1.943844492
+const metersPerSecondToKilometersPerHour = 3.6
+
 export function TelemetryPanel({ telemetry, updatedAt }: TelemetryPanelProps) {
   return (
     <section className="telemetry-panel" aria-labelledby="telemetry-title">
@@ -46,12 +49,26 @@ export function TelemetryPanel({ telemetry, updatedAt }: TelemetryPanelProps) {
         <div className="telemetry-card">
           <dt>
             <Gauge aria-hidden="true" size={14} />
-            Speed
+            SOG
           </dt>
           <dd>
-            {telemetry.speed_mps === null
-              ? 'Unavailable'
-              : `${telemetry.speed_mps.toFixed(2)} m/s`}
+            {telemetry.speed_mps === null ? (
+              'Unavailable'
+            ) : (
+              <>
+                <span>
+                  {(telemetry.speed_mps * metersPerSecondToKnots).toFixed(2)}{' '}
+                  knot
+                </span>
+                <br />
+                <span>
+                  {(
+                    telemetry.speed_mps * metersPerSecondToKilometersPerHour
+                  ).toFixed(2)}{' '}
+                  km/h
+                </span>
+              </>
+            )}
           </dd>
         </div>
         <div className="telemetry-card telemetry-card--wide">

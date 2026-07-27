@@ -1,4 +1,4 @@
-import { act, cleanup, render, screen } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { CameraStage } from './camera-stage'
@@ -133,6 +133,19 @@ beforeEach(() => {
       toJSON: () => ({}),
     },
   )
+  vi.spyOn(HTMLImageElement.prototype, 'getBoundingClientRect').mockReturnValue(
+    {
+      x: 0,
+      y: 0,
+      top: 0,
+      right: 800,
+      bottom: 600,
+      left: 0,
+      width: 800,
+      height: 600,
+      toJSON: () => ({}),
+    },
+  )
   vi.spyOn(HTMLMediaElement.prototype, 'play').mockResolvedValue(undefined)
 })
 
@@ -230,5 +243,51 @@ describe('CameraStage', () => {
     expect(
       screen.getByRole('img', { name: 'Live surface camera' }),
     ).toHaveAttribute('src', 'https://camera.example.test/surface')
+  })
+  it('restarts the player when the configured surface stream changes', () => {
+    const rendered = render(
+      <CameraStage
+        streamUrl="https://camera.example.test/old-surface"
+        metadataCache={cache}
+        metadataStatus="connected"
+      />,
+    )
+    act(() => CameraFakeSocket.instances[0].fail())
+    fireEvent.error(screen.getByRole('img', { name: 'Live surface camera' }))
+
+    rendered.rerender(
+      <CameraStage
+        streamUrl="https://camera.example.test/new-surface"
+        metadataCache={cache}
+        metadataStatus="connected"
+      />,
+    )
+
+    expect(screen.getByLabelText('Live surface camera')).toBeInTheDocument()
+    expect(CameraFakeSocket.instances).toHaveLength(2)
+    expect(CameraFakePeer.instances).toHaveLength(2)
+  })
+  it('draws normalized boxes over the MJPEG fallback', () => {
+    render(
+      <CameraStage
+        streamUrl="https://camera.example.test/surface"
+        metadataCache={cache}
+        metadataStatus="connected"
+      />,
+    )
+    act(() => CameraFakeSocket.instances[0].fail())
+    const image = screen.getByRole('img', { name: 'Live surface camera' })
+    Object.defineProperty(image, 'naturalWidth', {
+      configurable: true,
+      value: 1280,
+    })
+    Object.defineProperty(image, 'naturalHeight', {
+      configurable: true,
+      value: 720,
+    })
+
+    frameCallbacks[0](500)
+
+    expect(canvasContext.strokeRect).toHaveBeenCalledWith(320, 255, 160, 90)
   })
 })

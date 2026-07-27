@@ -24,38 +24,9 @@ type SignalingMessage = {
 }
 
 const WEBRTC_TIMEOUT_MS = 3000
-const ICE_GATHERING_TIMEOUT_MS = 1000
 
 function isSignalingMessage(value: unknown): value is SignalingMessage {
   return typeof value === 'object' && value !== null
-}
-
-function waitForIceGathering(peer: RTCPeerConnection): Promise<void> {
-  if (peer.iceGatheringState === 'complete') {
-    return Promise.resolve()
-  }
-
-  const { promise, resolve } = (
-    Promise as PromiseConstructor & {
-      withResolvers<T>(): {
-        promise: Promise<T>
-        resolve: (value?: T | PromiseLike<T>) => void
-      }
-    }
-  ).withResolvers<void>()
-  let settled = false
-  const finish = () => {
-    if (settled) return
-    settled = true
-    window.clearTimeout(timeoutId)
-    peer.onicegatheringstatechange = null
-    resolve()
-  }
-  const timeoutId = window.setTimeout(finish, ICE_GATHERING_TIMEOUT_MS)
-  peer.onicegatheringstatechange = () => {
-    if (peer.iceGatheringState === 'complete') finish()
-  }
-  return promise
 }
 
 export function useGo2rtcVideo({
@@ -79,6 +50,19 @@ export function useGo2rtcVideo({
     let peer: RTCPeerConnection | null = null
     let socket: WebSocket | null = null
     let timeoutId: number | undefined
+    let remoteStream: MediaStream | null = null
+    const activateIfConnected = () => {
+      if (
+        stopped ||
+        !peer ||
+        !remoteStream ||
+        peer.connectionState !== 'connected'
+      ) {
+        return
+      }
+      clearTimeoutIfNeeded()
+      setMode('webrtc')
+    }
 
     const clearTimeoutIfNeeded = () => {
       if (timeoutId !== undefined) {
@@ -158,7 +142,10 @@ export function useGo2rtcVideo({
         message.value
       ) {
         try {
-          await peer.addIceCandidate({ candidate: message.value })
+          await peer.addIceCandidate({
+            candidate: message.value,
+            sdpMid: '0',
+          })
         } catch {
           fallback()
         }
@@ -175,7 +162,16 @@ export function useGo2rtcVideo({
       }
 
       try {
-        peer = new RTCPeerConnection()
+        peer = new RTCPeerConnection({
+          iceServers: [
+            {
+              urls: [
+                'stun:stun.cloudflare.com:3478',
+                'stun:stun.l.google.com:19302',
+              ],
+            },
+          ],
+        })
         peer.addTransceiver('video', { direction: 'recvonly' })
         peer.ontrack = (event) => {
           if (stopped) return
@@ -187,10 +183,10 @@ export function useGo2rtcVideo({
           const video = videoRef.current
           if (!stream || !video) return
 
+          remoteStream = stream
           video.srcObject = stream
           void video.play().catch(() => undefined)
-          clearTimeoutIfNeeded()
-          setMode('webrtc')
+          activateIfConnected()
         }
         peer.onconnectionstatechange = () => {
           if (
@@ -199,7 +195,9 @@ export function useGo2rtcVideo({
               peer.connectionState === 'closed')
           ) {
             fallback()
+            return
           }
+          activateIfConnected()
         }
 
         socket = new WebSocket(urls.webrtcWs)
@@ -209,7 +207,6 @@ export function useGo2rtcVideo({
             const offer = await peer.createOffer()
             if (stopped || !peer) return
             await peer.setLocalDescription(offer)
-            await waitForIceGathering(peer)
             if (stopped || !peer?.localDescription?.sdp) return
             send({ type: 'webrtc/offer', value: peer.localDescription.sdp })
           } catch {
