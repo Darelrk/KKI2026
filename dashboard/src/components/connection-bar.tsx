@@ -5,7 +5,7 @@ export type ConnectionStatus = 'fixture' | 'connecting' | 'connected' | 'error'
 type ConnectionBarProps = {
   asvId: string
   online: boolean
-  status: ConnectionStatus
+  status: ConnectionStatus | null
 }
 
 const statusCopy: Record<ConnectionStatus, string> = {
@@ -34,9 +34,11 @@ export function ConnectionBar({ asvId, online, status }: ConnectionBarProps) {
         >
           {online ? 'ASV online' : 'ASV offline'}
         </span>
-        <span className={`status-chip status-chip--${status}`}>
-          {statusCopy[status]}
-        </span>
+        {status ? (
+          <span className={`status-chip status-chip--${status}`}>
+            {statusCopy[status]}
+          </span>
+        ) : null}
       </div>
     </section>
   )

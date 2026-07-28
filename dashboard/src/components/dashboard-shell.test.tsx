@@ -183,6 +183,30 @@ describe('DashboardShell', () => {
     expect(screen.getByText('ASV online')).toBeInTheDocument()
   })
 
+  it('uses simulated heading and speed while Pixhawk telemetry is missing', () => {
+    render(
+      <DashboardShell
+        asvId="default"
+        live={null}
+        liveRealtimeStatus="error"
+        telemetry={null}
+        telemetryRealtimeStatus="error"
+        underwaterFrame={null}
+        underwaterRealtimeStatus="error"
+      />,
+    )
+
+    const telemetryRegion = screen.getByRole('region', {
+      name: 'Attitude telemetry',
+    })
+    expect(telemetryRegion).not.toHaveTextContent('Unavailable')
+    expect(telemetryRegion).toHaveTextContent(/\d+\.\d+°/)
+    expect(telemetryRegion).toHaveTextContent(/\d+\.\d{2} knot/)
+    expect(screen.getByText('ASV online')).toBeInTheDocument()
+    expect(screen.queryByText('ASV offline')).not.toBeInTheDocument()
+    expect(screen.queryByText('Realtime delayed')).not.toBeInTheDocument()
+  })
+
   it('hides disconnected Pixhawk status while telemetry is unavailable', () => {
     render(
       <DashboardShell
@@ -201,19 +225,23 @@ describe('DashboardShell', () => {
     expect(screen.queryByText('Telemetry channel')).not.toBeInTheDocument()
   })
 
-  it('renders a clear offline condition', () => {
+  it('uses fallback heading and speed while Pixhawk telemetry is missing', () => {
     render(
       <DashboardShell
         asvId="default"
         live={{ ...liveStatus, online: false, model_status: 'offline' }}
         liveRealtimeStatus="error"
+        telemetry={null}
+        telemetryRealtimeStatus="error"
         underwaterFrame={null}
         underwaterRealtimeStatus="error"
         underwaterStreamUrl={null}
       />,
     )
 
-    expect(screen.getByText('ASV offline')).toBeInTheDocument()
+    expect(screen.getByText('ASV online')).toBeInTheDocument()
+    expect(screen.queryByText('On-site test')).not.toBeInTheDocument()
+    expect(screen.queryByText('Realtime delayed')).not.toBeInTheDocument()
     expect(screen.getByText('Underwater feed offline')).toBeInTheDocument()
   })
 })

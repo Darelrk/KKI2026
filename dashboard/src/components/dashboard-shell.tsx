@@ -50,19 +50,24 @@ export function DashboardShell({
   underwaterStreamUrl = asvStreamUrls.underwater,
 }: DashboardShellProps) {
   const telemetryMissing = !telemetry || !telemetry.connected
+  const simulationTelemetryActive = mode === 'fixture' || telemetryMissing
   const simulation = useMissionSimulation({
     autoStart: mode === 'fixture' || telemetryMissing,
   })
   const fixtureStartedAtMs = useRef(Date.now())
-  const displayTelemetry =
-    mode === 'fixture'
-      ? missionTelemetryAt({
-          progress: simulation.progress,
-          elapsedMs: simulation.elapsedMs,
-          status: simulation.status,
-          startedAtMs: fixtureStartedAtMs.current,
-        })
-      : telemetry
+  const displayTelemetry = simulationTelemetryActive
+    ? missionTelemetryAt({
+        progress: simulation.progress,
+        elapsedMs: simulation.elapsedMs,
+        status: simulation.status,
+        startedAtMs: fixtureStartedAtMs.current,
+      })
+    : telemetry
+  const displayTelemetryStatus: ConnectionStatus = simulationTelemetryActive
+    ? 'fixture'
+    : telemetryRealtimeStatus
+  const showTelemetryStatus =
+    mode === 'fixture' || telemetry?.connected === true
   const navigation = displayTelemetry ?? emptyNavigationTelemetry
   const displayLive =
     mode === 'fixture' && live && displayTelemetry
@@ -80,7 +85,7 @@ export function DashboardShell({
       <ConnectionBar
         asvId={asvId}
         online={displayTelemetry?.connected ?? false}
-        status={telemetryRealtimeStatus}
+        status={simulationTelemetryActive ? null : displayTelemetryStatus}
       />
 
       <section
@@ -101,8 +106,8 @@ export function DashboardShell({
         <div className="dashboard-grid__side">
           <SignalRail
             live={displayLive ?? null}
-            telemetryConnected={displayTelemetry?.connected ?? null}
-            telemetryStatus={telemetryRealtimeStatus}
+            telemetryConnected={telemetry?.connected ?? null}
+            telemetryStatus={displayTelemetryStatus}
           />
           <TelemetryPanel
             telemetry={navigation}
@@ -126,9 +131,9 @@ export function DashboardShell({
         <span>
           Fallback channel: {displayChannelStatus(underwaterRealtimeStatus)}
         </span>
-        {displayTelemetry?.connected ? (
+        {showTelemetryStatus ? (
           <span>
-            Telemetry channel: {displayChannelStatus(telemetryRealtimeStatus)}
+            Telemetry channel: {displayChannelStatus(displayTelemetryStatus)}
           </span>
         ) : null}
       </footer>
