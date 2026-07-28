@@ -183,7 +183,7 @@ describe('DashboardShell', () => {
     expect(screen.getByText('ASV online')).toBeInTheDocument()
   })
 
-  it('uses simulated heading and speed while Pixhawk telemetry is missing', () => {
+  it('uses fallback heading and speed while Pixhawk telemetry is missing', () => {
     render(
       <DashboardShell
         asvId="default"
@@ -205,6 +205,28 @@ describe('DashboardShell', () => {
     expect(screen.getByText('ASV online')).toBeInTheDocument()
     expect(screen.queryByText('ASV offline')).not.toBeInTheDocument()
     expect(screen.queryByText('Realtime delayed')).not.toBeInTheDocument()
+  })
+
+  it('uses live Pixhawk telemetry when it becomes available', () => {
+    render(
+      <DashboardShell
+        asvId="default"
+        live={null}
+        liveRealtimeStatus="error"
+        telemetry={{ ...telemetry, heading_deg: 144, speed_mps: 1.2 }}
+        telemetryRealtimeStatus="connected"
+        underwaterFrame={null}
+        underwaterRealtimeStatus="connected"
+      />,
+    )
+
+    const telemetryRegion = screen.getByRole('region', {
+      name: 'Attitude telemetry',
+    })
+    expect(telemetryRegion).toHaveTextContent('144.0°')
+    expect(telemetryRegion).toHaveTextContent('2.33 knot')
+    expect(screen.getByText('Pixhawk connected')).toBeInTheDocument()
+    expect(screen.getByText('Telemetry channel: connected')).toBeInTheDocument()
   })
 
   it('hides disconnected Pixhawk status while telemetry is unavailable', () => {
