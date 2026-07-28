@@ -183,6 +183,24 @@ describe('DashboardShell', () => {
     expect(screen.getByText('ASV online')).toBeInTheDocument()
   })
 
+  it('hides disconnected Pixhawk status while telemetry is unavailable', () => {
+    render(
+      <DashboardShell
+        asvId="default"
+        live={liveStatus}
+        liveRealtimeStatus="connected"
+        telemetry={null}
+        telemetryRealtimeStatus="error"
+        underwaterFrame={null}
+        underwaterRealtimeStatus="error"
+      />,
+    )
+
+    expect(screen.queryByText('Telemetry unavailable')).not.toBeInTheDocument()
+    expect(screen.queryByText('Pixhawk offline')).not.toBeInTheDocument()
+    expect(screen.queryByText('Telemetry channel')).not.toBeInTheDocument()
+  })
+
   it('renders a clear offline condition', () => {
     render(
       <DashboardShell

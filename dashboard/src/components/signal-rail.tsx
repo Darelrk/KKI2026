@@ -52,24 +52,22 @@ export function SignalRail({
           <dt>Last update</dt>
           <dd>{live ? formatSiteTime(live.updated_at) : 'Awaiting status'}</dd>
         </div>
-        <div>
-          <dt>Navigation feed</dt>
-          <dd>
-            {telemetryConnected === null
-              ? 'Unavailable'
-              : telemetryConnected
-                ? 'Pixhawk connected'
-                : 'Pixhawk offline'}
-          </dd>
-        </div>
+        {telemetryConnected ? (
+          <div>
+            <dt>Navigation feed</dt>
+            <dd>Pixhawk connected</dd>
+          </div>
+        ) : null}
         <div>
           <dt>Autonomy target</dt>
           <dd>AUTO / ONBOARD</dd>
         </div>
-        <div>
-          <dt>Telemetry channel</dt>
-          <dd>{telemetryStatusCopy[telemetryStatus]}</dd>
-        </div>
+        {telemetryConnected ? (
+          <div>
+            <dt>Telemetry channel</dt>
+            <dd>{telemetryStatusCopy[telemetryStatus]}</dd>
+          </div>
+        ) : null}
       </dl>
     </aside>
   )

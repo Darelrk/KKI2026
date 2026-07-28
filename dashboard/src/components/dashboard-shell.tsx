@@ -1,4 +1,3 @@
-import { WarningCircle } from '@phosphor-icons/react'
 import { useRef } from 'react'
 
 import { MissionStage } from './mission-stage'
@@ -64,7 +63,6 @@ export function DashboardShell({
           startedAtMs: fixtureStartedAtMs.current,
         })
       : telemetry
-  const isUnavailable = !displayTelemetry || !displayTelemetry.connected
   const navigation = displayTelemetry ?? emptyNavigationTelemetry
   const displayLive =
     mode === 'fixture' && live && displayTelemetry
@@ -84,19 +82,6 @@ export function DashboardShell({
         online={displayTelemetry?.connected ?? false}
         status={telemetryRealtimeStatus}
       />
-
-      {isUnavailable ? (
-        <section className="dashboard-shell__alert" role="status">
-          <WarningCircle aria-hidden="true" weight="fill" />
-          <div>
-            <strong>Telemetry unavailable</strong>
-            <p>
-              Waiting for a valid Pixhawk telemetry message from the realtime
-              channel.
-            </p>
-          </div>
-        </section>
-      ) : null}
 
       <section
         className="dashboard-grid"
@@ -141,9 +126,11 @@ export function DashboardShell({
         <span>
           Fallback channel: {displayChannelStatus(underwaterRealtimeStatus)}
         </span>
-        <span>
-          Telemetry channel: {displayChannelStatus(telemetryRealtimeStatus)}
-        </span>
+        {displayTelemetry?.connected ? (
+          <span>
+            Telemetry channel: {displayChannelStatus(telemetryRealtimeStatus)}
+          </span>
+        ) : null}
       </footer>
     </main>
   )
