@@ -1,5 +1,3 @@
-import { Radio, WarningCircle } from '@phosphor-icons/react'
-
 export type ConnectionStatus = 'fixture' | 'connecting' | 'connected' | 'error'
 
 type ConnectionBarProps = {
@@ -15,8 +13,6 @@ const statusCopy: Record<ConnectionStatus, string> = {
 }
 
 export function ConnectionBar({ online, status }: ConnectionBarProps) {
-  const isProblem = !online || status === 'error'
-
   return (
     <section className="connection-bar" aria-label="ASV connection status">
       <div className="connection-bar__brand">
@@ -39,8 +35,11 @@ export function ConnectionBar({ online, status }: ConnectionBarProps) {
         </div>
         <span className="connection-bar__brand-divider" aria-hidden="true" />
         <div className="connection-bar__identity">
-          {isProblem ? <WarningCircle weight="fill" /> : <Radio weight="fill" />}
-          <strong>TRIFUSION</strong>
+          <img
+            src="/trifusion.svg"
+            alt="TRIFUSION"
+            className="connection-bar__team-logo"
+          />
         </div>
       </div>
       <div className="connection-bar__signals">

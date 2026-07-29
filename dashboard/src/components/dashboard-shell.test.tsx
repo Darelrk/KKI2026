@@ -157,11 +157,11 @@ describe('DashboardShell', () => {
     expect(screen.getByText('144.0°')).toBeInTheDocument()
     expect(screen.getByText('0.00 knot')).toBeInTheDocument()
     expect(screen.getByText('0.00 km/h')).toBeInTheDocument()
-    const wordmark = screen.getByText('TRIFUSION')
-    expect(wordmark.tagName).toBe('STRONG')
-    expect(wordmark.closest('.connection-bar__identity')).toHaveTextContent(
-      /^TRIFUSION$/,
-    )
+    const teamLogo = screen.getByRole('img', { name: 'TRIFUSION' })
+    expect(teamLogo).toHaveAttribute('src', '/trifusion.svg')
+    const teamIdentity = teamLogo.closest('.connection-bar__identity')
+    expect(teamIdentity).not.toHaveTextContent('TRIFUSION')
+    expect(teamIdentity?.querySelector('svg')).not.toBeInTheDocument()
     expect(
       screen.getByRole('img', { name: 'Diktisaintek Berdampak' }),
     ).toBeInTheDocument()

@@ -202,10 +202,11 @@ h2 {
   white-space: nowrap;
 }
 
-.connection-bar__identity strong {
-  font-family: 'Arial Black', 'Segoe UI Black', 'Segoe UI', sans-serif;
-  font-weight: 900;
-  letter-spacing: 0.06em;
+.connection-bar__team-logo {
+  display: block;
+  width: 7rem;
+  height: 0.85rem;
+  object-fit: contain;
 }
 
 
