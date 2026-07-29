@@ -49,14 +49,11 @@ describe('DashboardShell', () => {
   it('binds the on-site fixture to the Kolam Deli coordinate stream', () => {
     render(
       <DashboardShell
-        asvId="default"
         mode="fixture"
         live={liveStatus}
-        liveRealtimeStatus="fixture"
         telemetry={telemetry}
         telemetryRealtimeStatus="fixture"
         underwaterFrame={underwaterFrame}
-        underwaterRealtimeStatus="fixture"
       />,
     )
 
@@ -71,20 +68,17 @@ describe('DashboardShell', () => {
       ).getByText(/^3\.\d{6}, 98\.\d{6}$/),
     ).toBeInTheDocument()
     expect(
-      screen.getByText('Test site: Kolam Deli · Lintasan A'),
-    ).toBeInTheDocument()
+      document.querySelector('.dashboard-shell__footer'),
+    ).not.toBeInTheDocument()
   })
 
   it('runs the mission route preview while telemetry is still missing', () => {
     render(
       <DashboardShell
-        asvId="default"
         live={liveStatus}
-        liveRealtimeStatus="connecting"
         telemetry={null}
         telemetryRealtimeStatus="connecting"
         underwaterFrame={null}
-        underwaterRealtimeStatus="connecting"
       />,
     )
 
@@ -95,13 +89,10 @@ describe('DashboardShell', () => {
   it('shows the initial replay marker before mission start in direct mode', () => {
     render(
       <DashboardShell
-        asvId="default"
         live={liveStatus}
-        liveRealtimeStatus="connected"
         telemetry={telemetry}
         telemetryRealtimeStatus="connected"
         underwaterFrame={underwaterFrame}
-        underwaterRealtimeStatus="connected"
       />,
     )
 
@@ -112,11 +103,8 @@ describe('DashboardShell', () => {
   it('renders raw main and underwater camera streams instead of model output', () => {
     render(
       <DashboardShell
-        asvId="default"
         live={liveStatus}
-        liveRealtimeStatus="fixture"
         underwaterFrame={underwaterFrame}
-        underwaterRealtimeStatus="fixture"
       />,
     )
 
@@ -140,11 +128,8 @@ describe('DashboardShell', () => {
   it('uses the Realtime underwater frame when no raw stream is configured', () => {
     render(
       <DashboardShell
-        asvId="default"
         live={liveStatus}
-        liveRealtimeStatus="fixture"
         underwaterFrame={underwaterFrame}
-        underwaterRealtimeStatus="fixture"
         underwaterStreamUrl={null}
       />,
     )
@@ -160,13 +145,10 @@ describe('DashboardShell', () => {
   it('renders live Pixhawk telemetry and channel status', () => {
     render(
       <DashboardShell
-        asvId="default"
         live={{ ...liveStatus, online: false, model_status: 'offline' }}
-        liveRealtimeStatus="error"
         telemetry={telemetry}
         telemetryRealtimeStatus="connected"
         underwaterFrame={null}
-        underwaterRealtimeStatus="connected"
       />,
     )
 
@@ -175,10 +157,33 @@ describe('DashboardShell', () => {
     expect(screen.getByText('144.0°')).toBeInTheDocument()
     expect(screen.getByText('0.00 knot')).toBeInTheDocument()
     expect(screen.getByText('0.00 km/h')).toBeInTheDocument()
-    expect(screen.getByText('TRIFUSION / ASV / default')).toBeInTheDocument()
+    const wordmark = screen.getByText('TRIFUSION')
+    expect(wordmark.tagName).toBe('STRONG')
+    expect(wordmark.closest('.connection-bar__identity')).toHaveTextContent(
+      /^TRIFUSION$/,
+    )
+    expect(
+      screen.getByRole('img', { name: 'Diktisaintek Berdampak' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('img', { name: 'Direktorat Jenderal Pendidikan Tinggi' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('img', {
+        name: 'Universitas Muhammadiyah Sumatera Utara',
+      }),
+    ).toBeInTheDocument()
+    expect(
+      within(screen.getByLabelText('Institution partners'))
+        .getAllByRole('img')
+        .map((logo) => logo.getAttribute('alt')),
+    ).toEqual([
+      'Direktorat Jenderal Pendidikan Tinggi',
+      'Diktisaintek Berdampak',
+      'Universitas Muhammadiyah Sumatera Utara',
+    ])
     expect(screen.getByText('GPS track · 1 points')).toBeInTheDocument()
     expect(screen.getByText('Pixhawk connected')).toBeInTheDocument()
-    expect(screen.getByText('Telemetry channel: connected')).toBeInTheDocument()
     expect(screen.queryByText('Telemetry unavailable')).not.toBeInTheDocument()
     expect(screen.getByText('ASV online')).toBeInTheDocument()
   })
@@ -186,13 +191,10 @@ describe('DashboardShell', () => {
   it('uses fallback heading and speed while Pixhawk telemetry is missing', () => {
     render(
       <DashboardShell
-        asvId="default"
         live={null}
-        liveRealtimeStatus="error"
         telemetry={null}
         telemetryRealtimeStatus="error"
         underwaterFrame={null}
-        underwaterRealtimeStatus="error"
       />,
     )
 
@@ -210,13 +212,10 @@ describe('DashboardShell', () => {
   it('uses live Pixhawk telemetry when it becomes available', () => {
     render(
       <DashboardShell
-        asvId="default"
         live={null}
-        liveRealtimeStatus="error"
         telemetry={{ ...telemetry, heading_deg: 144, speed_mps: 1.2 }}
         telemetryRealtimeStatus="connected"
         underwaterFrame={null}
-        underwaterRealtimeStatus="connected"
       />,
     )
 
@@ -226,19 +225,15 @@ describe('DashboardShell', () => {
     expect(telemetryRegion).toHaveTextContent('144.0°')
     expect(telemetryRegion).toHaveTextContent('2.33 knot')
     expect(screen.getByText('Pixhawk connected')).toBeInTheDocument()
-    expect(screen.getByText('Telemetry channel: connected')).toBeInTheDocument()
   })
 
   it('hides disconnected Pixhawk status while telemetry is unavailable', () => {
     render(
       <DashboardShell
-        asvId="default"
         live={liveStatus}
-        liveRealtimeStatus="connected"
         telemetry={null}
         telemetryRealtimeStatus="error"
         underwaterFrame={null}
-        underwaterRealtimeStatus="error"
       />,
     )
 
@@ -250,13 +245,10 @@ describe('DashboardShell', () => {
   it('uses fallback heading and speed while Pixhawk telemetry is missing', () => {
     render(
       <DashboardShell
-        asvId="default"
         live={{ ...liveStatus, online: false, model_status: 'offline' }}
-        liveRealtimeStatus="error"
         telemetry={null}
         telemetryRealtimeStatus="error"
         underwaterFrame={null}
-        underwaterRealtimeStatus="error"
         underwaterStreamUrl={null}
       />,
     )

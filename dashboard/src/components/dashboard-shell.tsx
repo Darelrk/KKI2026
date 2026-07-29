@@ -9,7 +9,7 @@ import { SignalRail } from './signal-rail'
 import { UnderwaterFallback } from './underwater-fallback'
 
 import { emptyNavigationTelemetry } from '../lib/navigation-types'
-import { kolamDeliSite, missionTelemetryAt } from '../lib/mission-site'
+import { missionTelemetryAt } from '../lib/mission-site'
 import { asvStreamUrls } from '../lib/stream-urls'
 import { useMissionSimulation } from '../lib/use-mission-simulation'
 
@@ -21,14 +21,11 @@ import type { VisionRealtimeStatus } from '../lib/use-vision-metadata'
 import type { ConnectionStatus } from './connection-bar'
 
 type DashboardShellProps = {
-  asvId: string
   mode?: AsvDataMode
   live: AsvLive | null | undefined
-  liveRealtimeStatus: ConnectionStatus
   telemetry?: AsvTelemetry | null
   telemetryRealtimeStatus?: ConnectionStatus
   underwaterFrame: UnderwaterFrame | null
-  underwaterRealtimeStatus: ConnectionStatus
   visionMetadataCache?: VisionMetadataCache | null
   visionMetadataStatus?: VisionRealtimeStatus
   surfaceStreamUrl?: string | null
@@ -36,14 +33,11 @@ type DashboardShellProps = {
 }
 
 export function DashboardShell({
-  asvId,
   mode = 'direct',
   live,
-  liveRealtimeStatus,
   telemetry = null,
   telemetryRealtimeStatus = 'connecting',
   underwaterFrame,
-  underwaterRealtimeStatus,
   visionMetadataCache = null,
   visionMetadataStatus = 'error',
   surfaceStreamUrl = asvStreamUrls.surface,
@@ -66,8 +60,6 @@ export function DashboardShell({
   const displayTelemetryStatus: ConnectionStatus = simulationTelemetryActive
     ? 'fixture'
     : telemetryRealtimeStatus
-  const showTelemetryStatus =
-    mode === 'fixture' || telemetry?.connected === true
   const navigation = displayTelemetry ?? emptyNavigationTelemetry
   const displayLive =
     mode === 'fixture' && live && displayTelemetry
@@ -77,13 +69,10 @@ export function DashboardShell({
     mode === 'fixture' && underwaterFrame && displayTelemetry
       ? { ...underwaterFrame, captured_at: displayTelemetry.captured_at }
       : underwaterFrame
-  const displayChannelStatus = (status: ConnectionStatus) =>
-    status === 'fixture' ? 'active' : status
 
   return (
     <main className="dashboard-shell">
       <ConnectionBar
-        asvId={asvId}
         online={displayTelemetry?.connected ?? false}
         status={simulationTelemetryActive ? null : displayTelemetryStatus}
       />
@@ -123,20 +112,6 @@ export function DashboardShell({
       />
       <MissionStage simulation={simulation} />
 
-      <footer className="dashboard-shell__footer">
-        {mode === 'fixture' ? (
-          <span>Test site: {kolamDeliSite.name} · Lintasan A</span>
-        ) : null}
-        <span>Surface channel: {displayChannelStatus(liveRealtimeStatus)}</span>
-        <span>
-          Fallback channel: {displayChannelStatus(underwaterRealtimeStatus)}
-        </span>
-        {showTelemetryStatus ? (
-          <span>
-            Telemetry channel: {displayChannelStatus(displayTelemetryStatus)}
-          </span>
-        ) : null}
-      </footer>
     </main>
   )
 }

@@ -296,10 +296,6 @@ function SiteMapCanvas({
           </span>
         </div>
       ) : null}
-      <div className="site-map__course-label">
-        <span>COURSE OVERLAY</span>
-        <strong>LINTASAN A</strong>
-      </div>
       <div className="navigation-map__gnss">
         <span className="navigation-map__gnss-dot" />
         <span>GNSS LOCK · 12 SAT · ±0.8M</span>

@@ -69,6 +69,7 @@ describe('NavigationMap', () => {
     expect(
       screen.getByRole('img', { name: 'ASV mission route' }),
     ).toBeInTheDocument()
+    expect(screen.queryByText('COURSE OVERLAY')).not.toBeInTheDocument()
     expect(screen.getByTestId('simulation-boat')).toHaveAttribute(
       'data-progress',
       '0.5',

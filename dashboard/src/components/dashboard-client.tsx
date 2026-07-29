@@ -19,16 +19,13 @@ export function DashboardClient({ asvId, mode }: DashboardClientProps) {
 
   return (
     <DashboardShell
-      asvId={asvId}
       mode={mode}
       live={liveQuery.data}
-      liveRealtimeStatus={liveQuery.realtimeStatus}
       underwaterFrame={underwater.frame}
       visionMetadataCache={vision.cache}
       visionMetadataStatus={vision.realtimeStatus}
       telemetry={telemetry.telemetry}
       telemetryRealtimeStatus={telemetry.realtimeStatus}
-      underwaterRealtimeStatus={underwater.realtimeStatus}
     />
   )
 }
