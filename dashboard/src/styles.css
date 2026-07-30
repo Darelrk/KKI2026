@@ -322,6 +322,11 @@ h2 {
   background: #050b0e;
 }
 
+.underwater-fallback__stream,
+.underwater-fallback__frame img {
+  transform: rotate(180deg);
+}
+
 .camera-stage__media {
   position: relative;
 }
