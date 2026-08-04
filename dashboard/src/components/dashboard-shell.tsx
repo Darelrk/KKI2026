@@ -43,10 +43,9 @@ export function DashboardShell({
   surfaceStreamUrl = asvStreamUrls.surface,
   underwaterStreamUrl = asvStreamUrls.underwater,
 }: DashboardShellProps) {
-  const telemetryMissing = !telemetry || !telemetry.connected
-  const simulationTelemetryActive = mode === 'fixture' || telemetryMissing
+  const simulationTelemetryActive = mode === 'fixture'
   const simulation = useMissionSimulation({
-    autoStart: mode === 'fixture' || telemetryMissing,
+    autoStart: mode === 'fixture',
   })
   const fixtureStartedAtMs = useRef(Date.now())
   const displayTelemetry = simulationTelemetryActive
@@ -107,10 +106,10 @@ export function DashboardShell({
 
       <NavigationMap
         telemetry={navigation}
-        simulation={simulation}
+        simulation={mode === 'fixture' ? simulation : undefined}
         previewMode={mode === 'fixture'}
       />
-      <MissionStage simulation={simulation} />
+      {mode === 'fixture' ? <MissionStage simulation={simulation} /> : null}
 
     </main>
   )

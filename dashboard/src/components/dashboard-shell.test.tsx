@@ -72,7 +72,7 @@ describe('DashboardShell', () => {
     ).not.toBeInTheDocument()
   })
 
-  it('runs the mission route preview while telemetry is still missing', () => {
+  it('shows the GPS waiting state while telemetry is missing in direct mode', () => {
     render(
       <DashboardShell
         live={liveStatus}
@@ -82,11 +82,11 @@ describe('DashboardShell', () => {
       />,
     )
 
-    expect(screen.queryByText('Waiting for GPS fix.')).not.toBeInTheDocument()
-    expect(screen.getByTestId('simulation-boat')).toBeInTheDocument()
+    expect(screen.getByText('Waiting for GPS fix.')).toBeInTheDocument()
+    expect(screen.queryByTestId('simulation-boat')).not.toBeInTheDocument()
   })
 
-  it('shows the initial replay marker before mission start in direct mode', () => {
+  it('shows the live GPS boat marker in direct mode', () => {
     render(
       <DashboardShell
         live={liveStatus}
@@ -96,8 +96,8 @@ describe('DashboardShell', () => {
       />,
     )
 
-    expect(screen.getByTestId('simulation-boat')).toBeInTheDocument()
-    expect(screen.queryByTestId('boat-marker')).not.toBeInTheDocument()
+    expect(screen.getByTestId('boat-marker')).toBeInTheDocument()
+    expect(screen.queryByTestId('simulation-boat')).not.toBeInTheDocument()
   })
 
   it('renders raw main and underwater camera streams instead of model output', () => {
@@ -188,7 +188,7 @@ describe('DashboardShell', () => {
     expect(screen.getByText('ASV online')).toBeInTheDocument()
   })
 
-  it('uses fallback heading and speed while Pixhawk telemetry is missing', () => {
+  it('shows unavailable telemetry and offline status while Pixhawk is missing', () => {
     render(
       <DashboardShell
         live={null}
@@ -201,12 +201,10 @@ describe('DashboardShell', () => {
     const telemetryRegion = screen.getByRole('region', {
       name: 'Attitude telemetry',
     })
-    expect(telemetryRegion).not.toHaveTextContent('Unavailable')
-    expect(telemetryRegion).toHaveTextContent(/\d+\.\d+°/)
-    expect(telemetryRegion).toHaveTextContent(/\d+\.\d{2} knot/)
-    expect(screen.getByText('ASV online')).toBeInTheDocument()
-    expect(screen.queryByText('ASV offline')).not.toBeInTheDocument()
-    expect(screen.queryByText('Realtime delayed')).not.toBeInTheDocument()
+    expect(telemetryRegion).toHaveTextContent('Unavailable')
+    expect(screen.getByText('ASV offline')).toBeInTheDocument()
+    expect(screen.queryByText('ASV online')).not.toBeInTheDocument()
+    expect(screen.getByText('Realtime delayed')).toBeInTheDocument()
   })
 
   it('uses live Pixhawk telemetry when it becomes available', () => {
@@ -242,7 +240,7 @@ describe('DashboardShell', () => {
     expect(screen.queryByText('Telemetry channel')).not.toBeInTheDocument()
   })
 
-  it('uses fallback heading and speed while Pixhawk telemetry is missing', () => {
+  it('reports offline status and underwater feed state without telemetry', () => {
     render(
       <DashboardShell
         live={{ ...liveStatus, online: false, model_status: 'offline' }}
@@ -253,9 +251,9 @@ describe('DashboardShell', () => {
       />,
     )
 
-    expect(screen.getByText('ASV online')).toBeInTheDocument()
+    expect(screen.getByText('ASV offline')).toBeInTheDocument()
     expect(screen.queryByText('On-site test')).not.toBeInTheDocument()
-    expect(screen.queryByText('Realtime delayed')).not.toBeInTheDocument()
+    expect(screen.getByText('Realtime delayed')).toBeInTheDocument()
     expect(screen.getByText('Underwater feed offline')).toBeInTheDocument()
   })
 })
