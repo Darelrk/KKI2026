@@ -296,10 +296,6 @@ function SiteMapCanvas({
           </span>
         </div>
       ) : null}
-      <div className="navigation-map__gnss">
-        <span className="navigation-map__gnss-dot" />
-        <span>GNSS LOCK · 12 SAT · ±0.8M</span>
-      </div>
       <a
         className="site-map__attribution"
         href={kolamDeliSite.mapsUrl}
