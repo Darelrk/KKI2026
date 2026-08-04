@@ -22,24 +22,24 @@ const simulation = {
 } as MissionSimulationController
 
 describe('NavigationMap', () => {
-  it('keeps the official mission route visible while GPS is unavailable', () => {
+  it('hides the synthetic mission route while keeping course markers', () => {
     render(<NavigationMap telemetry={emptyNavigationTelemetry} />)
 
     expect(
-      screen.getByRole('heading', { name: 'Mission route' }),
+      screen.getByRole('img', { name: 'ASV mission route' }),
     ).toBeInTheDocument()
+    expect(
+      screen.getByRole('img', { name: 'ASV mission route' }).querySelector(
+        '.site-map__route',
+      ),
+    ).not.toBeInTheDocument()
+    expect(screen.getByTestId('overlay-drag-layer')).toBeInTheDocument()
+    expect(screen.getByTestId('surface-zone')).toBeInTheDocument()
+    expect(screen.getByTestId('underwater-zone')).toBeInTheDocument()
+    expect(screen.getAllByTestId('buoy-pair')).toHaveLength(10)
     expect(screen.getByText('Waiting for GPS fix.')).toBeInTheDocument()
     expect(screen.getByText('GPS position unavailable')).toBeInTheDocument()
     expect(screen.getByText('GPS track unavailable')).toBeInTheDocument()
-    expect(
-      screen.getByRole('img', { name: 'ASV mission route' }),
-    ).toBeInTheDocument()
-    expect(screen.getAllByTestId('buoy-pair')).toHaveLength(10)
-    expect(
-      screen.queryByRole('complementary', { name: 'Mission route legend' }),
-    ).not.toBeInTheDocument()
-    expect(screen.queryByText('Course layout')).not.toBeInTheDocument()
-    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument()
   })
 
   it('shows the satellite map as the only map view', () => {

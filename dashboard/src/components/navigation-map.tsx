@@ -197,12 +197,14 @@ function SiteMapCanvas({
           transform={`translate(${nudge.x} ${nudge.y}) translate(50 50) scale(${nudge.scale}) translate(-50 -50)`}
           {...dragHandlers}
         >
-          <polyline
-            className="site-map__route"
-            points={siteMissionRoute.map(formatOverlayPoint).join(' ')}
-            fill="none"
-            markerEnd="url(#site-route-direction-arrow)"
-          />
+          {simulationActive ? (
+            <polyline
+              className="site-map__route"
+              points={siteMissionRoute.map(formatOverlayPoint).join(' ')}
+              fill="none"
+              markerEnd="url(#site-route-direction-arrow)"
+            />
+          ) : null}
 
           <polygon
             className="site-map__zone site-map__zone--surface"
