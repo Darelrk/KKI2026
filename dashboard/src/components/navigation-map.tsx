@@ -1,4 +1,5 @@
 import { MapPin } from '@phosphor-icons/react'
+import { useEffect, useState } from 'react'
 
 import {
   missionRoute,
@@ -16,6 +17,7 @@ import {
 import { useOverlayNudge } from '../lib/use-overlay-nudge'
 
 import type { NavigationTelemetry } from '../lib/navigation-types'
+import type { GeoCoordinate } from '../lib/mission-site'
 import type { MissionSimulationController } from '../lib/use-mission-simulation'
 import type { SiteOverlayPoint } from '../lib/site-map-projection'
 
@@ -38,10 +40,6 @@ const buoyPairs = [
   { red: { x: 13.19, y: 59.75 }, green: { x: 7.26, y: 60.62 } },
 ] as const
 
-const siteMapEmbedUrl = buildGoogleMapsSatelliteEmbedUrl(
-  kolamDeliSite.center,
-  22,
-)
 
 function formatOverlayPoint(point: SiteOverlayPoint): string {
   return `${point.x},${point.y}`
@@ -101,6 +99,7 @@ const siteDockingBalls = [
 
 type SiteMapCanvasProps = {
   telemetry: NavigationTelemetry
+  mapCenter: GeoCoordinate
   simulation?: MissionSimulationController
   simulationActive: boolean
   simulationComplete: boolean
@@ -109,11 +108,13 @@ type SiteMapCanvasProps = {
 
 function SiteMapCanvas({
   telemetry,
+  mapCenter,
   simulation,
   simulationActive,
   simulationComplete,
   simulationHeading,
 }: SiteMapCanvasProps) {
+  const mapSite = { ...kolamDeliSite, center: mapCenter }
   const lastTrackPoint = telemetry.track.at(-1)
   const boatPosition = telemetry.position ?? lastTrackPoint
   const currentIsAlreadyLastPoint =
@@ -126,7 +127,7 @@ function SiteMapCanvas({
       ? [...telemetry.track, boatPosition]
       : telemetry.track
   const telemetryCoursePoints = pathPoints.map((point) =>
-    geoPointToCourse(point),
+    geoPointToCourse(point, mapSite),
   )
   const telemetryCourseTrack = telemetryCoursePoints.map((point) =>
     coursePointToSiteOverlay(point),
@@ -140,7 +141,7 @@ function SiteMapCanvas({
     simulationActive && simulation
       ? simulation.position
       : telemetry.position
-        ? geoPointToCourse(telemetry.position)
+        ? geoPointToCourse(telemetry.position, mapSite)
         : telemetryCoursePoints.at(-1)
   const currentSitePoint = currentCoursePoint
     ? coursePointToSiteOverlay(currentCoursePoint)
@@ -159,7 +160,7 @@ function SiteMapCanvas({
     >
       <iframe
         className="site-map__base"
-        src={siteMapEmbedUrl}
+        src={buildGoogleMapsSatelliteEmbedUrl(mapCenter, 22)}
         title="Kolam Deli satellite base map"
         loading="eager"
         tabIndex={-1}
@@ -323,6 +324,20 @@ export function NavigationMap({
   const simulationHeading = simulation
     ? missionRouteHeading(simulation.progress)
     : 0
+  const liveCenter = telemetry.position ?? telemetry.track.at(-1) ?? null
+  const [mapCenter, setMapCenter] = useState<GeoCoordinate>(
+    () => (previewMode ? kolamDeliSite.center : liveCenter ?? kolamDeliSite.center),
+  )
+
+  useEffect(() => {
+    if (
+      !previewMode &&
+      mapCenter === kolamDeliSite.center &&
+      liveCenter !== null
+    ) {
+      setMapCenter(liveCenter)
+    }
+  }, [liveCenter, mapCenter, previewMode])
 
   return (
     <section className="navigation-map" aria-labelledby="navigation-map-title">
@@ -353,6 +368,7 @@ export function NavigationMap({
       <div className="navigation-map__layout">
         <SiteMapCanvas
           telemetry={telemetry}
+          mapCenter={mapCenter}
           simulation={simulation}
           simulationActive={simulationActive}
           simulationComplete={simulationComplete}

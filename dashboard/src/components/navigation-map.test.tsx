@@ -57,6 +57,66 @@ describe('NavigationMap', () => {
       screen.queryByRole('button', { name: 'Course' }),
     ).not.toBeInTheDocument()
   })
+  it('centers direct map on the latest GPS position', () => {
+    render(
+      <NavigationMap
+        telemetry={{
+          ...emptyNavigationTelemetry,
+          position: {
+            latitude: 3.4997,
+            longitude: 98.7059,
+            captured_at: '2026-08-07T09:55:31.000Z',
+          },
+        }}
+      />,
+    )
+
+    const src =
+      screen.getByTitle('Kolam Deli satellite base map').getAttribute('src') ?? ''
+    expect(decodeURIComponent(src)).toContain('ll=3.4997,98.7059')
+  })
+
+  it('keeps the satellite map stable while the GPS cursor updates', () => {
+    const { rerender } = render(
+      <NavigationMap
+        telemetry={{
+          ...emptyNavigationTelemetry,
+          position: {
+            latitude: 3.4997,
+            longitude: 98.7059,
+            captured_at: '2026-08-07T09:55:31.000Z',
+          },
+          heading_deg: 90,
+        }}
+      />,
+    )
+
+    const iframe = screen.getByTitle('Kolam Deli satellite base map')
+    const initialSrc = iframe.getAttribute('src')
+
+    rerender(
+      <NavigationMap
+        telemetry={{
+          ...emptyNavigationTelemetry,
+          position: {
+            latitude: 3.4998,
+            longitude: 98.706,
+            captured_at: '2026-08-07T09:55:32.000Z',
+          },
+          heading_deg: 180,
+        }}
+      />,
+    )
+
+    expect(
+      screen.getByTitle('Kolam Deli satellite base map'),
+    ).toHaveAttribute('src', initialSrc)
+    expect(screen.getByTestId('boat-marker')).toHaveAttribute(
+      'data-course-heading',
+      '180',
+    )
+  })
+
 
   it('shows the local replay boat on the simulation route', () => {
     render(
