@@ -6,7 +6,10 @@ import { missionRoute, missionRoutePosition } from '../lib/mission-simulation'
 import type { MissionSimulationController } from '../lib/use-mission-simulation'
 import { NavigationMap } from './navigation-map'
 
-afterEach(cleanup)
+afterEach(() => {
+  cleanup()
+  window.localStorage.removeItem('kki2026.site-overlay-nudge')
+})
 
 const simulation = {
   status: 'running',
@@ -363,8 +366,44 @@ describe('NavigationMap', () => {
       screen.queryByRole('button', { name: 'Course' }),
     ).not.toBeInTheDocument()
   })
+  it('refreshes the map without fixing its live position', () => {
+    const firstTelemetry = {
+      ...emptyNavigationTelemetry,
+      position: {
+        latitude: 3.4995,
+        longitude: 98.7058,
+        captured_at: '2026-07-20T09:30:00.000Z',
+      },
+    }
+    const latestTelemetry = {
+      ...firstTelemetry,
+      position: {
+        latitude: 3.5012,
+        longitude: 98.7074,
+        captured_at: '2026-07-20T09:31:00.000Z',
+      },
+    }
+    const { rerender } = render(
+      <NavigationMap telemetry={firstTelemetry} />,
+    )
+    const firstMap = screen.getByTitle('Kolam Deli satellite base map')
+    const firstMapSrc = firstMap.getAttribute('src')
 
-  it('plots GPS points and rotates the current boat marker by heading', () => {
+    rerender(<NavigationMap telemetry={latestTelemetry} />)
+    expect(
+      screen.getByTitle('Kolam Deli satellite base map'),
+    ).toHaveAttribute('src', firstMapSrc)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Refresh map' }))
+
+    const refreshedMap = screen.getByTitle('Kolam Deli satellite base map')
+    expect(refreshedMap).not.toBe(firstMap)
+    expect(refreshedMap).toHaveAttribute('src', firstMapSrc)
+    expect(screen.getByTestId('boat-marker')).toBeInTheDocument()
+    expect(screen.getByText('GPS position available')).toBeInTheDocument()
+  })
+
+  it('updates the GPS cursor without drawing a history line', () => {
     render(
       <NavigationMap
         telemetry={{
@@ -392,7 +431,7 @@ describe('NavigationMap', () => {
     )
 
     expect(screen.getByText('GPS track · 2 points')).toBeInTheDocument()
-    expect(screen.getByTestId('gps-track')).toBeInTheDocument()
+    expect(screen.queryByTestId('gps-track')).not.toBeInTheDocument()
     expect(screen.getByTestId('boat-marker')).toHaveAttribute(
       'data-course-heading',
       '90',
@@ -403,7 +442,7 @@ describe('NavigationMap', () => {
     )
   })
 
-  it('connects the current position to the end of the GPS path', () => {
+  it('does not draw a GPS history line in direct mode', () => {
     render(
       <NavigationMap
         telemetry={{
@@ -429,9 +468,8 @@ describe('NavigationMap', () => {
       />,
     )
 
-    const polyline = screen.getByTestId('gps-track')
-
-    expect(polyline.getAttribute('points')?.trim().split(/\s+/)).toHaveLength(3)
+    expect(screen.queryByTestId('gps-track')).not.toBeInTheDocument()
+    expect(screen.getByTestId('boat-marker')).toBeInTheDocument()
   })
 
   it('renders one current position without inventing a path', () => {

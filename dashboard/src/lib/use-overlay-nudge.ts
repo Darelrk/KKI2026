@@ -9,6 +9,19 @@ const minimumScale = 0.3
 const maximumScale = 3
 
 export type OverlayNudge = { x: number; y: number; scale: number }
+export type OverlayNudgeDragHandlers = {
+  onPointerDown: (event: ReactPointerEvent<SVGGElement>) => void
+  onPointerMove: (event: ReactPointerEvent<SVGGElement>) => void
+  onPointerUp: (event: ReactPointerEvent<SVGGElement>) => void
+  onPointerCancel: (event: ReactPointerEvent<SVGGElement>) => void
+  onWheel: (event: WheelEvent<SVGGElement>) => void
+}
+
+export type OverlayNudgeControls = {
+  nudge: OverlayNudge
+  dragging: boolean
+  dragHandlers: OverlayNudgeDragHandlers
+}
 
 type DragOrigin = {
   pointerX: number
@@ -63,7 +76,7 @@ function persist(nudge: OverlayNudge): void {
  * because the right values depend on the imagery Google happens to serve
  * rather than on anything we can compute.
  */
-export function useOverlayNudge() {
+export function useOverlayNudge(): OverlayNudgeControls {
   const [nudge, setNudge] = useState<OverlayNudge>(readStoredNudge)
   const [origin, setOrigin] = useState<DragOrigin | null>(null)
 
@@ -138,3 +151,4 @@ export function useOverlayNudge() {
     },
   }
 }
+

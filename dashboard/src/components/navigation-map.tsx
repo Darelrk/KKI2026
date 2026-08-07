@@ -1,4 +1,4 @@
-import { MapPin } from '@phosphor-icons/react'
+import { ArrowClockwise, MapPin } from '@phosphor-icons/react'
 import { useEffect, useState } from 'react'
 
 import {
@@ -15,6 +15,7 @@ import {
   coursePointToSiteOverlay,
 } from '../lib/site-map-projection'
 import { useOverlayNudge } from '../lib/use-overlay-nudge'
+import type { OverlayNudgeControls } from '../lib/use-overlay-nudge'
 
 import type { NavigationTelemetry } from '../lib/navigation-types'
 import type { GeoCoordinate } from '../lib/mission-site'
@@ -26,6 +27,7 @@ type NavigationMapProps = {
   simulation?: MissionSimulationController
   previewMode?: boolean
 }
+ 
 
 const buoyPairs = [
   { red: { x: 81.34, y: 67.51 }, green: { x: 87.33, y: 67.63 } },
@@ -104,6 +106,9 @@ type SiteMapCanvasProps = {
   simulationActive: boolean
   simulationComplete: boolean
   simulationHeading: number
+  nudge: OverlayNudgeControls['nudge']
+  dragging: OverlayNudgeControls['dragging']
+  dragHandlers: OverlayNudgeControls['dragHandlers']
 }
 
 function SiteMapCanvas({
@@ -113,6 +118,9 @@ function SiteMapCanvas({
   simulationActive,
   simulationComplete,
   simulationHeading,
+  nudge,
+  dragging,
+  dragHandlers,
 }: SiteMapCanvasProps) {
   const mapSite = { ...kolamDeliSite, center: mapCenter }
   const lastTrackPoint = telemetry.track.at(-1)
@@ -151,7 +159,6 @@ function SiteMapCanvas({
       ? simulationHeading
       : (telemetry.heading_deg ?? 0)
   const siteHeading = courseHeadingToSiteOverlay(heading)
-  const { nudge, dragging, dragHandlers } = useOverlayNudge()
 
   return (
     <div
@@ -260,10 +267,10 @@ function SiteMapCanvas({
             </>
           ) : null}
 
-          {travelledPoints.length > 1 ? (
+          {simulationActive && travelledPoints.length > 1 ? (
             <polyline
               className="site-map__travelled"
-              data-testid={simulationActive ? 'simulation-track' : 'gps-track'}
+              data-testid="simulation-track"
               points={travelledPoints.map(formatOverlayPoint).join(' ')}
               fill="none"
             />
@@ -330,6 +337,8 @@ export function NavigationMap({
   const [mapCenter, setMapCenter] = useState<GeoCoordinate>(
     () => (previewMode ? kolamDeliSite.center : liveCenter ?? kolamDeliSite.center),
   )
+  const [mapRefreshKey, setMapRefreshKey] = useState(0)
+  const { nudge, dragging, dragHandlers } = useOverlayNudge()
 
   useEffect(() => {
     if (
@@ -340,6 +349,11 @@ export function NavigationMap({
       setMapCenter(liveCenter)
     }
   }, [liveCenter, mapCenter, previewMode])
+
+  const refreshMap = () => {
+    setMapRefreshKey((current) => current + 1)
+  }
+
 
   return (
     <section className="navigation-map" aria-labelledby="navigation-map-title">
@@ -364,17 +378,30 @@ export function NavigationMap({
               Map
             </button>
           </div>
+          <button
+            type="button"
+            className="navigation-map__refresh"
+            onClick={refreshMap}
+            title="Refresh map and real boat position"
+          >
+            <ArrowClockwise aria-hidden="true" size={14} />
+            <span>Refresh map</span>
+          </button>
         </div>
       </div>
 
       <div className="navigation-map__layout">
         <SiteMapCanvas
+          key={mapRefreshKey}
           telemetry={telemetry}
           mapCenter={mapCenter}
           simulation={simulation}
           simulationActive={simulationActive}
           simulationComplete={simulationComplete}
           simulationHeading={simulationHeading}
+          nudge={nudge}
+          dragging={dragging}
+          dragHandlers={dragHandlers}
         />
         <div className="navigation-map__readout">
           <span>

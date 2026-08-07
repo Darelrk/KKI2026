@@ -109,7 +109,7 @@ export function DashboardShell({
         simulation={mode === 'fixture' ? simulation : undefined}
         previewMode={mode === 'fixture'}
       />
-      {mode === 'fixture' ? <MissionStage simulation={simulation} /> : null}
+      <MissionStage simulation={simulation} />
 
     </main>
   )

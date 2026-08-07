@@ -1,4 +1,10 @@
-import { cleanup, render, screen, within } from '@testing-library/react'
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 
 import { DashboardShell } from './dashboard-shell'
@@ -98,6 +104,28 @@ describe('DashboardShell', () => {
 
     expect(screen.getByTestId('boat-marker')).toBeInTheDocument()
     expect(screen.queryByTestId('simulation-boat')).not.toBeInTheDocument()
+  })
+
+  it('keeps mission controls in direct mode without replacing live GPS', () => {
+    render(
+      <DashboardShell
+        live={liveStatus}
+        telemetry={telemetry}
+        telemetryRealtimeStatus="connected"
+        underwaterFrame={underwaterFrame}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Start mission' }))
+
+    expect(screen.getAllByText('Mission route active')).toHaveLength(2)
+    expect(screen.getByTestId('boat-marker')).toBeInTheDocument()
+    expect(screen.queryByTestId('simulation-boat')).not.toBeInTheDocument()
+    expect(
+      within(
+        screen.getByRole('region', { name: 'Attitude telemetry' }),
+      ).getByText('-1.700000, 102.250000'),
+    ).toBeInTheDocument()
   })
 
   it('renders raw main and underwater camera streams instead of model output', () => {
