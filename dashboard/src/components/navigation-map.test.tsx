@@ -22,24 +22,28 @@ const simulation = {
 } as MissionSimulationController
 
 describe('NavigationMap', () => {
-  it('hides the synthetic mission route while keeping course markers', () => {
+  it('shows only live GPS layers in direct mode', () => {
     render(<NavigationMap telemetry={emptyNavigationTelemetry} />)
 
-    expect(
-      screen.getByRole('img', { name: 'ASV mission route' }),
-    ).toBeInTheDocument()
     expect(
       screen.getByRole('img', { name: 'ASV mission route' }).querySelector(
         '.site-map__route',
       ),
     ).not.toBeInTheDocument()
-    expect(screen.getByTestId('overlay-drag-layer')).toBeInTheDocument()
-    expect(screen.getByTestId('surface-zone')).toBeInTheDocument()
-    expect(screen.getByTestId('underwater-zone')).toBeInTheDocument()
-    expect(screen.getAllByTestId('buoy-pair')).toHaveLength(10)
-    expect(screen.getByText('Waiting for GPS fix.')).toBeInTheDocument()
+    expect(screen.queryByTestId('surface-zone')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('underwater-zone')).not.toBeInTheDocument()
+    expect(screen.queryAllByTestId('buoy-pair')).toHaveLength(0)
+    expect(
+      screen.queryByTestId('overlay-drag-layer')?.querySelector(
+        '.site-map__dock',
+      ),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByTestId('overlay-drag-layer')?.querySelector(
+        '.site-map__docking-balls',
+      ),
+    ).not.toBeInTheDocument()
     expect(screen.getByText('GPS position unavailable')).toBeInTheDocument()
-    expect(screen.getByText('GPS track unavailable')).toBeInTheDocument()
   })
 
   it('shows the satellite map as the only map view', () => {
@@ -345,12 +349,12 @@ describe('NavigationMap', () => {
     )
   })
 
-  it('keeps mission graphics visible with the map view', () => {
+  it('hides static course graphics in direct mode', () => {
     render(<NavigationMap telemetry={emptyNavigationTelemetry} />)
 
-    expect(screen.getByTestId('surface-zone')).toBeInTheDocument()
-    expect(screen.getByTestId('underwater-zone')).toBeInTheDocument()
-    expect(screen.getAllByTestId('buoy-pair')).toHaveLength(10)
+    expect(screen.queryByTestId('surface-zone')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('underwater-zone')).not.toBeInTheDocument()
+    expect(screen.queryAllByTestId('buoy-pair')).toHaveLength(0)
     expect(screen.getByRole('button', { name: 'Map' })).toHaveAttribute(
       'aria-pressed',
       'true',

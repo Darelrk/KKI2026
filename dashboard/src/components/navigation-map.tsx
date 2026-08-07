@@ -199,64 +199,66 @@ function SiteMapCanvas({
           {...dragHandlers}
         >
           {simulationActive ? (
-            <polyline
-              className="site-map__route"
-              points={siteMissionRoute.map(formatOverlayPoint).join(' ')}
-              fill="none"
-              markerEnd="url(#site-route-direction-arrow)"
-            />
+            <>
+              <polyline
+                className="site-map__route"
+                points={siteMissionRoute.map(formatOverlayPoint).join(' ')}
+                fill="none"
+                markerEnd="url(#site-route-direction-arrow)"
+              />
+
+              <polygon
+                className="site-map__zone site-map__zone--surface"
+                data-testid="surface-zone"
+                points={siteSurfaceZonePoints}
+              />
+              <polygon
+                className="site-map__zone site-map__zone--underwater"
+                data-testid="underwater-zone"
+                points={siteUnderwaterZonePoints}
+              />
+
+              {siteBuoyPairs.map((pair, index) => (
+                <g
+                  key={`site-buoy-pair-${index + 1}`}
+                  className="site-map__buoy-pair"
+                  data-testid="buoy-pair"
+                  aria-label={`Buoy pair ${index + 1}`}
+                >
+                  <circle
+                    className="site-map__buoy site-map__buoy--red"
+                    cx={pair.red.x}
+                    cy={pair.red.y}
+                    r={siteBuoyRadius}
+                  />
+                  <circle
+                    className="site-map__buoy site-map__buoy--green"
+                    cx={pair.green.x}
+                    cy={pair.green.y}
+                    r={siteBuoyRadius}
+                  />
+                </g>
+              ))}
+
+              <g className="site-map__dock">
+                <circle cx={siteDock.x} cy={siteDock.y} r={siteDockRadius} />
+                <path
+                  transform={`translate(${siteDock.x} ${siteDock.y}) rotate(${siteDockHeading})`}
+                  d="M 0 -3.4 L 1.5 -1.2 L 0 -1.8 L -1.5 -1.2 Z"
+                />
+              </g>
+              <g className="site-map__docking-balls">
+                {siteDockingBalls.map((point, index) => (
+                  <circle
+                    key={`site-docking-ball-${index + 1}`}
+                    cx={point.x}
+                    cy={point.y}
+                    r={siteDockingBallRadius}
+                  />
+                ))}
+              </g>
+            </>
           ) : null}
-
-          <polygon
-            className="site-map__zone site-map__zone--surface"
-            data-testid="surface-zone"
-            points={siteSurfaceZonePoints}
-          />
-          <polygon
-            className="site-map__zone site-map__zone--underwater"
-            data-testid="underwater-zone"
-            points={siteUnderwaterZonePoints}
-          />
-
-          {siteBuoyPairs.map((pair, index) => (
-            <g
-              key={`site-buoy-pair-${index + 1}`}
-              className="site-map__buoy-pair"
-              data-testid="buoy-pair"
-              aria-label={`Buoy pair ${index + 1}`}
-            >
-              <circle
-                className="site-map__buoy site-map__buoy--red"
-                cx={pair.red.x}
-                cy={pair.red.y}
-                r={siteBuoyRadius}
-              />
-              <circle
-                className="site-map__buoy site-map__buoy--green"
-                cx={pair.green.x}
-                cy={pair.green.y}
-                r={siteBuoyRadius}
-              />
-            </g>
-          ))}
-
-          <g className="site-map__dock">
-            <circle cx={siteDock.x} cy={siteDock.y} r={siteDockRadius} />
-            <path
-              transform={`translate(${siteDock.x} ${siteDock.y}) rotate(${siteDockHeading})`}
-              d="M 0 -3.4 L 1.5 -1.2 L 0 -1.8 L -1.5 -1.2 Z"
-            />
-          </g>
-          <g className="site-map__docking-balls">
-            {siteDockingBalls.map((point, index) => (
-              <circle
-                key={`site-docking-ball-${index + 1}`}
-                cx={point.x}
-                cy={point.y}
-                r={siteDockingBallRadius}
-              />
-            ))}
-          </g>
 
           {travelledPoints.length > 1 ? (
             <polyline
