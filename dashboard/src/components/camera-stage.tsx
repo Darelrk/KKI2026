@@ -70,18 +70,6 @@ export function CameraStage({
             height: sourceHeight * scale,
           }
 
-          // Keep the operator's visual center fixed independently of
-          // detection refreshes and stale metadata.
-          const centerX = (sourceRect.x + sourceRect.width / 2) * dpr
-          context.strokeStyle = '#2f80ed'
-          context.lineWidth = 2 * dpr
-          context.beginPath()
-          context.moveTo(centerX, sourceRect.y * dpr)
-          context.lineTo(
-            centerX,
-            (sourceRect.y + sourceRect.height) * dpr,
-          )
-          context.stroke()
 
           if (cache && isVisionMetadataFresh(cache, nowMs)) {
             context.strokeStyle = '#ff9762'

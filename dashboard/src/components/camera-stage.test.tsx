@@ -218,8 +218,10 @@ describe('CameraStage', () => {
     frameCallbacks[0](500)
 
     expect(canvasContext.clearRect).toHaveBeenCalled()
-    expect(canvasContext.moveTo).toHaveBeenCalledWith(400, 75)
-    expect(canvasContext.lineTo).toHaveBeenCalledWith(400, 525)
+    expect(canvasContext.beginPath).not.toHaveBeenCalled()
+    expect(canvasContext.moveTo).not.toHaveBeenCalled()
+    expect(canvasContext.lineTo).not.toHaveBeenCalled()
+    expect(canvasContext.stroke).not.toHaveBeenCalled()
     expect(canvasContext.strokeRect).toHaveBeenCalledWith(320, 255, 160, 90)
   })
 
@@ -235,8 +237,8 @@ describe('CameraStage', () => {
     frameCallbacks[0](1000)
 
     expect(canvasContext.clearRect).toHaveBeenCalled()
-    expect(canvasContext.moveTo).toHaveBeenCalled()
-    expect(canvasContext.lineTo).toHaveBeenCalled()
+    expect(canvasContext.moveTo).not.toHaveBeenCalled()
+    expect(canvasContext.lineTo).not.toHaveBeenCalled()
     expect(canvasContext.strokeRect).not.toHaveBeenCalled()
     expect(screen.getByLabelText('Live surface camera')).toBeInTheDocument()
     expect(screen.getByText('Vision error')).toBeInTheDocument()

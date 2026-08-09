@@ -38,7 +38,7 @@ export function TelemetryPanel({ telemetry, updatedAt }: TelemetryPanelProps) {
         <div className="telemetry-card">
           <dt>
             <Compass aria-hidden="true" size={14} />
-            Heading
+            COG
           </dt>
           <dd>
             {telemetry.heading_deg === null

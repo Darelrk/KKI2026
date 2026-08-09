@@ -181,6 +181,8 @@ describe('DashboardShell', () => {
     )
 
     expect(screen.getByText('GPS position')).toBeInTheDocument()
+    expect(screen.getByText('COG')).toBeInTheDocument()
+    expect(screen.queryByText('Heading')).not.toBeInTheDocument()
     expect(screen.getByText('-1.700000, 102.250000')).toBeInTheDocument()
     expect(screen.getByText('144.0°')).toBeInTheDocument()
     expect(screen.getByText('0.00 knot')).toBeInTheDocument()
