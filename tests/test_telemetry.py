@@ -204,6 +204,11 @@ def test_unified_worker_only_overrides_fresh_manual_commands() -> None:
 
     reader._apply_actuator_command()
 
+    # The vision loop can take over one second per frame on the Pi.
+    reader._actuator_command_at = time.monotonic() - 1.0
+    reader._apply_actuator_command()
+    assert connection.mav.sent[-1][2:5] == (1490, 65535, 1560)
+
     assert connection.mav.sent[-1] == (
         1,
         1,

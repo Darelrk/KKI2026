@@ -32,7 +32,7 @@ class BridgeSettings:
     pixhawk_reconnect_seconds: float = 0.5
     model_actuators_enabled: bool = False
     actuator_control_token: str | None = None
-    actuator_command_timeout: float = 0.75
+    actuator_command_timeout: float = 2.5
 
     def __post_init__(self) -> None:
         if not self.asv_id.strip():
@@ -101,7 +101,7 @@ class BridgeSettings:
             ),
             actuator_control_token=_optional_env("ASV_CONTROL_TOKEN"),
             actuator_command_timeout=_float_env(
-                "ASV_ACTUATOR_COMMAND_TIMEOUT", 0.75
+                "ASV_ACTUATOR_COMMAND_TIMEOUT", 2.5
             ),
         )
 
