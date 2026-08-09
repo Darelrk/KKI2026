@@ -1,24 +1,39 @@
+import { forwardRef, useImperativeHandle, useRef } from 'react'
 import { Waves } from '@phosphor-icons/react'
 
 import { asvGo2rtcUrls } from '../lib/stream-urls'
 import { useGo2rtcVideo } from '../lib/use-go2rtc-video'
+import { captureMediaFrame } from '../lib/camera-capture'
 
 import type { UnderwaterFrame } from '../lib/asv-types'
+import type { CameraCaptureHandle } from '../lib/camera-capture'
 
 type UnderwaterFallbackProps = {
   frame: UnderwaterFrame | null
   streamUrl: string | null
 }
 
-export function UnderwaterFallback({
-  frame,
-  streamUrl,
-}: UnderwaterFallbackProps) {
+export const UnderwaterFallback = forwardRef<
+  CameraCaptureHandle,
+  UnderwaterFallbackProps
+>(function UnderwaterFallback({ frame, streamUrl }, ref) {
+  const imageRef = useRef<HTMLImageElement>(null)
   const player = useGo2rtcVideo({
     urls: asvGo2rtcUrls.underwater,
     enabled: Boolean(streamUrl),
     fallbackUrl: streamUrl,
   })
+  useImperativeHandle(
+    ref,
+    () => ({
+      captureFrame() {
+        const media = player.videoRef.current ?? imageRef.current
+        if (!media) throw new Error('Underwater camera frame is not ready')
+        return captureMediaFrame(media, { rotate180: true })
+      },
+    }),
+    [player.videoRef],
+  )
   const activeStreamUrl =
     streamUrl && player.mode === 'mjpeg' && !player.mjpegFailed
       ? streamUrl
@@ -48,6 +63,7 @@ export function UnderwaterFallback({
         />
       ) : activeStreamUrl ? (
         <img
+          ref={imageRef}
           className="underwater-fallback__stream"
           src={activeStreamUrl}
           alt="Live underwater action camera"
@@ -56,6 +72,7 @@ export function UnderwaterFallback({
       ) : frame ? (
         <figure className="underwater-fallback__frame">
           <img
+            ref={imageRef}
             src={`data:${frame.mime};base64,${frame.data_base64}`}
             alt="Latest underwater frame"
           />
@@ -77,4 +94,4 @@ export function UnderwaterFallback({
       )}
     </section>
   )
-}
+})

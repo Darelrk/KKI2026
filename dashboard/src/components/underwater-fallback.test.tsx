@@ -1,9 +1,11 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { createRef } from 'react'
 
 import { UnderwaterFallback } from './underwater-fallback'
 
 import type { UnderwaterFrame } from '../lib/asv-types'
+import type { CameraCaptureHandle } from '../lib/camera-capture'
 
 const frame = {
   mime: 'image/jpeg',
@@ -11,6 +13,16 @@ const frame = {
   captured_at: '2026-07-20T10:00:00+00:00',
   frame_id: 'frame-42',
 } satisfies UnderwaterFrame
+
+const canvasContext = {
+  fillStyle: '',
+  fillRect: vi.fn(),
+  drawImage: vi.fn(),
+  save: vi.fn(),
+  translate: vi.fn(),
+  rotate: vi.fn(),
+  restore: vi.fn(),
+}
 
 class UnderwaterFakeSocket {
   static readonly OPEN = 1
@@ -61,6 +73,9 @@ beforeEach(() => {
   vi.stubGlobal('WebSocket', UnderwaterFakeSocket)
   vi.stubGlobal('RTCPeerConnection', UnderwaterFakePeer)
   vi.spyOn(HTMLMediaElement.prototype, 'play').mockResolvedValue(undefined)
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(
+    canvasContext as unknown as CanvasRenderingContext2D,
+  )
 })
 
 afterEach(() => {
@@ -115,5 +130,22 @@ describe('UnderwaterFallback', () => {
       screen.getByRole('img', { name: 'Latest underwater frame' }),
     ).toHaveAttribute('src', 'data:image/jpeg;base64,/9j/abc=')
     expect(screen.getByText('frame-42')).toBeInTheDocument()
+  })
+  it('captures the underwater frame in its displayed orientation', () => {
+    const captureRef = createRef<CameraCaptureHandle>()
+    render(
+      <UnderwaterFallback ref={captureRef} frame={frame} streamUrl={null} />,
+    )
+    const image = screen.getByRole('img', { name: 'Latest underwater frame' })
+    Object.defineProperties(image, {
+      naturalWidth: { configurable: true, value: 640 },
+      naturalHeight: { configurable: true, value: 360 },
+    })
+
+    const captured = captureRef.current?.captureFrame()
+
+    expect(captured).toBeInstanceOf(HTMLCanvasElement)
+    expect(canvasContext.translate).toHaveBeenCalledWith(640, 360)
+    expect(canvasContext.rotate).toHaveBeenCalledWith(Math.PI)
   })
 })

@@ -1,5 +1,6 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { createRef } from 'react'
 
 import { CameraStage } from './camera-stage'
 
@@ -7,6 +8,7 @@ import type {
   VisionMetadata,
   VisionMetadataCache,
 } from '../lib/vision-metadata'
+import type { CameraCaptureHandle } from '../lib/camera-capture'
 
 const metadata = {
   schema_version: 1,
@@ -34,11 +36,15 @@ let frameCallbacks: FrameRequestCallback[]
 type CanvasContextSpies = {
   clearRect: (...args: number[]) => void
   strokeRect: (...args: number[]) => void
+  fillRect: (...args: number[]) => void
+  drawImage: (...args: unknown[]) => void
   beginPath: () => void
   moveTo: (...args: number[]) => void
   lineTo: (...args: number[]) => void
   stroke: () => void
   fillText: (...args: unknown[]) => void
+  fillStyle: string
+  font: string
   strokeStyle: string
   lineWidth: number
 }
@@ -109,11 +115,15 @@ beforeEach(() => {
   canvasContext = {
     clearRect: vi.fn(),
     strokeRect: vi.fn(),
+    fillRect: vi.fn(),
+    drawImage: vi.fn(),
     beginPath: vi.fn(),
     moveTo: vi.fn(),
     lineTo: vi.fn(),
     stroke: vi.fn(),
     fillText: vi.fn(),
+    fillStyle: '',
+    font: '',
     strokeStyle: '',
     lineWidth: 0,
   }
@@ -303,5 +313,36 @@ describe('CameraStage', () => {
     frameCallbacks[0](500)
 
     expect(canvasContext.strokeRect).toHaveBeenCalledWith(320, 255, 160, 90)
+  })
+  it('captures the surface frame with fresh detection boxes', () => {
+    vi.spyOn(performance, 'now').mockReturnValue(500)
+    const captureRef = createRef<CameraCaptureHandle>()
+    render(
+      <CameraStage
+        ref={captureRef}
+        streamUrl="https://camera.example.test/surface"
+        metadataCache={cache}
+        metadataStatus="connected"
+      />,
+    )
+    const video = screen.getByLabelText('Live surface camera')
+    Object.defineProperties(video, {
+      videoWidth: { configurable: true, value: 1280 },
+      videoHeight: { configurable: true, value: 720 },
+    })
+
+    const captured = captureRef.current?.captureFrame()
+
+    expect(captured).toBeInstanceOf(HTMLCanvasElement)
+    expect(captured).toHaveProperty('width', 1280)
+    expect(captured).toHaveProperty('height', 720)
+    expect(canvasContext.drawImage).toHaveBeenCalledWith(
+      video,
+      0,
+      0,
+      1280,
+      720,
+    )
+    expect(canvasContext.strokeRect).toHaveBeenCalledWith(512, 288, 256, 144)
   })
 })
