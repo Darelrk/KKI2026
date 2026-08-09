@@ -14,6 +14,7 @@ type CameraStageProps = {
   streamUrl: string | null
   metadataCache?: VisionMetadataCache | null
   metadataStatus?: VisionRealtimeStatus
+  capturing?: boolean
 }
 
 type VisionRect = {
@@ -57,6 +58,7 @@ export const CameraStage = forwardRef<CameraCaptureHandle, CameraStageProps>(
       streamUrl,
       metadataCache = null,
       metadataStatus = 'error',
+      capturing = false,
     },
     ref,
   ) {
@@ -153,7 +155,10 @@ export const CameraStage = forwardRef<CameraCaptureHandle, CameraStageProps>(
   }, [player.videoRef])
 
   return (
-    <section className="camera-stage" aria-labelledby="surface-camera-title">
+    <section
+      className={`camera-stage${capturing ? ' camera-capture--active' : ''}`}
+      aria-labelledby="surface-camera-title"
+    >
       <div className="panel-heading">
         <Camera aria-hidden="true" />
         <div>

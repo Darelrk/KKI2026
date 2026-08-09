@@ -1,4 +1,5 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
+import { Camera as CameraIcon } from '@phosphor-icons/react'
 
 import { MissionStage } from './mission-stage'
 import { NavigationMap } from './navigation-map'
@@ -12,6 +13,10 @@ import { emptyNavigationTelemetry } from '../lib/navigation-types'
 import { missionTelemetryAt } from '../lib/mission-site'
 import { asvStreamUrls } from '../lib/stream-urls'
 import { useMissionSimulation } from '../lib/use-mission-simulation'
+import {
+  combineCameraFrames,
+  downloadCameraCapture,
+} from '../lib/camera-capture'
 
 import type { AsvLive, UnderwaterFrame } from '../lib/asv-types'
 import type { AsvDataMode } from '../lib/asv-data-mode'
@@ -19,6 +24,7 @@ import type { AsvTelemetry } from '../lib/asv-telemetry'
 import type { VisionMetadataCache } from '../lib/vision-metadata'
 import type { VisionRealtimeStatus } from '../lib/use-vision-metadata'
 import type { ConnectionStatus } from './connection-bar'
+import type { CameraCaptureHandle } from '../lib/camera-capture'
 
 type DashboardShellProps = {
   mode?: AsvDataMode
@@ -43,6 +49,12 @@ export function DashboardShell({
   surfaceStreamUrl = asvStreamUrls.surface,
   underwaterStreamUrl = asvStreamUrls.underwater,
 }: DashboardShellProps) {
+  const surfaceCaptureRef = useRef<CameraCaptureHandle>(null)
+  const underwaterCaptureRef = useRef<CameraCaptureHandle>(null)
+  const [captureState, setCaptureState] = useState<
+    'idle' | 'capturing' | 'saved' | 'error'
+  >('idle')
+  const [captureFilename, setCaptureFilename] = useState('')
   const simulationTelemetryActive = mode === 'fixture'
   const simulation = useMissionSimulation({
     autoStart: mode === 'fixture',
@@ -69,6 +81,30 @@ export function DashboardShell({
       ? { ...underwaterFrame, captured_at: displayTelemetry.captured_at }
       : underwaterFrame
 
+  const captureBothCameras = () => {
+    if (captureState === 'capturing') return
+    setCaptureState('capturing')
+    setCaptureFilename('')
+    requestAnimationFrame(() => {
+      try {
+        const surface = surfaceCaptureRef.current?.captureFrame()
+        const underwater = underwaterCaptureRef.current?.captureFrame()
+        if (!surface || !underwater) {
+          throw new Error('Camera frame is not ready')
+        }
+        const filename = downloadCameraCapture(
+          combineCameraFrames(surface, underwater),
+        )
+        setTimeout(() => {
+          setCaptureFilename(filename)
+          setCaptureState('saved')
+        }, 320)
+      } catch {
+        setTimeout(() => setCaptureState('error'), 320)
+      }
+    })
+  }
+
   return (
     <main className="dashboard-shell">
       <ConnectionBar
@@ -81,12 +117,46 @@ export function DashboardShell({
         aria-label="ASV operational dashboard"
       >
         <div className="dashboard-grid__cameras">
+          <div className="camera-capture-toolbar">
+            <button
+              type="button"
+              onClick={captureBothCameras}
+              disabled={captureState === 'capturing'}
+            >
+              <CameraIcon aria-hidden="true" size={15} weight="bold" />
+              <span>
+                {captureState === 'capturing'
+                  ? 'Capturing…'
+                  : 'Capture both cameras'}
+              </span>
+            </button>
+            {captureState === 'capturing' ? (
+              <span className="camera-capture-toolbar__status" role="status">
+                Capturing both camera feeds.
+              </span>
+            ) : captureState === 'saved' ? (
+              <span className="camera-capture-toolbar__status" role="status">
+                Capture saved: {captureFilename}
+              </span>
+            ) : captureState === 'error' ? (
+              <span
+                className="camera-capture-toolbar__status camera-capture-toolbar__status--error"
+                role="alert"
+              >
+                Capture failed. Verify both camera feeds.
+              </span>
+            ) : null}
+          </div>
           <CameraStage
+            ref={surfaceCaptureRef}
+            capturing={captureState === 'capturing'}
             streamUrl={surfaceStreamUrl}
             metadataCache={visionMetadataCache}
             metadataStatus={visionMetadataStatus}
           />
           <UnderwaterFallback
+            ref={underwaterCaptureRef}
+            capturing={captureState === 'capturing'}
             frame={displayUnderwaterFrame}
             streamUrl={underwaterStreamUrl}
           />

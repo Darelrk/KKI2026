@@ -11,12 +11,13 @@ import type { CameraCaptureHandle } from '../lib/camera-capture'
 type UnderwaterFallbackProps = {
   frame: UnderwaterFrame | null
   streamUrl: string | null
+  capturing?: boolean
 }
 
 export const UnderwaterFallback = forwardRef<
   CameraCaptureHandle,
   UnderwaterFallbackProps
->(function UnderwaterFallback({ frame, streamUrl }, ref) {
+>(function UnderwaterFallback({ frame, streamUrl, capturing = false }, ref) {
   const imageRef = useRef<HTMLImageElement>(null)
   const player = useGo2rtcVideo({
     urls: asvGo2rtcUrls.underwater,
@@ -41,7 +42,7 @@ export const UnderwaterFallback = forwardRef<
 
   return (
     <section
-      className="underwater-fallback"
+      className={`underwater-fallback${capturing ? ' camera-capture--active' : ''}`}
       aria-labelledby="underwater-camera-title"
     >
       <div className="panel-heading">

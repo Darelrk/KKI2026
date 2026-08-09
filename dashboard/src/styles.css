@@ -279,6 +279,79 @@ h2 {
   gap: 0.875rem;
 }
 
+.camera-capture-toolbar {
+  grid-column: 1 / -1;
+  display: flex;
+  min-height: 2rem;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.65rem;
+}
+
+.camera-capture-toolbar button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.62rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-inset);
+  color: var(--color-accent);
+  font-family:
+    'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.56rem;
+  font-weight: 750;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.camera-capture-toolbar button:hover:not(:disabled) {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+}
+
+.camera-capture-toolbar button:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.camera-capture-toolbar__status {
+  color: var(--color-text-muted);
+  font-family:
+    'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.58rem;
+}
+
+.camera-capture-toolbar__status--error {
+  color: var(--color-danger);
+}
+
+.camera-capture--active {
+  animation: camera-panel-capture 320ms ease-out;
+}
+
+.camera-capture--active .camera-stage__stream,
+.camera-capture--active .underwater-fallback__stream,
+.camera-capture--active .underwater-fallback__frame img {
+  animation: camera-frame-capture 320ms ease-out;
+}
+
+@keyframes camera-panel-capture {
+  50% {
+    border-color: var(--color-accent);
+    box-shadow:
+      var(--shadow-panel),
+      0 0 0 3px var(--color-accent-soft);
+  }
+}
+
+@keyframes camera-frame-capture {
+  50% {
+    filter: brightness(1.45);
+  }
+}
+
 .dashboard-grid__side {
   display: grid;
   align-content: start;
@@ -1510,6 +1583,13 @@ h2 {
   .dashboard-grid > *,
   .navigation-map,
   .mission-stage {
+    animation: none;
+  }
+
+  .camera-capture--active,
+  .camera-capture--active .camera-stage__stream,
+  .camera-capture--active .underwater-fallback__stream,
+  .camera-capture--active .underwater-fallback__frame img {
     animation: none;
   }
 }

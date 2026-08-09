@@ -345,4 +345,16 @@ describe('CameraStage', () => {
     )
     expect(canvasContext.strokeRect).toHaveBeenCalledWith(512, 288, 256, 144)
   })
+  it('marks the surface feed for the shared capture animation', () => {
+    render(
+      <CameraStage
+        capturing
+        streamUrl="https://camera.example.test/surface"
+      />,
+    )
+
+    expect(
+      screen.getByRole('region', { name: 'Surface camera' }),
+    ).toHaveClass('camera-capture--active')
+  })
 })

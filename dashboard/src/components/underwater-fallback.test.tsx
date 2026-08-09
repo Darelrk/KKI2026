@@ -148,4 +148,17 @@ describe('UnderwaterFallback', () => {
     expect(canvasContext.translate).toHaveBeenCalledWith(640, 360)
     expect(canvasContext.rotate).toHaveBeenCalledWith(Math.PI)
   })
+  it('marks the underwater feed for the shared capture animation', () => {
+    render(
+      <UnderwaterFallback
+        capturing
+        frame={frame}
+        streamUrl={null}
+      />,
+    )
+
+    expect(
+      screen.getByRole('region', { name: 'Underwater action camera' }),
+    ).toHaveClass('camera-capture--active')
+  })
 })
