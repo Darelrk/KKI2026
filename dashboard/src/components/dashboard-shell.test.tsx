@@ -68,11 +68,7 @@ describe('DashboardShell', () => {
         name: 'Open Kolam Deli test location in Google Maps',
       }),
     ).not.toBeInTheDocument()
-    expect(
-      within(
-        screen.getByRole('region', { name: 'Attitude telemetry' }),
-      ).getByText(/^3\.\d{6}, 98\.\d{6}$/),
-    ).toBeInTheDocument()
+    expect(screen.getByTestId('simulation-boat')).toBeInTheDocument()
     expect(
       document.querySelector('.dashboard-shell__footer'),
     ).not.toBeInTheDocument()
@@ -121,11 +117,6 @@ describe('DashboardShell', () => {
     expect(screen.getAllByText('Mission route active')).toHaveLength(2)
     expect(screen.getByTestId('boat-marker')).toBeInTheDocument()
     expect(screen.queryByTestId('simulation-boat')).not.toBeInTheDocument()
-    expect(
-      within(
-        screen.getByRole('region', { name: 'Attitude telemetry' }),
-      ).getByText('-1.700000, 102.250000'),
-    ).toBeInTheDocument()
   })
 
   it('renders raw main and underwater camera streams instead of model output', () => {
@@ -180,10 +171,10 @@ describe('DashboardShell', () => {
       />,
     )
 
-    expect(screen.getByText('GPS position')).toBeInTheDocument()
+    expect(screen.queryByText('GPS position')).not.toBeInTheDocument()
+    expect(screen.getByTestId('boat-marker')).toBeInTheDocument()
     expect(screen.getByText('COG')).toBeInTheDocument()
     expect(screen.queryByText('Heading')).not.toBeInTheDocument()
-    expect(screen.getByText('-1.700000, 102.250000')).toBeInTheDocument()
     expect(screen.getByText('144.0°')).toBeInTheDocument()
     expect(screen.getByText('0.00 knot')).toBeInTheDocument()
     expect(screen.getByText('0.00 km/h')).toBeInTheDocument()
