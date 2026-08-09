@@ -8,6 +8,7 @@ import math
 import time
 from collections.abc import Awaitable, Callable
 from datetime import datetime, timezone
+from threading import Lock
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -57,8 +58,18 @@ class PixhawkTelemetry(BaseModel):
     track: list[GpsPoint] = Field(default_factory=list)
 
 
+class ActuatorCommand(BaseModel):
+    """Validated model command accepted by the unified Pixhawk worker."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    steering_pwm: int = Field(ge=1000, le=2000)
+    throttle_pwm: int = Field(ge=1000, le=2000)
+    enabled: bool = True
+
+
 class PixhawkTelemetryReader:
-    """Poll MAVLink messages without ever sending a vehicle-control command."""
+    """Own the single Pixhawk link for telemetry and guarded RC override."""
 
     _MESSAGE_TYPES = [
         "HEARTBEAT",
@@ -84,6 +95,11 @@ class PixhawkTelemetryReader:
         self._next_reconnect = 0.0
         self._last_error: str | None = None
         self._last_stream_target: tuple[int, int] | None = None
+        self._mode = "UNKNOWN"
+        self._actuator_lock = Lock()
+        self._actuator_command: ActuatorCommand | None = None
+        self._actuator_command_at = float("-inf")
+        self._override_active = False
 
     def snapshot(self) -> PixhawkTelemetry:
         now = time.monotonic()
@@ -103,6 +119,12 @@ class PixhawkTelemetryReader:
             heartbeat_at=self._heartbeat_at,
             track=list(self._track),
         )
+
+    def submit_actuator_command(self, command: ActuatorCommand) -> None:
+        """Store the newest short-lived model command for the control loop."""
+        with self._actuator_lock:
+            self._actuator_command = command
+            self._actuator_command_at = time.monotonic()
 
     async def run(self, publish: TelemetryPublisher) -> None:
         """Keep polling and publish one bounded snapshot per configured second."""
@@ -134,6 +156,7 @@ class PixhawkTelemetryReader:
                             await self._reset_connection(
                                 TimeoutError("heartbeat Pixhawk tidak diterima")
                             )
+                        self._apply_actuator_command()
 
                 now = time.monotonic()
                 if now >= next_publish:
@@ -149,8 +172,73 @@ class PixhawkTelemetryReader:
         finally:
             await self.close()
 
+
+    def _apply_actuator_command(self) -> None:
+        """Send only fresh MANUAL-mode overrides; otherwise release them."""
+        if self._connection is None or not self.settings.model_actuators_enabled:
+            self._release_actuator_override()
+            return
+
+        with self._actuator_lock:
+            command = self._actuator_command
+            command_age = time.monotonic() - self._actuator_command_at
+        heartbeat_age = (
+            float("inf")
+            if self._last_heartbeat_monotonic is None
+            else time.monotonic() - self._last_heartbeat_monotonic
+        )
+        if (
+            command is None
+            or not command.enabled
+            or command_age > self.settings.actuator_command_timeout
+            or heartbeat_age > self.settings.pixhawk_heartbeat_timeout
+            or self._mode != "MANUAL"
+        ):
+            self._release_actuator_override()
+            return
+
+        try:
+            self._connection.mav.rc_channels_override_send(
+                self._connection.target_system,
+                self._connection.target_component,
+                command.steering_pwm,
+                65535,
+                command.throttle_pwm,
+                65535,
+                65535,
+                65535,
+                65535,
+                65535,
+            )
+            self._override_active = True
+        except Exception as exc:  # pragma: no cover - hardware-specific
+            self._override_active = False
+            logger.warning("Gagal mengirim RC override Pixhawk (%s)", exc)
+
+    def _release_actuator_override(self) -> None:
+        """Release channels so the physical RC transmitter regains authority."""
+        if self._connection is None or not self._override_active:
+            return
+        try:
+            self._connection.mav.rc_channels_override_send(
+                self._connection.target_system,
+                self._connection.target_component,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+            )
+        except Exception:  # pragma: no cover - hardware-specific
+            logger.debug("Gagal melepas RC override Pixhawk", exc_info=True)
+        finally:
+            self._override_active = False
     async def close(self) -> None:
         self._stop = True
+        self._release_actuator_override()
         connection = self._connection
         self._connection = None
         if connection is not None:
@@ -180,6 +268,8 @@ class PixhawkTelemetryReader:
             self._mavlink_api = mavutil.mavlink
             self._connection_started_monotonic = time.monotonic()
             self._last_heartbeat_monotonic = None
+            self._mode = "UNKNOWN"
+            self._override_active = False
             self._last_stream_target = None
             self._request_telemetry_streams()
             self._last_error = None
@@ -217,11 +307,13 @@ class PixhawkTelemetryReader:
         """Close a broken serial link so the next cycle creates a fresh one."""
         self._record_connection_error(exc)
         connection = self._connection
+        self._release_actuator_override()
         self._connection = None
         self._mavlink_api = None
         self._connection_started_monotonic = None
         self._last_stream_target = None
         self._last_heartbeat_monotonic = None
+        self._mode = "UNKNOWN"
         self._next_reconnect = time.monotonic() + 0.5
         if connection is not None:
             try:
@@ -245,6 +337,9 @@ class PixhawkTelemetryReader:
         if message_type == "HEARTBEAT":
             self._last_heartbeat_monotonic = now
             self._heartbeat_at = datetime.now(timezone.utc)
+            self._mode = str(
+                getattr(self._connection, "flightmode", "UNKNOWN") or "UNKNOWN"
+            ).upper()
             self._request_telemetry_streams()
             return
 

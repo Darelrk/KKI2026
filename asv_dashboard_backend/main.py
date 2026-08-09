@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import secrets
 import asyncio
 from datetime import datetime, timezone
 from contextlib import asynccontextmanager
@@ -13,7 +14,7 @@ from fastapi.responses import StreamingResponse
 from .config import BridgeSettings
 from .frames import FrameTooLargeError, build_underwater_payload
 from .state import AsvLiveStatus, BridgeState, VisionMetadata
-from .telemetry import PixhawkTelemetry, PixhawkTelemetryReader
+from .telemetry import ActuatorCommand, PixhawkTelemetry, PixhawkTelemetryReader
 
 
 def create_app(
@@ -73,6 +74,22 @@ def create_app(
     @app.get("/api/telemetry", response_model=PixhawkTelemetry)
     async def get_telemetry() -> PixhawkTelemetry:
         return resolved_telemetry.snapshot()
+
+    @app.post("/api/control/actuator")
+    async def post_actuator_command(
+        command: ActuatorCommand,
+        request: Request,
+    ) -> dict[str, object]:
+        if not resolved_settings.model_actuators_enabled:
+            raise HTTPException(status_code=503, detail="model actuators disabled")
+        expected_token = resolved_settings.actuator_control_token
+        provided_token = request.headers.get("x-asv-control-token", "")
+        if expected_token is None or not secrets.compare_digest(
+            provided_token, expected_token
+        ):
+            raise HTTPException(status_code=403, detail="invalid control token")
+        resolved_telemetry.submit_actuator_command(command)
+        return {"ok": True, "accepted": True}
 
     @app.put("/api/status", response_model=AsvLiveStatus)
     async def put_status(status: AsvLiveStatus) -> AsvLiveStatus:

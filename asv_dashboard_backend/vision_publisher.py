@@ -21,6 +21,7 @@ class BridgeFramePublisher:
         asv_id: str,
         stream_url: str | None = None,
         max_surface_fps: float = 5.0,
+        control_token: str | None = None,
         timeout_seconds: float = 2.0,
     ) -> None:
         if not bridge_url.startswith("http://") and not bridge_url.startswith("https://"):
@@ -32,14 +33,16 @@ class BridgeFramePublisher:
         self.base_url = bridge_url.rstrip("/")
         self.asv_id = asv_id
         self.stream_url = stream_url
+        self.control_token = control_token
         self.max_surface_interval = 1.0 / max_surface_fps
         self.timeout_seconds = timeout_seconds
-        self._executor = ThreadPoolExecutor(max_workers=3, thread_name_prefix="asv-bridge")
+        self._executor = ThreadPoolExecutor(max_workers=4, thread_name_prefix="asv-bridge")
         self._lock = threading.Lock()
         self._futures: dict[str, Future[None] | None] = {
             "surface": None,
             "metadata": None,
             "status": None,
+            "actuator": None,
         }
         self._last_surface_at = float("-inf")
 
@@ -76,6 +79,30 @@ class BridgeFramePublisher:
             json.dumps(payload, separators=(",", ":")).encode("utf-8"),
             "application/json",
             lane="metadata",
+        )
+
+    def publish_actuator_command(
+        self,
+        *,
+        steering_pwm: int,
+        throttle_pwm: int,
+        enabled: bool,
+    ) -> bool:
+        """Queue a short-lived guarded actuator command to the unified worker."""
+        if not self.control_token:
+            raise RuntimeError("ASV_CONTROL_TOKEN is required for actuator commands")
+        payload = {
+            "steering_pwm": steering_pwm,
+            "throttle_pwm": throttle_pwm,
+            "enabled": enabled,
+        }
+        return self._submit(
+            "POST",
+            "/api/control/actuator",
+            json.dumps(payload, separators=(",", ":")).encode("utf-8"),
+            "application/json",
+            {"X-ASV-Control-Token": self.control_token},
+            lane="actuator",
         )
 
     def publish_surface_frame(self, jpeg_bytes: bytes, *, now: float | None = None) -> bool:

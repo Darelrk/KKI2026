@@ -30,6 +30,9 @@ class BridgeSettings:
     pixhawk_heartbeat_timeout: float = 1.0
     pixhawk_track_max_points: int = 500
     pixhawk_reconnect_seconds: float = 0.5
+    model_actuators_enabled: bool = False
+    actuator_control_token: str | None = None
+    actuator_command_timeout: float = 0.75
 
     def __post_init__(self) -> None:
         if not self.asv_id.strip():
@@ -58,6 +61,16 @@ class BridgeSettings:
             raise ConfigError("ASV_PIXHAWK_TRACK_MAX_POINTS must be positive")
         if self.pixhawk_reconnect_seconds <= 0:
             raise ConfigError("ASV_PIXHAWK_RECONNECT_SECONDS must be positive")
+        if self.actuator_command_timeout <= 0:
+            raise ConfigError("ASV_ACTUATOR_COMMAND_TIMEOUT must be positive")
+        if self.model_actuators_enabled and not self.pixhawk_enabled:
+            raise ConfigError(
+                "ASV_PIXHAWK_ENABLED must be true when model actuators are enabled"
+            )
+        if self.model_actuators_enabled and not self.actuator_control_token:
+            raise ConfigError(
+                "ASV_CONTROL_TOKEN is required when model actuators are enabled"
+            )
 
 
     @classmethod
@@ -82,6 +95,13 @@ class BridgeSettings:
             pixhawk_track_max_points=_int_env("ASV_PIXHAWK_TRACK_MAX_POINTS", 500),
             pixhawk_reconnect_seconds=_float_env(
                 "ASV_PIXHAWK_RECONNECT_SECONDS", 0.5
+            ),
+            model_actuators_enabled=_bool_env(
+                "ASV_MODEL_ACTUATORS_ENABLED", False
+            ),
+            actuator_control_token=_optional_env("ASV_CONTROL_TOKEN"),
+            actuator_command_timeout=_float_env(
+                "ASV_ACTUATOR_COMMAND_TIMEOUT", 0.75
             ),
         )
 

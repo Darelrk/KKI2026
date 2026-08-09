@@ -61,3 +61,28 @@ def test_detection_metadata_publisher_uses_independent_json_lane() -> None:
     surface_args, surface_kwargs = calls[1]
     assert surface_args[:2] == ("POST", "/api/frame/surface")
     assert surface_kwargs["lane"] == "surface"
+
+
+def test_actuator_publisher_requires_token_and_uses_separate_lane() -> None:
+    publisher = BridgeFramePublisher(
+        "http://127.0.0.1:8080",
+        asv_id="default",
+        control_token="secret-token",
+    )
+    calls: list[tuple[tuple[Any, ...], dict[str, Any]]] = []
+    publisher._submit = (  # type: ignore[method-assign]
+        lambda *args, **kwargs: calls.append((args, kwargs)) or True
+    )
+
+    assert publisher.publish_actuator_command(
+        steering_pwm=1490,
+        throttle_pwm=1560,
+        enabled=True,
+    )
+    publisher.close()
+
+    args, kwargs = calls[0]
+    assert args[:2] == ("POST", "/api/control/actuator")
+    assert args[3] == "application/json"
+    assert args[4] == {"X-ASV-Control-Token": "secret-token"}
+    assert kwargs["lane"] == "actuator"

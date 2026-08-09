@@ -3,7 +3,7 @@ from __future__ import annotations
 import time
 
 from asv_dashboard_backend.config import BridgeSettings
-from asv_dashboard_backend.telemetry import PixhawkTelemetryReader
+from asv_dashboard_backend.telemetry import ActuatorCommand, PixhawkTelemetryReader
 
 
 class FakeMavlinkMessage:
@@ -168,3 +168,54 @@ def test_request_telemetry_streams_sends_stream_all() -> None:
     # Calling again with same target does not re-send
     reader._request_telemetry_streams()
     assert len(conn.mav.sent) == 1
+
+
+def test_unified_worker_only_overrides_fresh_manual_commands() -> None:
+    settings = BridgeSettings(
+        pixhawk_enabled=True,
+        model_actuators_enabled=True,
+        actuator_control_token="secret-token",
+    )
+    reader = PixhawkTelemetryReader(settings)
+
+    class FakeMav:
+        def __init__(self) -> None:
+            self.sent: list[tuple[object, ...]] = []
+
+        def rc_channels_override_send(self, *values: object) -> None:
+            self.sent.append(values)
+
+    class FakeConnection:
+        target_system = 1
+        target_component = 1
+        flightmode = "MANUAL"
+
+        def __init__(self) -> None:
+            self.mav = FakeMav()
+
+    connection = FakeConnection()
+    reader._connection = connection
+    reader._mode = "MANUAL"
+    reader._last_heartbeat_monotonic = time.monotonic()
+    reader.submit_actuator_command(
+        ActuatorCommand(steering_pwm=1490, throttle_pwm=1560, enabled=True)
+    )
+
+    reader._apply_actuator_command()
+
+    assert connection.mav.sent[-1] == (
+        1,
+        1,
+        1490,
+        65535,
+        1560,
+        65535,
+        65535,
+        65535,
+        65535,
+        65535,
+    )
+
+    reader._mode = "AUTO"
+    reader._apply_actuator_command()
+    assert connection.mav.sent[-1] == (1, 1, 0, 0, 0, 0, 0, 0, 0, 0)

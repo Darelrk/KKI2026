@@ -27,6 +27,31 @@ def settings() -> BridgeSettings:
     )
 
 
+class CapturingTelemetryReader:
+    def __init__(self) -> None:
+        self.commands = []
+
+    async def run(self, _publish) -> None:
+        return
+
+    async def close(self) -> None:
+        return
+
+    def snapshot(self):
+        raise AssertionError("snapshot is not used by actuator route tests")
+
+    def submit_actuator_command(self, command) -> None:
+        self.commands.append(command)
+
+
+def actuator_settings() -> BridgeSettings:
+    return BridgeSettings(
+        pixhawk_enabled=True,
+        model_actuators_enabled=True,
+        actuator_control_token="secret-token",
+    )
+
+
 def test_cors_origins_parse_from_environment(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv(
         "ASV_CORS_ORIGINS",
@@ -107,6 +132,32 @@ def test_status_and_frame_endpoints_keep_local_state() -> None:
     assert frame.status_code == 200
     assert frame.json()["frame_id"] == "frame-004"
     assert current.json()["run_id"] == "run-001"
+
+
+def test_actuator_endpoint_requires_token_and_queues_command() -> None:
+    reader = CapturingTelemetryReader()
+    app = create_app(settings=actuator_settings(), telemetry_reader=reader)
+
+    with TestClient(app) as client:
+        assert client.post(
+            "/api/control/actuator",
+            json={"steering_pwm": 1500, "throttle_pwm": 1560, "enabled": True},
+        ).status_code == 403
+        assert client.post(
+            "/api/control/actuator",
+            headers={"x-asv-control-token": "wrong"},
+            json={"steering_pwm": 1500, "throttle_pwm": 1560, "enabled": True},
+        ).status_code == 403
+        accepted = client.post(
+            "/api/control/actuator",
+            headers={"x-asv-control-token": "secret-token"},
+            json={"steering_pwm": 1490, "throttle_pwm": 1540, "enabled": True},
+        )
+
+    assert accepted.status_code == 200
+    assert len(reader.commands) == 1
+    assert reader.commands[0].steering_pwm == 1490
+    assert reader.commands[0].throttle_pwm == 1540
 
 
 def test_read_endpoints_allow_configured_dashboard_origin() -> None:
