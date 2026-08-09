@@ -33,18 +33,7 @@ export function TelemetryPanel({
       </div>
 
       <dl className="telemetry-grid">
-        <div className="telemetry-card telemetry-card--wide">
-          <dt>
-            <Crosshair aria-hidden="true" size={14} />
-            GPS position
-          </dt>
-          <dd>
-            {telemetry.position
-              ? `${telemetry.position.latitude.toFixed(6)}, ${telemetry.position.longitude.toFixed(6)}`
-              : 'Unavailable'}
-          </dd>
-        </div>
-        <div className="telemetry-card telemetry-card--priority">
+        <div className="telemetry-card telemetry-card--priority telemetry-card--wide">
           <dt>
             <Compass aria-hidden="true" size={14} />
             COG
@@ -55,7 +44,7 @@ export function TelemetryPanel({
               : `${telemetry.heading_deg.toFixed(1)}°`}
           </dd>
         </div>
-        <div className="telemetry-card telemetry-card--priority">
+        <div className="telemetry-card telemetry-card--priority telemetry-card--wide">
           <dt>
             <Gauge aria-hidden="true" size={14} />
             SOG

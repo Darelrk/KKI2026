@@ -12,11 +12,11 @@ describe('TelemetryPanel', () => {
       <TelemetryPanel telemetry={emptyNavigationTelemetry} updatedAt={null} />,
     )
 
-    expect(screen.getByText('GPS position')).toBeInTheDocument()
+    expect(screen.queryByText('GPS position')).not.toBeInTheDocument()
     expect(screen.getByText('COG')).toBeInTheDocument()
     expect(screen.getByText('SOG')).toBeInTheDocument()
     expect(screen.getByText('Last update')).toBeInTheDocument()
-    expect(screen.getAllByText('Unavailable')).toHaveLength(4)
+    expect(screen.getAllByText('Unavailable')).toHaveLength(3)
   })
 
   it('shows SOG in knots and kilometres per hour', () => {
@@ -44,11 +44,18 @@ describe('TelemetryPanel', () => {
       />,
     )
 
-    expect(screen.getByText('COG').closest('.telemetry-card')).toHaveClass(
+    const cogCard = screen.getByText('COG').closest('.telemetry-card')
+    const sogCard = screen.getByText('SOG').closest('.telemetry-card')
+    expect(cogCard).toHaveClass(
       'telemetry-card--priority',
+      'telemetry-card--wide',
     )
-    expect(screen.getByText('SOG').closest('.telemetry-card')).toHaveClass(
+    expect(sogCard).toHaveClass(
       'telemetry-card--priority',
+      'telemetry-card--wide',
+    )
+    expect(cogCard?.compareDocumentPosition(sogCard as Node)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
     )
   })
 })
