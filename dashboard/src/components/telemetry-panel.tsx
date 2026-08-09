@@ -84,38 +84,41 @@ export function TelemetryPanel({
           <dt>
             <Timer aria-hidden="true" size={14} />
             Last update
-            {onCapture ? (
-              <button
-                type="button"
-                className={`telemetry-card__capture-button telemetry-card__capture-button--${captureState}`}
-                aria-label="Capture both cameras"
-                title="Capture both cameras"
-                onClick={onCapture}
-                disabled={captureState === 'capturing'}
-              >
-                <Camera aria-hidden="true" size={15} weight="bold" />
-              </button>
-            ) : null}
           </dt>
           <dd>{updatedAt ? formatSiteTime(updatedAt) : 'Unavailable'}</dd>
+        </div>
+      </dl>
+      {onCapture ? (
+        <div className="telemetry-panel__capture">
+          <button
+            type="button"
+            className={`telemetry-panel__capture-button telemetry-panel__capture-button--${captureState}`}
+            aria-label="Capture both cameras"
+            title="Capture both cameras"
+            onClick={onCapture}
+            disabled={captureState === 'capturing'}
+          >
+            <Camera aria-hidden="true" size={15} weight="bold" />
+            <span>Capture cameras</span>
+          </button>
           {captureState === 'capturing' ? (
-            <span className="telemetry-card__capture-status" role="status">
+            <span className="telemetry-panel__capture-status" role="status">
               Capturing both camera feeds.
             </span>
           ) : captureState === 'saved' ? (
-            <span className="telemetry-card__capture-status" role="status">
+            <span className="telemetry-panel__capture-status" role="status">
               Capture saved: {captureFilename}
             </span>
           ) : captureState === 'error' ? (
             <span
-              className="telemetry-card__capture-status telemetry-card__capture-status--error"
+              className="telemetry-panel__capture-status telemetry-panel__capture-status--error"
               role="alert"
             >
               Capture failed. Verify both camera feeds.
             </span>
           ) : null}
         </div>
-      </dl>
+      ) : null}
     </section>
   )
 }

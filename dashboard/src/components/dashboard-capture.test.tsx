@@ -67,17 +67,18 @@ describe('Dashboard camera capture', () => {
     )
 
     render(<DashboardShell live={null} underwaterFrame={null} />)
-    const lastUpdateCard = within(
-      screen.getByRole('region', { name: 'Attitude telemetry' }),
-    )
+    const telemetryPanel = screen.getByRole('region', {
+      name: 'Attitude telemetry',
+    })
+    const lastUpdateCard = within(telemetryPanel)
       .getByText('Last update')
       .closest('div')
+    const captureButton = within(telemetryPanel).getByRole('button', {
+      name: 'Capture both cameras',
+    })
     expect(lastUpdateCard).not.toBeNull()
-    expect(
-      within(lastUpdateCard as HTMLElement).getByRole('button', {
-        name: 'Capture both cameras',
-      }),
-    ).toBeInTheDocument()
+    expect(lastUpdateCard).not.toContainElement(captureButton)
+    expect(telemetryPanel.lastElementChild).toContainElement(captureButton)
     fireEvent.click(
       screen.getByRole('button', { name: 'Capture both cameras' }),
     )

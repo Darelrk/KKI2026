@@ -279,33 +279,45 @@ h2 {
   gap: 0.875rem;
 }
 
-.telemetry-card__capture-button {
-  display: inline-grid;
-  width: 1.55rem;
-  height: 1.55rem;
-  margin-left: auto;
-  padding: 0;
-  place-items: center;
+.telemetry-panel__capture {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.telemetry-panel__capture-button {
+  display: inline-flex;
+  height: 1.65rem;
+  align-items: center;
+  gap: 0.32rem;
+  padding: 0 0.48rem;
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-sm);
-  background: var(--color-bg-panel);
+  background: var(--color-bg-inset);
   color: var(--color-accent);
+  font-family:
+    'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.5rem;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   cursor: pointer;
 }
 
-.telemetry-card__capture-button:hover:not(:disabled) {
+.telemetry-panel__capture-button:hover:not(:disabled) {
   border-color: var(--color-accent);
   background: var(--color-accent-soft);
 }
 
-.telemetry-card__capture-button:disabled {
+.telemetry-panel__capture-button:disabled {
   cursor: wait;
   opacity: 0.72;
 }
 
-.telemetry-card__capture-status {
-  display: block;
-  margin-top: 0.35rem;
+.telemetry-panel__capture-status {
+  min-width: 0;
   color: var(--color-text-muted);
   font-family:
     'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -313,7 +325,7 @@ h2 {
   overflow-wrap: anywhere;
 }
 
-.telemetry-card__capture-status--error {
+.telemetry-panel__capture-status--error {
   color: var(--color-danger);
 }
 
