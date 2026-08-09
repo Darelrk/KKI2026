@@ -267,7 +267,6 @@ class PixhawkLink:
                 "Pastikan Pixhawk terhubung dan port tidak dikunci oleh QGroundControl/Mission Planner."
             )
 
-        self.arm_vehicle()
         self._stream_thread = threading.Thread(target=self._override_loop, daemon=True)
         self._stream_thread.start()
 
@@ -323,32 +322,7 @@ class PixhawkLink:
         """Attempt to recover lost Pixhawk connection dynamically."""
         with self._mav_lock:
             print(f"Mencoba menyambungkan ulang MAVLink ke {self._endpoint}...")
-            ok = self._try_connect(self._endpoint)
-            if ok:
-                self.arm_vehicle()
-            return ok
-    def arm_vehicle(self) -> None:
-        """Bypass pre-arm checks and arm Pixhawk for active throttle testing."""
-        if self.connection is None:
-            return
-        with self._mav_lock:
-            try:
-                self.connection.mav.param_set_send(
-                    self.connection.target_system,
-                    self.connection.target_component,
-                    b'ARMING_CHECK',
-                    0.0,
-                    self._mavutil.mavlink.MAV_PARAM_TYPE_REAL32
-                )
-                time.sleep(0.05)
-                self.connection.mav.command_long_send(
-                    self.connection.target_system,
-                    self.connection.target_component,
-                    self._mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM,
-                    0, 1, 21196, 0, 0, 0, 0, 0
-                )
-            except Exception:
-                pass
+            return self._try_connect(self._endpoint)
 
     def mode(self) -> str:
         """Read and cache the latest heartbeat mode."""
@@ -481,12 +455,6 @@ class PixhawkLink:
                         self.connection.target_system,
                         self.connection.target_component,
                         0, unused, 0, unused, unused, unused, unused, unused
-                    )
-                    self.connection.mav.command_long_send(
-                        self.connection.target_system,
-                        self.connection.target_component,
-                        self._mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM,
-                        0, 0, 0, 0, 0, 0, 0, 0
                     )
                     self.connection.close()
                 except Exception:
