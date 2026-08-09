@@ -10,7 +10,9 @@ from vision_route import (
     RouteConfig,
     RouteController,
     RouteState,
+    SearchConfig,
     ThrottleConfig,
+    VisualSearchController,
     VisualTargetTracker,
     VisualThrottleController,
     compute_visual_throttle_pwm,
@@ -30,6 +32,20 @@ def test_controller_starts_in_visual_track():
     assert decision.state is RouteState.VISUAL_TRACK
     assert decision.steering_pwm == 1500
     assert decision.throttle_pwm == 1500
+
+
+def test_visual_search_sweeps_steering_with_neutral_throttle_policy() -> None:
+    search = VisualSearchController(SearchConfig(max_delta=100, period_s=8.0))
+
+    assert search.update(now=0.0) == 1500
+    assert search.update(now=2.0) == 1600
+    assert search.update(now=4.0) == 1500
+    assert search.update(now=6.0) == 1400
+    assert search.active is True
+
+    search.reset()
+    assert search.active is False
+    assert search.update(now=20.0) == 1500
 
 
 def det(label, x, y, confidence=0.9):

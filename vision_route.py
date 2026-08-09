@@ -139,6 +139,53 @@ class VisualTargetTracker:
             self._last_target_at = now
         return smoothed_target_x
 
+
+@dataclass(frozen=True)
+class SearchConfig:
+    """Conservative visual sweep settings used when no buoy is visible."""
+
+    center_pwm: int = NEUTRAL_PWM
+    max_delta: int = 180
+    period_s: float = 8.0
+    throttle_pwm: int = NEUTRAL_PWM
+
+    def __post_init__(self) -> None:
+        if not PWM_MIN <= self.center_pwm <= PWM_MAX:
+            raise ValueError("center_pwm must be between 1000 and 2000")
+        if self.max_delta < 0 or self.center_pwm - self.max_delta < PWM_MIN:
+            raise ValueError("max_delta drives steering below PWM_MIN")
+        if self.center_pwm + self.max_delta > PWM_MAX:
+            raise ValueError("max_delta drives steering above PWM_MAX")
+        if self.period_s <= 0.0:
+            raise ValueError("period_s must be positive")
+        if not PWM_MIN <= self.throttle_pwm <= PWM_MAX:
+            raise ValueError("throttle_pwm must be between 1000 and 2000")
+
+
+class VisualSearchController:
+    """Sweep steering smoothly while holding safe throttle until reacquisition."""
+
+    def __init__(self, config: SearchConfig = SearchConfig()) -> None:
+        self.config = config
+        self._started_at: float | None = None
+
+    @property
+    def active(self) -> bool:
+        return self._started_at is not None
+
+    def reset(self) -> None:
+        """Stop the sweep after a buoy is reacquired."""
+        self._started_at = None
+
+    def update(self, *, now: float) -> int:
+        """Return the next steering PWM in a smooth left-right sweep."""
+        if self._started_at is None:
+            self._started_at = now
+        elapsed = max(0.0, now - self._started_at)
+        phase = 2.0 * math.pi * elapsed / self.config.period_s
+        pwm = self.config.center_pwm + self.config.max_delta * math.sin(phase)
+        return int(round(clamp(pwm, PWM_MIN, PWM_MAX)))
+
 def compute_steering_pwm(
     target_x: float,
     frame_width: int,
