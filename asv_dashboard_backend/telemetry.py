@@ -76,6 +76,7 @@ class PixhawkTelemetryReader:
         "GLOBAL_POSITION_INT",
         "GPS_RAW_INT",
         "VFR_HUD",
+        "RC_CHANNELS",
     ]
 
     def __init__(self, settings: BridgeSettings) -> None:
@@ -95,6 +96,7 @@ class PixhawkTelemetryReader:
         self._next_reconnect = 0.0
         self._last_error: str | None = None
         self._last_stream_target: tuple[int, int] | None = None
+        self._last_rc_monotonic: float | None = None
         self._mode = "UNKNOWN"
         self._actuator_lock = Lock()
         self._actuator_command: ActuatorCommand | None = None
@@ -187,11 +189,17 @@ class PixhawkTelemetryReader:
             if self._last_heartbeat_monotonic is None
             else time.monotonic() - self._last_heartbeat_monotonic
         )
+        rc_age = (
+            float("inf")
+            if self._last_rc_monotonic is None
+            else time.monotonic() - self._last_rc_monotonic
+        )
         if (
             command is None
             or not command.enabled
             or command_age > self.settings.actuator_command_timeout
             or heartbeat_age > self.settings.pixhawk_heartbeat_timeout
+            or rc_age > self.settings.pixhawk_heartbeat_timeout
             or self._mode != "MANUAL"
         ):
             self._release_actuator_override()
@@ -268,6 +276,7 @@ class PixhawkTelemetryReader:
             self._mavlink_api = mavutil.mavlink
             self._connection_started_monotonic = time.monotonic()
             self._last_heartbeat_monotonic = None
+            self._last_rc_monotonic = None
             self._mode = "UNKNOWN"
             self._override_active = False
             self._last_stream_target = None
@@ -315,6 +324,7 @@ class PixhawkTelemetryReader:
         self._last_heartbeat_monotonic = None
         self._mode = "UNKNOWN"
         self._next_reconnect = time.monotonic() + 0.5
+        self._last_rc_monotonic = None
         if connection is not None:
             try:
                 await asyncio.to_thread(connection.close)
@@ -350,6 +360,18 @@ class PixhawkTelemetryReader:
             speed = _finite_number(getattr(message, "groundspeed", None))
             if speed is not None and speed >= 0:
                 self._speed_mps = speed
+            return
+
+        if message_type == "RC_CHANNELS":
+            steering = _finite_number(getattr(message, "chan1_raw", None))
+            throttle = _finite_number(getattr(message, "chan3_raw", None))
+            if (
+                steering is not None
+                and throttle is not None
+                and 900 <= steering <= 2200
+                and 900 <= throttle <= 2200
+            ):
+                self._last_rc_monotonic = now
             return
 
         if message_type == "GLOBAL_POSITION_INT":
