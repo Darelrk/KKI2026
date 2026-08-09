@@ -255,7 +255,7 @@ def test_unified_worker_releases_override_without_fresh_rc_input() -> None:
     reader._connection = connection
     reader._mode = "MANUAL"
     reader._last_heartbeat_monotonic = time.monotonic()
-    reader._last_rc_monotonic = None
+    reader._mode = "AUTO"
     reader.submit_actuator_command(
         ActuatorCommand(steering_pwm=1490, throttle_pwm=1560, enabled=True)
     )

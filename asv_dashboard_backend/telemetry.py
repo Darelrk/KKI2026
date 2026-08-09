@@ -199,16 +199,17 @@ class PixhawkTelemetryReader:
             or not command.enabled
             or command_age > self.settings.actuator_command_timeout
             or heartbeat_age > self.settings.pixhawk_heartbeat_timeout
-            or rc_age > self.settings.pixhawk_heartbeat_timeout
             or self._mode != "MANUAL"
         ):
             self._release_actuator_override()
             return
 
         try:
+            target_sys = getattr(self._connection, "target_system", 1) or 1
+            target_comp = getattr(self._connection, "target_component", 1) or 1
             self._connection.mav.rc_channels_override_send(
-                self._connection.target_system,
-                self._connection.target_component,
+                target_sys,
+                target_comp,
                 command.steering_pwm,
                 65535,
                 command.throttle_pwm,
@@ -347,9 +348,12 @@ class PixhawkTelemetryReader:
         if message_type == "HEARTBEAT":
             self._last_heartbeat_monotonic = now
             self._heartbeat_at = datetime.now(timezone.utc)
-            self._mode = str(
+            mode_str = str(
                 getattr(self._connection, "flightmode", "UNKNOWN") or "UNKNOWN"
             ).upper()
+            if mode_str != self._mode:
+                logger.info("Pixhawk flightmode berubah ke: %s", mode_str)
+            self._mode = mode_str
             self._request_telemetry_streams()
             return
 
