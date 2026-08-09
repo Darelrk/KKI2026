@@ -147,7 +147,7 @@ class SearchConfig:
     center_pwm: int = NEUTRAL_PWM
     max_delta: int = 180
     period_s: float = 8.0
-    throttle_pwm: int = NEUTRAL_PWM
+    throttle_pwm: int = 1540
 
     def __post_init__(self) -> None:
         if not PWM_MIN <= self.center_pwm <= PWM_MAX:
@@ -163,7 +163,7 @@ class SearchConfig:
 
 
 class VisualSearchController:
-    """Sweep steering smoothly while holding safe throttle until reacquisition."""
+    """Sweep steering while advancing slowly until buoy reacquisition."""
 
     def __init__(self, config: SearchConfig = SearchConfig()) -> None:
         self.config = config

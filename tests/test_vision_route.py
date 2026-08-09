@@ -34,8 +34,9 @@ def test_controller_starts_in_visual_track():
     assert decision.throttle_pwm == 1500
 
 
-def test_visual_search_sweeps_steering_with_neutral_throttle_policy() -> None:
+def test_visual_search_sweeps_while_advancing_slowly() -> None:
     search = VisualSearchController(SearchConfig(max_delta=100, period_s=8.0))
+    assert search.config.throttle_pwm == 1540
 
     assert search.update(now=0.0) == 1500
     assert search.update(now=2.0) == 1600
