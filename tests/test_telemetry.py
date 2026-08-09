@@ -263,3 +263,48 @@ def test_unified_worker_releases_override_without_fresh_rc_input() -> None:
     reader._apply_actuator_command()
 
     assert connection.mav.sent == []
+
+
+def test_unified_worker_prioritizes_pilot_rc_stick_deflection() -> None:
+    reader = PixhawkTelemetryReader(
+        BridgeSettings(
+            pixhawk_enabled=True,
+            model_actuators_enabled=True,
+            actuator_control_token="secret-token",
+        )
+    )
+    class FakeMav:
+        def __init__(self) -> None:
+            self.sent: list[tuple[object, ...]] = []
+        def rc_channels_override_send(self, *values: object) -> None:
+            self.sent.append(values)
+    class FakeRcMsg:
+        def get_type(self) -> str:
+            return "RC_CHANNELS"
+        chan1_raw = 1750
+        chan3_raw = 1500
+
+    class FakeConnection:
+        target_system = 1
+        target_component = 1
+        flightmode = "MANUAL"
+        def __init__(self) -> None:
+            self.mav = FakeMav()
+
+    connection = FakeConnection()
+    reader._connection = connection
+    reader._mode = "MANUAL"
+    now = time.monotonic()
+    reader._last_heartbeat_monotonic = now
+    reader.submit_actuator_command(
+        ActuatorCommand(steering_pwm=1490, throttle_pwm=1560, enabled=True)
+    )
+    reader._override_active = True
+
+    # Pilot moves steering stick to 1750 PWM (>60 from neutral)
+    reader._consume_message(FakeRcMsg(), now)
+    reader._apply_actuator_command()
+
+    # Override must be immediately released (0,0) to give pilot 100% priority
+    assert connection.mav.sent[-1] == (1, 1, 0, 0, 0, 0, 0, 0, 0, 0)
+    assert reader._override_active is False

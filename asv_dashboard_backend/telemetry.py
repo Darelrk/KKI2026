@@ -98,6 +98,7 @@ class PixhawkTelemetryReader:
         self._last_stream_target: tuple[int, int] | None = None
         self._last_rc_monotonic: float | None = None
         self._mode = "UNKNOWN"
+        self._last_pilot_input_monotonic: float | None = None
         self._actuator_lock = Lock()
         self._actuator_command: ActuatorCommand | None = None
         self._actuator_command_at = float("-inf")
@@ -194,12 +195,18 @@ class PixhawkTelemetryReader:
             if self._last_rc_monotonic is None
             else time.monotonic() - self._last_rc_monotonic
         )
+        pilot_input_age = (
+            float("inf")
+            if self._last_pilot_input_monotonic is None
+            else time.monotonic() - self._last_pilot_input_monotonic
+        )
         if (
             command is None
             or not command.enabled
             or command_age > self.settings.actuator_command_timeout
             or heartbeat_age > self.settings.pixhawk_heartbeat_timeout
             or self._mode != "MANUAL"
+            or pilot_input_age <= 1.5
         ):
             self._release_actuator_override()
             return
@@ -273,7 +280,7 @@ class PixhawkTelemetryReader:
                 source_system=255,
                 source_component=190,
             )
-            self._connection = connection
+            self._last_pilot_input_monotonic = None
             self._mavlink_api = mavutil.mavlink
             self._connection_started_monotonic = time.monotonic()
             self._last_heartbeat_monotonic = None
@@ -318,7 +325,7 @@ class PixhawkTelemetryReader:
         self._record_connection_error(exc)
         connection = self._connection
         self._release_actuator_override()
-        self._connection = None
+        self._last_pilot_input_monotonic = None
         self._mavlink_api = None
         self._connection_started_monotonic = None
         self._last_stream_target = None
@@ -376,6 +383,8 @@ class PixhawkTelemetryReader:
                 and 900 <= throttle <= 2200
             ):
                 self._last_rc_monotonic = now
+                if abs(steering - 1500) > 60 or abs(throttle - 1500) > 60:
+                    self._last_pilot_input_monotonic = now
             return
 
         if message_type == "GLOBAL_POSITION_INT":
