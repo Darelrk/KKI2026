@@ -436,6 +436,38 @@ h2 {
   background: var(--color-bg-inset);
 }
 
+.telemetry-card--priority {
+  border-color: var(--color-accent-dim);
+  background: linear-gradient(
+    135deg,
+    var(--color-accent-soft),
+    var(--color-bg-panel)
+  );
+  box-shadow:
+    inset 3px 0 0 var(--color-accent),
+    0 3px 10px rgba(23, 107, 156, 0.09);
+}
+
+.telemetry-card--priority dt {
+  color: var(--color-accent);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.telemetry-card--priority dd {
+  color: var(--color-text-bright);
+  font-size: 0.92rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.25;
+}
+
+.telemetry-card--priority dd span:last-child {
+  color: var(--color-text-secondary);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
 .telemetry-card--wide {
   grid-column: 1 / -1;
 }

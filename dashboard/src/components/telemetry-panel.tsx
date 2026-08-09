@@ -44,7 +44,7 @@ export function TelemetryPanel({
               : 'Unavailable'}
           </dd>
         </div>
-        <div className="telemetry-card">
+        <div className="telemetry-card telemetry-card--priority">
           <dt>
             <Compass aria-hidden="true" size={14} />
             COG
@@ -55,7 +55,7 @@ export function TelemetryPanel({
               : `${telemetry.heading_deg.toFixed(1)}°`}
           </dd>
         </div>
-        <div className="telemetry-card">
+        <div className="telemetry-card telemetry-card--priority">
           <dt>
             <Gauge aria-hidden="true" size={14} />
             SOG
