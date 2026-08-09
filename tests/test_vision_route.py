@@ -191,13 +191,13 @@ def test_select_target_x_pair_and_single_buoy_offset():
     pair = [det("red_buoy", 280, 300), det("green_buoy", 360, 300)]
     assert select_target_x(pair) == 320.0
 
-    # Single red buoy -> steer right (+offset)
+    # Single red buoy on the right -> search left for the missing green buoy.
     red_only = [det("red_buoy", 200, 300)] # width=20, default offset = 20 * 1.5 = 30
-    assert select_target_x(red_only) == 230.0
+    assert select_target_x(red_only) == 170.0
 
-    # Single green buoy -> steer left (-offset)
+    # Single green buoy on the left -> search right for the missing red buoy.
     green_only = [det("green_buoy", 400, 300)] # width=20, default offset = 20 * 1.5 = 30
-    assert select_target_x(green_only) == 370.0
+    assert select_target_x(green_only) == 430.0
 
 
 def throttle_det(width: float, height: float, label: str = "red_buoy") -> Detection:
@@ -405,7 +405,7 @@ def test_visual_target_tracker_holds_pair_midpoint_when_buoy_is_missing() -> Non
     assert tracker.update(pair, now=0.0) == 320.0
     assert tracker.update([pair[0]], now=0.2) == 320.0
     assert tracker.update([pair[1]], now=0.4) == 320.0
-    assert tracker.update([pair[0]], now=0.9) == 260.0
+    assert tracker.update([pair[0]], now=0.9) == 140.0
 
 
 def test_visual_target_tracker_smooths_pair_midpoint_motion() -> None:

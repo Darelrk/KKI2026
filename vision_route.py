@@ -43,7 +43,7 @@ def select_target_x(
     *,
     single_buoy_offset: float = 0.0,
 ) -> float | None:
-    """Return the midpoint of the best red/green target, or offset for a single buoy."""
+    """Return the gate midpoint, or steer toward the missing buoy's side."""
     relevant = [d for d in detections if d.label in TARGET_LABELS]
     if not relevant:
         return None
@@ -63,12 +63,14 @@ def select_target_x(
         return (red.x_center + green.x_center) / 2.0
 
     if red is not None:
+        # Red belongs on the right; search left for the missing green buoy.
         offset = single_buoy_offset if single_buoy_offset > 0.0 else (red.width * 1.5)
-        return max(0.0, red.x_center + offset)
+        return max(0.0, red.x_center - offset)
 
     if green is not None:
+        # Green belongs on the left; search right for the missing red buoy.
         offset = single_buoy_offset if single_buoy_offset > 0.0 else (green.width * 1.5)
-        return max(0.0, green.x_center - offset)
+        return green.x_center + offset
     best = max(relevant, key=lambda d: (d.confidence, d.area))
     return best.x_center
 

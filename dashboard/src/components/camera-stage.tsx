@@ -49,25 +49,41 @@ export function CameraStage({
         if (context) {
           context.clearRect(0, 0, canvas.width, canvas.height)
           const cache = cacheRef.current
+          const sourceWidth =
+            video?.videoWidth ||
+            image?.naturalWidth ||
+            cache?.payload.source_width ||
+            display.width
+          const sourceHeight =
+            video?.videoHeight ||
+            image?.naturalHeight ||
+            cache?.payload.source_height ||
+            display.height
+          const scale = Math.min(
+            display.width / sourceWidth,
+            display.height / sourceHeight,
+          )
+          const sourceRect = {
+            x: (display.width - sourceWidth * scale) / 2,
+            y: (display.height - sourceHeight * scale) / 2,
+            width: sourceWidth * scale,
+            height: sourceHeight * scale,
+          }
+
+          // Keep the operator's visual center fixed independently of
+          // detection refreshes and stale metadata.
+          const centerX = (sourceRect.x + sourceRect.width / 2) * dpr
+          context.strokeStyle = '#2f80ed'
+          context.lineWidth = 2 * dpr
+          context.beginPath()
+          context.moveTo(centerX, sourceRect.y * dpr)
+          context.lineTo(
+            centerX,
+            (sourceRect.y + sourceRect.height) * dpr,
+          )
+          context.stroke()
+
           if (cache && isVisionMetadataFresh(cache, nowMs)) {
-            const sourceWidth =
-              video?.videoWidth ||
-              image?.naturalWidth ||
-              cache.payload.source_width
-            const sourceHeight =
-              video?.videoHeight ||
-              image?.naturalHeight ||
-              cache.payload.source_height
-            const scale = Math.min(
-              display.width / sourceWidth,
-              display.height / sourceHeight,
-            )
-            const sourceRect = {
-              x: (display.width - sourceWidth * scale) / 2,
-              y: (display.height - sourceHeight * scale) / 2,
-              width: sourceWidth * scale,
-              height: sourceHeight * scale,
-            }
             context.strokeStyle = '#ff9762'
             context.lineWidth = 2 * dpr
             for (const detection of cache.payload.detections) {

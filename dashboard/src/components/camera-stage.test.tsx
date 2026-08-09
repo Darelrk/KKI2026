@@ -34,6 +34,10 @@ let frameCallbacks: FrameRequestCallback[]
 type CanvasContextSpies = {
   clearRect: (...args: number[]) => void
   strokeRect: (...args: number[]) => void
+  beginPath: () => void
+  moveTo: (...args: number[]) => void
+  lineTo: (...args: number[]) => void
+  stroke: () => void
   fillText: (...args: unknown[]) => void
   strokeStyle: string
   lineWidth: number
@@ -105,6 +109,10 @@ beforeEach(() => {
   canvasContext = {
     clearRect: vi.fn(),
     strokeRect: vi.fn(),
+    beginPath: vi.fn(),
+    moveTo: vi.fn(),
+    lineTo: vi.fn(),
+    stroke: vi.fn(),
     fillText: vi.fn(),
     strokeStyle: '',
     lineWidth: 0,
@@ -210,6 +218,8 @@ describe('CameraStage', () => {
     frameCallbacks[0](500)
 
     expect(canvasContext.clearRect).toHaveBeenCalled()
+    expect(canvasContext.moveTo).toHaveBeenCalledWith(400, 75)
+    expect(canvasContext.lineTo).toHaveBeenCalledWith(400, 525)
     expect(canvasContext.strokeRect).toHaveBeenCalledWith(320, 255, 160, 90)
   })
 
@@ -225,6 +235,8 @@ describe('CameraStage', () => {
     frameCallbacks[0](1000)
 
     expect(canvasContext.clearRect).toHaveBeenCalled()
+    expect(canvasContext.moveTo).toHaveBeenCalled()
+    expect(canvasContext.lineTo).toHaveBeenCalled()
     expect(canvasContext.strokeRect).not.toHaveBeenCalled()
     expect(screen.getByLabelText('Live surface camera')).toBeInTheDocument()
     expect(screen.getByText('Vision error')).toBeInTheDocument()
