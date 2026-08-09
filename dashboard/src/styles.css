@@ -279,51 +279,41 @@ h2 {
   gap: 0.875rem;
 }
 
-.camera-capture-toolbar {
-  grid-column: 1 / -1;
-  display: flex;
-  min-height: 2rem;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 0.65rem;
-}
-
-.camera-capture-toolbar button {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.4rem 0.62rem;
+.telemetry-card__capture-button {
+  display: inline-grid;
+  width: 1.55rem;
+  height: 1.55rem;
+  margin-left: auto;
+  padding: 0;
+  place-items: center;
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-sm);
-  background: var(--color-bg-inset);
+  background: var(--color-bg-panel);
   color: var(--color-accent);
-  font-family:
-    'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 0.56rem;
-  font-weight: 750;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
   cursor: pointer;
 }
 
-.camera-capture-toolbar button:hover:not(:disabled) {
+.telemetry-card__capture-button:hover:not(:disabled) {
   border-color: var(--color-accent);
   background: var(--color-accent-soft);
 }
 
-.camera-capture-toolbar button:disabled {
+.telemetry-card__capture-button:disabled {
   cursor: wait;
   opacity: 0.72;
 }
 
-.camera-capture-toolbar__status {
+.telemetry-card__capture-status {
+  display: block;
+  margin-top: 0.35rem;
   color: var(--color-text-muted);
   font-family:
     'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 0.58rem;
+  font-size: 0.52rem;
+  overflow-wrap: anywhere;
 }
 
-.camera-capture-toolbar__status--error {
+.telemetry-card__capture-status--error {
   color: var(--color-danger);
 }
 

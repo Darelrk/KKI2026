@@ -1,5 +1,4 @@
 import { useRef, useState } from 'react'
-import { Camera as CameraIcon } from '@phosphor-icons/react'
 
 import { MissionStage } from './mission-stage'
 import { NavigationMap } from './navigation-map'
@@ -117,36 +116,6 @@ export function DashboardShell({
         aria-label="ASV operational dashboard"
       >
         <div className="dashboard-grid__cameras">
-          <div className="camera-capture-toolbar">
-            <button
-              type="button"
-              onClick={captureBothCameras}
-              disabled={captureState === 'capturing'}
-            >
-              <CameraIcon aria-hidden="true" size={15} weight="bold" />
-              <span>
-                {captureState === 'capturing'
-                  ? 'Capturing…'
-                  : 'Capture both cameras'}
-              </span>
-            </button>
-            {captureState === 'capturing' ? (
-              <span className="camera-capture-toolbar__status" role="status">
-                Capturing both camera feeds.
-              </span>
-            ) : captureState === 'saved' ? (
-              <span className="camera-capture-toolbar__status" role="status">
-                Capture saved: {captureFilename}
-              </span>
-            ) : captureState === 'error' ? (
-              <span
-                className="camera-capture-toolbar__status camera-capture-toolbar__status--error"
-                role="alert"
-              >
-                Capture failed. Verify both camera feeds.
-              </span>
-            ) : null}
-          </div>
           <CameraStage
             ref={surfaceCaptureRef}
             capturing={captureState === 'capturing'}
@@ -170,6 +139,9 @@ export function DashboardShell({
           <TelemetryPanel
             telemetry={navigation}
             updatedAt={displayTelemetry?.captured_at ?? null}
+            captureState={captureState}
+            captureFilename={captureFilename}
+            onCapture={captureBothCameras}
           />
         </div>
       </section>

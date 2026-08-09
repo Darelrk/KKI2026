@@ -1,4 +1,4 @@
-import { Compass, Crosshair, Gauge, Timer } from '@phosphor-icons/react'
+import { Camera, Compass, Crosshair, Gauge, Timer } from '@phosphor-icons/react'
 
 import { formatSiteTime } from '../lib/format-site-time'
 
@@ -7,12 +7,21 @@ import type { NavigationTelemetry } from '../lib/navigation-types'
 type TelemetryPanelProps = {
   telemetry: NavigationTelemetry
   updatedAt: string | null
+  captureState?: 'idle' | 'capturing' | 'saved' | 'error'
+  captureFilename?: string
+  onCapture?: () => void
 }
 
 const metersPerSecondToKnots = 1.943844492
 const metersPerSecondToKilometersPerHour = 3.6
 
-export function TelemetryPanel({ telemetry, updatedAt }: TelemetryPanelProps) {
+export function TelemetryPanel({
+  telemetry,
+  updatedAt,
+  captureState = 'idle',
+  captureFilename = '',
+  onCapture,
+}: TelemetryPanelProps) {
   return (
     <section className="telemetry-panel" aria-labelledby="telemetry-title">
       <div className="panel-heading">
@@ -75,8 +84,36 @@ export function TelemetryPanel({ telemetry, updatedAt }: TelemetryPanelProps) {
           <dt>
             <Timer aria-hidden="true" size={14} />
             Last update
+            {onCapture ? (
+              <button
+                type="button"
+                className={`telemetry-card__capture-button telemetry-card__capture-button--${captureState}`}
+                aria-label="Capture both cameras"
+                title="Capture both cameras"
+                onClick={onCapture}
+                disabled={captureState === 'capturing'}
+              >
+                <Camera aria-hidden="true" size={15} weight="bold" />
+              </button>
+            ) : null}
           </dt>
           <dd>{updatedAt ? formatSiteTime(updatedAt) : 'Unavailable'}</dd>
+          {captureState === 'capturing' ? (
+            <span className="telemetry-card__capture-status" role="status">
+              Capturing both camera feeds.
+            </span>
+          ) : captureState === 'saved' ? (
+            <span className="telemetry-card__capture-status" role="status">
+              Capture saved: {captureFilename}
+            </span>
+          ) : captureState === 'error' ? (
+            <span
+              className="telemetry-card__capture-status telemetry-card__capture-status--error"
+              role="alert"
+            >
+              Capture failed. Verify both camera feeds.
+            </span>
+          ) : null}
         </div>
       </dl>
     </section>

@@ -1,4 +1,11 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { DashboardShell } from './dashboard-shell'
@@ -60,6 +67,17 @@ describe('Dashboard camera capture', () => {
     )
 
     render(<DashboardShell live={null} underwaterFrame={null} />)
+    const lastUpdateCard = within(
+      screen.getByRole('region', { name: 'Attitude telemetry' }),
+    )
+      .getByText('Last update')
+      .closest('div')
+    expect(lastUpdateCard).not.toBeNull()
+    expect(
+      within(lastUpdateCard as HTMLElement).getByRole('button', {
+        name: 'Capture both cameras',
+      }),
+    ).toBeInTheDocument()
     fireEvent.click(
       screen.getByRole('button', { name: 'Capture both cameras' }),
     )
