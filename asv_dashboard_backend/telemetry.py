@@ -272,7 +272,7 @@ class PixhawkTelemetryReader:
             from pymavlink import mavutil
 
             endpoint = _resolve_pixhawk_endpoint(self.settings.pixhawk_endpoint)
-            connection = await asyncio.to_thread(
+            self._connection = await asyncio.to_thread(
                 mavutil.mavlink_connection,
                 endpoint,
                 baud=self.settings.pixhawk_baud,

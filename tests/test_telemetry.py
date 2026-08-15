@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import time
 
 from asv_dashboard_backend.config import BridgeSettings
@@ -23,6 +24,21 @@ def make_reader() -> PixhawkTelemetryReader:
             pixhawk_track_max_points=2,
         )
     )
+
+
+def test_connect_if_due_keeps_mavlink_connection(monkeypatch) -> None:
+    reader = make_reader()
+    connection = object()
+
+    monkeypatch.setattr(
+        "pymavlink.mavutil.mavlink_connection",
+        lambda *args, **kwargs: connection,
+    )
+    reader._request_telemetry_streams = lambda: None  # type: ignore[method-assign]
+
+    asyncio.run(reader._connect_if_due())
+
+    assert reader._connection is connection
 
 
 def test_reader_extracts_gps_heading_speed_and_bounded_track() -> None:
