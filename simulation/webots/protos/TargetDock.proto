@@ -1,0 +1,56 @@
+#VRML_SIM R2025a utf8
+
+PROTO TargetDock [
+  field SFVec3f    translation 0 0 0
+  field SFRotation rotation    0 0 1 0
+  field SFString   name        "target_dock"
+  field SFColor    dockColor   0.12 0.35 0.95
+  field SFVec3f    dockSize    1.6 0.8 0.15
+] {
+  Solid {
+    translation IS translation
+    rotation IS rotation
+    name IS name
+    children [
+      # Main floating dock platform
+      Transform {
+        translation 0 0 0.05
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor IS dockColor
+              roughness 0.4
+              metalness 0.2
+            }
+            geometry Box {
+              size IS dockSize
+            }
+          }
+        ]
+      }
+      # Fender edge
+      Transform {
+        translation 0 0 0.11
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor 0.85 0.85 0.88
+              roughness 0.6
+            }
+            geometry Box {
+              size 1.5 0.7 0.02
+            }
+          }
+        ]
+      }
+    ]
+    boundingObject Transform {
+      translation 0 0 0.05
+      children [
+        Box {
+          size IS dockSize
+        }
+      ]
+    }
+  }
+}

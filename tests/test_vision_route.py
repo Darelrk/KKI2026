@@ -35,19 +35,18 @@ def test_controller_starts_in_visual_track():
 
 
 def test_visual_search_sweeps_while_advancing_slowly() -> None:
-    search = VisualSearchController(SearchConfig(max_delta=100, period_s=8.0))
-    assert search.config.throttle_pwm == 1540
+    search = VisualSearchController(SearchConfig(center_pwm=1500, max_delta=100, period_s=8.0, throttle_pwm=1535))
+    assert search.config.throttle_pwm == 1535
 
-    assert search.update(now=0.0) == 1500
-    assert search.update(now=2.0) == 1600
-    assert search.update(now=4.0) == 1500
-    assert search.update(now=6.0) == 1400
+    assert search.update(now=0.0) == (1500, 1535)
+    assert search.update(now=2.0) == (1400, 1535)
+    assert search.update(now=4.0) == (1500, 1535)
+    assert search.update(now=6.0) == (1600, 1535)
     assert search.active is True
 
     search.reset()
     assert search.active is False
-    assert search.update(now=20.0) == 1500
-
+    assert search.update(now=20.0) == (1500, 1535)
 
 def det(label, x, y, confidence=0.9):
     return Detection(label, confidence, x, y, 20.0, 20.0)
@@ -191,14 +190,13 @@ def test_select_target_x_pair_and_single_buoy_offset():
     pair = [det("red_buoy", 280, 300), det("green_buoy", 360, 300)]
     assert select_target_x(pair) == 320.0
 
-    # Single red buoy on the right -> search left for the missing green buoy.
-    red_only = [det("red_buoy", 200, 300)] # width=20, default offset = 20 * 1.5 = 30
-    assert select_target_x(red_only) == 170.0
+    # KKI convention: Red buoy is on the left -> search right for corridor
+    red_only = [det("red_buoy", 200, 300)]
+    assert select_target_x(red_only) == 310.0
 
-    # Single green buoy on the left -> search right for the missing red buoy.
-    green_only = [det("green_buoy", 400, 300)] # width=20, default offset = 20 * 1.5 = 30
-    assert select_target_x(green_only) == 430.0
-
+    # Green buoy is on the right -> search left for corridor
+    green_only = [det("green_buoy", 400, 300)]
+    assert select_target_x(green_only) == 290.0
 
 def throttle_det(width: float, height: float, label: str = "red_buoy") -> Detection:
     return Detection(label, 0.9, 320.0, 240.0, width, height)
@@ -239,7 +237,7 @@ def test_visual_throttle_maps_area_and_steering_boost() -> None:
             480,
             1750,
         )
-        == 1585
+        == 1580
     )
     assert (
         compute_visual_throttle_pwm(
@@ -405,7 +403,7 @@ def test_visual_target_tracker_holds_pair_midpoint_when_buoy_is_missing() -> Non
     assert tracker.update(pair, now=0.0) == 320.0
     assert tracker.update([pair[0]], now=0.2) == 320.0
     assert tracker.update([pair[1]], now=0.4) == 320.0
-    assert tracker.update([pair[0]], now=0.9) == 140.0
+    assert tracker.update([pair[0]], now=0.9) == 310.0
 
 
 def test_visual_target_tracker_smooths_pair_midpoint_motion() -> None:

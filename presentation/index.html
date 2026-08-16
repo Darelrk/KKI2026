@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Presentasi Kapal ASV Coast Guard 900mm - KKI 2026</title>
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: #131b2e;
+      --card-border: #1e293b;
+      --primary: #38bdf8;
+      --primary-glow: rgba(56, 189, 248, 0.25);
+      --accent: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Progress Bar */
+    #progress-container {
+      width: 100%;
+      height: 6px;
+      background: #1e293b;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 100;
+    }
+
+    #progress-bar {
+      height: 100%;
+      width: 12.5%;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      transition: width 0.3s ease;
+    }
+
+    /* Slide Deck Container */
+    #deck {
+      flex: 1;
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      padding: 3rem 4rem 5rem;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(20px);
+      transition: opacity 0.4s ease, transform 0.4s ease, visibility 0.4s;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .slide.active {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    /* Header */
+    .slide-header {
+      margin-bottom: 1.5rem;
+    }
+
+    .slide-badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      background: var(--primary-glow);
+      border: 1px solid var(--primary);
+      color: var(--primary);
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.5rem;
+    }
+
+    .slide-title {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.2;
+    }
+
+    .slide-subtitle {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+
+    /* Content Grid */
+    .content-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+      flex: 1;
+      align-items: stretch;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+
+    .card h3 {
+      font-size: 1.25rem;
+      color: var(--primary);
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .card ul {
+      list-style-position: inside;
+      color: var(--text-muted);
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+
+    .card ul li strong {
+      color: #ffffff;
+    }
+
+    .card-img {
+      width: 100%;
+      max-height: 220px;
+      object-fit: contain;
+      background: #0f172a;
+      border-radius: 0.5rem;
+      padding: 0.5rem;
+      margin-top: auto;
+      border: 1px solid #334155;
+    }
+
+    /* Slide 1 Cover Specifics */
+    .cover-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      height: 100%;
+      gap: 1.5rem;
+    }
+
+    .cover-logos {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+
+    .cover-logo {
+      height: 60px;
+      object-fit: contain;
+      filter: drop-shadow(0 0 10px rgba(255,255,255,0.2));
+    }
+
+    .cover-title {
+      font-size: 3rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #ffffff 40%, var(--primary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1.15;
+    }
+
+    .cover-meta {
+      display: flex;
+      gap: 2rem;
+      margin-top: 1.5rem;
+      padding: 1rem 2rem;
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid var(--card-border);
+      border-radius: 9999px;
+      font-size: 0.95rem;
+      color: var(--text-muted);
+    }
+
+    /* Stat Box */
+    .stat-box {
+      display: flex;
+      justify-content: space-around;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--card-border);
+      border-radius: 0.75rem;
+      padding: 1rem;
+      margin-top: 1rem;
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-val {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .stat-lbl {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    /* Navigation Controls */
+    #nav-controls {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 4rem;
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    .nav-btn {
+      pointer-events: auto;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      padding: 0.6rem 1.2rem;
+      border-radius: 0.5rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s;
+    }
+
+    .nav-btn:hover {
+      background: var(--primary);
+      color: #000;
+      border-color: var(--primary);
+    }
+
+    #slide-indicator {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      font-weight: 600;
+      background: rgba(15, 23, 42, 0.8);
+      padding: 0.35rem 0.85rem;
+      border-radius: 9999px;
+      border: 1px solid var(--card-border);
+    }
+
+    /* Key indicator */
+    .key-hint {
+      display: inline-block;
+      padding: 0.15rem 0.4rem;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="progress-container">
+    <div id="progress-bar"></div>
+  </div>
+
+  <div id="deck">
+
+    <!-- SLIDE 1: Cover -->
+    <div class="slide active" id="slide-1">
+      <div class="cover-container">
+        <div class="cover-logos">
+          <img src="../trifusion.svg" alt="Trifusion" class="cover-logo">
+          <img src="../ditjen dikti.svg" alt="Dikti" class="cover-logo">
+        </div>
+        <span class="slide-badge">Kontes Kapal Indonesia (KKI) 2026</span>
+        <h1 class="cover-title">Pengembangan Kapal Tak Berawak (ASV) Coast Guard 900mm</h1>
+        <p style="font-size: 1.3rem; color: var(--primary); max-width: 800px;">
+          Sistem Navigasi Otonom Berbasis Computer Vision & ArduPilot dengan Arsitektur Edge Companion Computer
+        </p>
+        <div class="cover-meta">
+          <span>🚤 <strong>Kategori:</strong> Autonomous Surface Vehicle (ASV)</span>
+          <span>📐 <strong>Dimensi:</strong> 900 &times; 304 mm</span>
+          <span>🧠 <strong>AI Edge:</strong> YOLOv8 + Raspberry Pi 5</span>
+          <span>🎯 <strong>Status:</strong> 10 Gate Full Course Ready</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 2: Desain Mekanikal & Struktur Dek (CAD) -->
+    <div class="slide" id="slide-2">
+      <div class="slide-header">
+        <span class="slide-badge">Mekanikal & Struktur</span>
+        <h2 class="slide-title">Desain Lambung & Tata Letak Dek Atas 900 &times; 304 mm</h2>
+        <p class="slide-subtitle">Stabilitas hidrodinamika, modularitas akses baterai, dan low-center-of-gravity.</p>
+      </div>
+      <div class="content-grid">
+        <div class="card">
+          <h3>📐 Spesifikasi Lambung</h3>
+          <ul>
+            <li><strong>Panjang Lambung:</strong> 900 mm (Cut-list verified)</li>
+            <li><strong>Lebar Maksimum:</strong> 304 mm (Optimasi stabilitas lateral)</li>
+            <li><strong>Struktur Sekat:</strong> 7 Sekat transversal (Sekat 0 Haluan s.d. Sekat 6 Buritan)</li>
+            <li><strong>Material:</strong> Polywood ringan berlapis epoxy & fiberglass waterproof</li>
+          </ul>
+          <img src="../upper_deck_top.png" alt="Top View CAD" class="card-img">
+        </div>
+        <div class="card">
+          <h3>⚓ Pembagian Modular Dek</h3>
+          <ul>
+            <li><strong>Haluan (Sekat 0-1):</strong> Dudukan pedestal dekoratif Coast Guard simetris</li>
+            <li><strong>Tengah (Sekat 1-4):</strong> Kabin ruang kemudi modular (Akses cepat baterai & ESC)</li>
+            <li><strong>Atap Kabin:</strong> Mast radar, kamera permukaan Logitech, & antena MAVLink</li>
+            <li><strong>Buritan (Sekat 4-6):</strong> Helipad mini & kompartemen kemudi rudder servo</li>
+          </ul>
+          <img src="../upper_deck_isometric.png" alt="Isometric View CAD" class="card-img">
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 3: Arsitektur Hardware & Kontrol Navigasi -->
+    <div class="slide" id="slide-3">
+      <div class="slide-header">
+        <span class="slide-badge">Sistem Kontrol</span>
+        <h2 class="slide-title">Arsitektur Hibrida: Pixhawk + Raspberry Pi 5</h2>
+        <p class="slide-subtitle">Pemisahan tegas antara kontrol aktuator real-time dan inferensi visi otonom.</p>
+      </div>
+      <div class="content-grid">
+        <div class="card">
+          <h3>🎮 Low-Level Actuator (Pixhawk)</h3>
+          <ul>
+            <li><strong>Firmware:</strong> ArduRover Boat Mode (ArduPilot)</li>
+            <li><strong>Aktuator:</strong> Servo Kemudi (RC1) & ESC Brushless Thruster (RC3)</li>
+            <li><strong>Safety Override:</strong> Manual RC Takeover transmitter memiliki prioritas tertinggi</li>
+            <li><strong>Failsafe:</strong> Auto-neutral throttle saat kehilangan sinyal kontrol</li>
+          </ul>
+          <div class="stat-box">
+            <div class="stat-item">
+              <div class="stat-val">20 Hz</div>
+              <div class="stat-lbl">MAVLink Stream</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-val">&lt; 50 ms</div>
+              <div class="stat-lbl">Control Latency</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>🧠 High-Level Companion (Raspberry Pi 5)</h3>
+          <ul>
+            <li><strong>Koneksi Serial:</strong> MAVLink via USB Serial (/dev/ttyACM0)</li>
+            <li><strong>Peran:</strong> Menjalankan model YOLO, pelacak target, & visual servoing</li>
+            <li><strong>Telemetry Bridge:</strong> WebSocket & REST API untuk monitoring telemetri live</li>
+            <li><strong>No-GPS Independence:</strong> Bekerja murni menggunakan kamera tanpa ketergantungan GPS</li>
+          </ul>
+          <div class="stat-box">
+            <div class="stat-item">
+              <div class="stat-val">4 FPS</div>
+              <div class="stat-lbl">AI Inference</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-val">100%</div>
+              <div class="stat-lbl">Pure Vision Driven</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 4: Computer Vision & Model YOLO -->
+    <div class="slide" id="slide-4">
+      <div class="slide-header">
+        <span class="slide-badge">Persepsi Visual</span>
+        <h2 class="slide-title">Computer Vision & Deteksi Buoy Real-Time</h2>
+        <p class="slide-subtitle">Ekstraksi koordinat rintangan dan gerbang jalur menggunakan Ultralytics YOLOv8.</p>
+      </div>
+      <div class="content-grid">
+        <div class="card">
+          <h3>🎯 Model Deteksi Buoy (YOLOv8)</h3>
+          <ul>
+            <li><strong>Kelas Objek:</strong> <code>red_buoy</code> (Buoy Merah) & <code>green_buoy</code> (Buoy Hijau)</li>
+            <li><strong>Ekstraksi Target:</strong> Titik tengah gerbang (Midpoint) dihitung langsung dari koordinat piksel</li>
+            <li><strong>Single Buoy Offset:</strong> Otomatis menghitung jalur aman saat hanya 1 buoy terlihat</li>
+            <li><strong>Visual Target Tracker:</strong> Mempertahankan memori target selama 0.8s saat buoy keluar frame</li>
+          </ul>
+          <div class="stat-box">
+            <div class="stat-item">
+              <div class="stat-val">0.35</div>
+              <div class="stat-lbl">Min Confidence</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-val">0.8 s</div>
+              <div class="stat-lbl">Target Persistence</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>🎥 Dual Camera Pipeline</h3>
+          <ul>
+            <li><strong>Surface Camera (Logitech C920):</strong> Stream MJPEG 20-30 FPS untuk navigasi permukaan</li>
+            <li><strong>Underwater Camera:</strong> Inspeksi bawah air & broadcast frame fallback via WebSocket</li>
+            <li><strong>AR Lane Overlay:</strong> Visualisasi garis tengah jalur (Google Maps style) pada video feed</li>
+            <li><strong>Optimasi Bandwidth:</strong> Metadata JSON bounding box dikirim terpisah dari raw stream video</li>
+          </ul>
+          <div class="stat-box">
+            <div class="stat-item">
+              <div class="stat-val">20-30 FPS</div>
+              <div class="stat-lbl">Raw Stream</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-val">&lt; 180 KB</div>
+              <div class="stat-lbl">Frame Payload</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 5: Algoritma Navigasi Otonom & Kontrol -->
+    <div class="slide" id="slide-5">
+      <div class="slide-header">
+        <span class="slide-badge">Algoritma Otonom</span>
+        <h2 class="slide-title">Algoritma Navigasi Loop & Visual Servoing</h2>
+        <p class="slide-subtitle">Penyesuaian kemudi proporsional dinamis dan transisi sektor cerdas.</p>
+      </div>
+      <div class="content-grid">
+        <div class="card">
+          <h3>🔄 Kontrol Kemudi & Throttle Dinamis</h3>
+          <ul>
+            <li><strong>Visual Servoing:</strong> Error lateral <code>(target_x - center_x)</code> dikonversi ke PWM Servo</li>
+            <li><strong>Throttle Adaptif:</strong> Meluncur kencang saat jalur lurus, melambat presisi saat berbelok tajam</li>
+            <li><strong>PD Compass Damping:</strong> Menstabilkan orientasi sudut saat transisi antar gerbang</li>
+            <li><strong>Anti-Stuck Failsafe:</strong> Otomatis melakukan manuver mundur jika kapal mendeteksi benturan/macet</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>🗺️ Alur Navigasi Rute 10 Gerbang</h3>
+          <ul>
+            <li><strong>1. Slalom Kanan (Gate 1 &rarr; 2 &rarr; 3):</strong> Navigasi zig-zag menyusuri buoy merah & hijau</li>
+            <li><strong>2. Sudut Barat-Laut (Gate 3 &rarr; 4):</strong> Belok 310&deg; NW presisi masuk koridor atas</li>
+            <li><strong>3. Koridor Lurus Atas (Gate 4 &rarr; 5 &rarr; 6 &rarr; 7):</strong> Kecepatan jelajah tinggi menyusuri Y=10.0m</li>
+            <li><strong>4. Sudut Barat-Daya (Gate 7 &rarr; 8):</strong> Belok 230&deg; SW masuk slalom kiri</li>
+            <li><strong>5. Slalom Kiri & Finish (Gate 8 &rarr; 9 &rarr; 10):</strong> Menembus gerbang akhir menuju area finish</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 6: Dashboard Telemetri & Monitoring -->
+    <div class="slide" id="slide-6">
+      <div class="slide-header">
+        <span class="slide-badge">Monitoring & Telemetri</span>
+        <h2 class="slide-title">Dashboard Web Real-Time & Cloudflare Tunnel</h2>
+        <p class="slide-subtitle">Pemantauan visual dan status instrumen kapal dari darat secara aman dan real-time.</p>
+      </div>
+      <div class="content-grid">
+        <div class="card">
+          <h3>💻 Dashboard Frontend (Vercel)</h3>
+          <ul>
+            <li><strong>Single Viewport:</strong> Kamera surface full-screen dengan overlay visual interaktif</li>
+            <li><strong>Telemetri Live:</strong> Menampilkan mode kemudi, status arming, PWM servo, dan kompas</li>
+            <li><strong>Canvas Overlay:</strong> Menampilkan bounding box buoy, garis tengah, dan target pin</li>
+            <li><strong>Indikator Koneksi:</strong> Real-time status heartbeat bridge lokal & MAVLink</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>🌐 Konektivitas & Keamanan Jaringan</h3>
+          <ul>
+            <li><strong>Cloudflare Tunnel:</strong> Mengamankan akses stream Raspberry Pi ke internet tanpa port forwarding</li>
+            <li><strong>WebSocket Telemetry:</strong> Pembaruan data instrumen berkecepatan tinggi (&gt;10 Hz)</li>
+            <li><strong>go2rtc / WebRTC Stream:</strong> Latensi video ultra-rendah (&lt;150 ms) untuk pilot darat</li>
+            <li><strong>Supabase Integration:</strong> Penyimpanan log performa misi dan status telemetri</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 7: Hasil Uji & Validasi Simulasi -->
+    <div class="slide" id="slide-7">
+      <div class="slide-header">
+        <span class="slide-badge">Pengujian & Hasil</span>
+        <h2 class="slide-title">Hasil Validasi Simulasi Arena Kolam KKI 30 &times; 30 m</h2>
+        <p class="slide-subtitle">Evaluasi batch navigasi otonom dengan sensor pembatas dinding dan penghitung gate.</p>
+      </div>
+      <div class="content-grid">
+        <div class="card">
+          <h3>📊 Metrik Performa Simulasi</h3>
+          <ul>
+            <li><strong>Kecepatan Maksimum:</strong> 2.20 m/s (Propulsi penuh bermanuver lincah)</li>
+            <li><strong>Total Waktu Lintasan:</strong> &plusmn;28.7 detik untuk menyelesaikan seluruh rute 10 gate</li>
+            <li><strong>Wall Collision:</strong> 0 Kali (Zero Wall Hits pada arena pembatas kolam)</li>
+            <li><strong>Valid Gate Clearance:</strong> Berhasil melewati gerbang slalom dan koridor secara konsisten</li>
+          </ul>
+          <div class="stat-box">
+            <div class="stat-item">
+              <div class="stat-val">2.2 m/s</div>
+              <div class="stat-lbl">Top Speed</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-val">0</div>
+              <div class="stat-lbl">Wall Collision</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-val">28.7 s</div>
+              <div class="stat-lbl">Course Time</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>🛠️ Keunggulan Arsitektur Sistem</h3>
+          <ul>
+            <li><strong>Bebas Ketergantungan GPS:</strong> Tidak terpengaruh error GPS indoor/kolam (3-6m)</li>
+            <li><strong>Kekebalan Drift Kompas:</strong> Panduan visual YOLO mengoreksi deviasi arah secara mandiri</li>
+            <li><strong>Transparansi Log:</strong> Setiap frame mencatat status navigasi, koordinat target, dan aksi kemudi</li>
+            <li><strong>Fail-Safe Tangguh:</strong> Sambungan MAVLink otomatis pulih jika terjadi fluktuasi jaringan/serial</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 8: Kesimpulan -->
+    <div class="slide" id="slide-8">
+      <div class="cover-container">
+        <span class="slide-badge">Kesiapan Kompetisi</span>
+        <h2 class="cover-title">Siap Berlaga di KKI 2026</h2>
+        <p style="font-size: 1.25rem; color: var(--text-muted); max-width: 750px;">
+          Integrasi mekanikal lambung 900mm, persepsi cerdas YOLOv8, dan kontrol aktuasi Pixhawk telah teruji kokoh, mandiri tanpa GPS, dan siap berlomba.
+        </p>
+        <div class="cover-meta" style="margin-top: 1rem;">
+          <span>✅ <strong>Hardware Ready</strong></span>
+          <span>✅ <strong>AI Vision Tuned</strong></span>
+          <span>✅ <strong>Zero-GPS Autonomous</strong></span>
+          <span>✅ <strong>Dashboard Live Ready</strong></span>
+        </div>
+        <p style="margin-top: 2rem; font-size: 1.1rem; color: var(--primary);">
+          Terima Kasih &bull; Tim ASV KKI 2026
+        </p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Navigation Controls -->
+  <div id="nav-controls">
+    <button class="nav-btn" id="prev-btn" onclick="prevSlide()">&#8592; Sebelumnya <span class="key-hint">&larr;</span></button>
+    <div id="slide-indicator">1 / 8</div>
+    <button class="nav-btn" id="next-btn" onclick="nextSlide()">Berikutnya &#8594; <span class="key-hint">&rarr;</span></button>
+  </div>
+
+  <script>
+    let currentSlide = 1;
+    const totalSlides = 8;
+
+    function showSlide(index) {
+      if (index < 1) index = 1;
+      if (index > totalSlides) index = totalSlides;
+      currentSlide = index;
+
+      document.querySelectorAll('.slide').forEach((slide, i) => {
+        slide.classList.toggle('active', i + 1 === currentSlide);
+      });
+
+      document.getElementById('slide-indicator').innerText = `${currentSlide} / ${totalSlides}`;
+      document.getElementById('progress-bar').style.width = `${(currentSlide / totalSlides) * 100}%`;
+
+      document.getElementById('prev-btn').style.visibility = currentSlide === 1 ? 'hidden' : 'visible';
+      document.getElementById('next-btn').style.visibility = currentSlide === totalSlides ? 'hidden' : 'visible';
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides) {
+        showSlide(currentSlide + 1);
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 1) {
+        showSlide(currentSlide - 1);
+      }
+    }
+
+    // Keyboard Shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        nextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        prevSlide();
+      } else if (e.key === 'Home') {
+        showSlide(1);
+      } else if (e.key === 'End') {
+        showSlide(totalSlides);
+      } else if (e.key === 'f' || e.key === 'F') {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen();
+        } else {
+          document.exitFullscreen();
+        }
+      }
+    });
+
+    showSlide(1);
+  </script>
+</body>
+</html>

@@ -1,0 +1,131 @@
+{
+  "run_id": "run_20260815_160311",
+  "log_dir": "D:\\KKI2\\KKI2026\\simulation\\logs\\run_20260815_160311",
+  "total_gates": 10,
+  "passed_valid": 10,
+  "missed": 0,
+  "buoy_touches": 4,
+  "score_percent": 100.0,
+  "gates": {
+    "gate_1": {
+      "name": "Gate 1 (Slalom Kanan 1)",
+      "status": "PASSED_VALID",
+      "crossed_at": 191770.5801613,
+      "crossing_coord": [
+        10.37,
+        -6.0
+      ]
+    },
+    "gate_2": {
+      "name": "Gate 2 (Slalom Kanan 2)",
+      "status": "PASSED_VALID",
+      "crossed_at": 191773.5168028,
+      "crossing_coord": [
+        9.63,
+        0.0
+      ]
+    },
+    "gate_3": {
+      "name": "Gate 3 (Slalom Kanan 3)",
+      "status": "PASSED_VALID",
+      "crossed_at": 191776.6676481,
+      "crossing_coord": [
+        10.63,
+        6.0
+      ]
+    },
+    "gate_4": {
+      "name": "Gate 4 (Koridor Atas 1)",
+      "status": "PASSED_VALID",
+      "crossed_at": 191783.4514623,
+      "crossing_coord": [
+        6.0,
+        9.2
+      ]
+    },
+    "gate_5": {
+      "name": "Gate 5 (Koridor Atas 2)",
+      "status": "PASSED_VALID",
+      "crossed_at": 191785.497683,
+      "crossing_coord": [
+        2.0,
+        9.95
+      ]
+    },
+    "gate_6": {
+      "name": "Gate 6 (Koridor Atas 3)",
+      "status": "PASSED_VALID",
+      "crossed_at": 191787.5210966,
+      "crossing_coord": [
+        -2.0,
+        9.93
+      ]
+    },
+    "gate_7": {
+      "name": "Gate 7 (Koridor Atas 4)",
+      "status": "PASSED_VALID",
+      "crossed_at": 191789.9473703,
+      "crossing_coord": [
+        -6.0,
+        9.72
+      ]
+    },
+    "gate_8": {
+      "name": "Gate 8 (Slalom Kiri 1)",
+      "status": "PASSED_VALID",
+      "crossed_at": 191796.6019047,
+      "crossing_coord": [
+        -11.83,
+        6.0
+      ]
+    },
+    "gate_9": {
+      "name": "Gate 9 (Slalom Kiri 2)",
+      "status": "PASSED_VALID",
+      "crossed_at": 191799.9964257,
+      "crossing_coord": [
+        -9.16,
+        0.0
+      ]
+    },
+    "gate_10": {
+      "name": "Gate 10 (Slalom Kiri 3)",
+      "status": "PASSED_VALID",
+      "crossed_at": 191803.4494238,
+      "crossing_coord": [
+        -10.66,
+        -6.0
+      ]
+    }
+  },
+  "collisions": [
+    {
+      "timestamp": "2026-08-15T16:03:15.619965+00:00",
+      "buoy_name": "gate_1_red",
+      "boat_x": 10.39,
+      "boat_y": -6.05,
+      "distance_m": 0.395
+    },
+    {
+      "timestamp": "2026-08-15T16:03:18.572811+00:00",
+      "buoy_name": "gate_2_green",
+      "boat_x": 9.61,
+      "boat_y": -0.03,
+      "distance_m": 0.387
+    },
+    {
+      "timestamp": "2026-08-15T16:03:28.260869+00:00",
+      "buoy_name": "gate_4_red",
+      "boat_x": 6.37,
+      "boat_y": 9.13,
+      "distance_m": 0.39
+    },
+    {
+      "timestamp": "2026-08-15T16:03:41.518218+00:00",
+      "buoy_name": "gate_8_green",
+      "boat_x": -11.67,
+      "boat_y": 6.21,
+      "distance_m": 0.391
+    }
+  ]
+}

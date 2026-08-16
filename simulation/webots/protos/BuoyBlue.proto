@@ -1,0 +1,56 @@
+#VRML_SIM R2025a utf8
+
+PROTO BuoyBlue [
+  field SFVec3f    translation 0 0 0
+  field SFRotation rotation    0 0 1 0
+  field SFString   name        "buoy_blue"
+  field SFFloat    radius      0.18
+] {
+  Solid {
+    translation IS translation
+    rotation IS rotation
+    name IS name
+    recognitionColors [ 0.10 0.25 0.90 ]
+    children [
+      Transform {
+        translation 0 0 0.05
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor 0.12 0.35 0.95
+              roughness 0.2
+              metalness 0.05
+            }
+            geometry Sphere {
+              radius IS radius
+              subdivision 3
+            }
+          }
+        ]
+      }
+      Transform {
+        translation 0 0 0.26
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor 0.15 0.15 0.15
+              roughness 0.5
+            }
+            geometry Cylinder {
+              radius 0.025
+              height 0.05
+            }
+          }
+        ]
+      }
+    ]
+    boundingObject Transform {
+      translation 0 0 0.05
+      children [
+        Sphere {
+          radius IS radius
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,58 @@
+#VRML_SIM R2025a utf8
+
+PROTO BuoyRed [
+  field SFVec3f    translation 0 0 0
+  field SFRotation rotation    0 0 1 0
+  field SFString   name        "buoy_red"
+  field SFFloat    radius      0.22
+] {
+  Solid {
+    translation IS translation
+    rotation IS rotation
+    name IS name
+    recognitionColors [ 0.95 0.10 0.10 ]
+    children [
+      # Spherical buoy body (half submerged, half above water)
+      Transform {
+        translation 0 0 0.05
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor 0.95 0.08 0.08
+              roughness 0.2
+              metalness 0.05
+            }
+            geometry Sphere {
+              radius IS radius
+              subdivision 3
+            }
+          }
+        ]
+      }
+      # Top flag / anchor ring
+      Transform {
+        translation 0 0 0.28
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor 0.15 0.15 0.15
+              roughness 0.5
+            }
+            geometry Cylinder {
+              radius 0.025
+              height 0.06
+            }
+          }
+        ]
+      }
+    ]
+    boundingObject Transform {
+      translation 0 0 0.05
+      children [
+        Sphere {
+          radius IS radius
+        }
+      ]
+    }
+  }
+}

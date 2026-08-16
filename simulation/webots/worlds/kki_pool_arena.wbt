@@ -1,0 +1,293 @@
+#VRML_SIM R2025a utf8
+
+EXTERNPROTO "../protos/KKIBoat.proto"
+EXTERNPROTO "../protos/BuoyRed.proto"
+EXTERNPROTO "../protos/BuoyGreen.proto"
+EXTERNPROTO "../protos/BuoyBlue.proto"
+EXTERNPROTO "../protos/TargetDock.proto"
+
+WorldInfo {
+  basicTimeStep 16
+  coordinateSystem "ENU"
+  defaultDamping Damping {
+    linear 0.5
+    angular 0.5
+  }
+}
+Viewpoint {
+  orientation -0.32 0.14 0.94 2.5
+  position 14.0 -18.0 12.0
+}
+DirectionalLight {
+  direction 0.3 0.6 -1.0
+  intensity 2.5
+  castShadows TRUE
+}
+Background {
+  skyColor [
+    0.45 0.72 0.92
+  ]
+}
+
+# --- POOL FLOOR (30m x 30m) ---
+DEF POOL_FLOOR Solid {
+  name "pool_floor"
+  translation 0 0 -0.85
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.72 0.75 0.80
+        roughness 0.9
+      }
+      geometry Box {
+        size 30 30 0.10
+      }
+    }
+  ]
+  boundingObject Box {
+    size 30 30 0.10
+  }
+}
+
+# --- WATER FLUID VOLUME (Top surface at Z = 0.0) ---
+DEF WATER Fluid {
+  name "water"
+  translation 0 0 -0.40
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.08 0.55 0.75
+        transparency 0.65
+        roughness 0.2
+        metalness 0.1
+      }
+      geometry DEF WATER_BOX Box {
+        size 30 30 0.80
+      }
+    }
+  ]
+  viscosity 0.001
+  density 1000
+  boundingObject USE WATER_BOX
+  locked TRUE
+}
+
+# --- PERIMETER WALLS (30m x 30m) ---
+DEF WALL_NORTH Solid {
+  name "wall_north"
+  translation 0 15.1 0.2
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.85 0.85 0.88
+      }
+      geometry Box {
+        size 30.2 0.2 1.2
+      }
+    }
+  ]
+  boundingObject Box {
+    size 30.2 0.2 1.2
+  }
+}
+DEF WALL_SOUTH Solid {
+  name "wall_south"
+  translation 0 -15.1 0.2
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.85 0.85 0.88
+      }
+      geometry Box {
+        size 30.2 0.2 1.2
+      }
+    }
+  ]
+  boundingObject Box {
+    size 30.2 0.2 1.2
+  }
+}
+DEF WALL_WEST Solid {
+  name "wall_west"
+  translation -15.1 0 0.2
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.85 0.85 0.88
+      }
+      geometry Box {
+        size 0.2 30.2 1.2
+      }
+    }
+  ]
+  boundingObject Box {
+    size 0.2 30.2 1.2
+  }
+}
+DEF WALL_EAST Solid {
+  name "wall_east"
+  translation 15.1 0 0.2
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.85 0.85 0.88
+      }
+      geometry Box {
+        size 0.2 30.2 1.2
+      }
+    }
+  ]
+  boundingObject Box {
+    size 0.2 30.2 1.2
+  }
+}
+
+# =========================================================
+# SECTION 1: START / FINISH DOCK AREA (Bottom-Right, Biru)
+# =========================================================
+TargetDock {
+  translation 11.5 -13.0 0.0
+  dockColor 0.12 0.35 0.95
+  dockSize 2.2 1.4 0.15
+  name "dock_start_finish_biru"
+}
+BuoyBlue {
+  translation 12.8 -12.4 0.0
+  name "dock_buoy_1"
+}
+BuoyBlue {
+  translation 12.8 -13.0 0.0
+  name "dock_buoy_2"
+}
+BuoyBlue {
+  translation 12.8 -13.6 0.0
+  name "dock_buoy_3"
+}
+
+# =========================================================
+# SECTION 2: RIGHT LEG SLALOM GATES (Heading North)
+# Gate width = 2.0 meters between pairs
+# =========================================================
+BuoyRed {
+  translation 10.0 -6.0 0.0
+  name "right_slalom_red_1"
+}
+BuoyGreen {
+  translation 12.0 -6.0 0.0
+  name "right_slalom_green_1"
+}
+
+BuoyRed {
+  translation 8.0 0.0 0.0
+  name "right_slalom_red_2"
+}
+BuoyGreen {
+  translation 10.0 0.0 0.0
+  name "right_slalom_green_2"
+}
+
+BuoyRed {
+  translation 10.0 6.0 0.0
+  name "right_slalom_red_3"
+}
+BuoyGreen {
+  translation 12.0 6.0 0.0
+  name "right_slalom_green_3"
+}
+
+# =========================================================
+# SECTION 3: TOP STRAIGHT CORRIDOR (Hijau / Merah)
+# Jarak Hijau (North) dan Merah (South) = 2.0 meter
+# =========================================================
+BuoyGreen {
+  translation 6.0 11.0 0.0
+  name "top_gate_green_1"
+}
+BuoyRed {
+  translation 6.0 9.0 0.0
+  name "top_gate_red_1"
+}
+
+BuoyGreen {
+  translation 2.0 11.0 0.0
+  name "top_gate_green_2"
+}
+BuoyRed {
+  translation 2.0 9.0 0.0
+  name "top_gate_red_2"
+}
+
+BuoyGreen {
+  translation -2.0 11.0 0.0
+  name "top_gate_green_3"
+}
+BuoyRed {
+  translation -2.0 9.0 0.0
+  name "top_gate_red_3"
+}
+
+BuoyGreen {
+  translation -6.0 11.0 0.0
+  name "top_gate_green_4"
+}
+BuoyRed {
+  translation -6.0 9.0 0.0
+  name "top_gate_red_4"
+}
+
+# =========================================================
+# SECTION 4: LEFT LEG SLALOM GATES (Heading South)
+# Gate width = 2.0 meters between pairs
+# =========================================================
+BuoyRed {
+  translation -10.0 6.0 0.0
+  name "left_slalom_red_1"
+}
+BuoyGreen {
+  translation -12.0 6.0 0.0
+  name "left_slalom_green_1"
+}
+
+BuoyRed {
+  translation -8.0 0.0 0.0
+  name "left_slalom_red_2"
+}
+BuoyGreen {
+  translation -10.0 0.0 0.0
+  name "left_slalom_green_2"
+}
+
+BuoyRed {
+  translation -10.0 -6.0 0.0
+  name "left_slalom_red_3"
+}
+BuoyGreen {
+  translation -12.0 -6.0 0.0
+  name "left_slalom_green_3"
+}
+
+# =========================================================
+# SECTION 5: BOTTOM STRETCH & TARGET DOCKING STATIONS
+# =========================================================
+TargetDock {
+  translation -11.0 -10.5 0.0
+  dockColor 0.12 0.35 0.95
+  dockSize 1.6 0.8 0.15
+  name "dock_target_biru"
+}
+TargetDock {
+  translation -3.0 -12.5 0.0
+  dockColor 0.10 0.85 0.15
+  dockSize 1.6 0.8 0.15
+  name "dock_target_hijau"
+}
+
+# =========================================================
+# ASV BOAT (90cm x 30cm) at Start Position facing North
+# =========================================================
+KKIBoat {
+  translation 10.0 -11.5 0.04
+  rotation 0 0 1 1.5708
+  name "kki_boat"
+  controller "asv_sim_agent"
+}

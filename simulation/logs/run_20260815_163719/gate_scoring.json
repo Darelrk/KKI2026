@@ -1,0 +1,273 @@
+{
+  "run_id": "run_20260815_163719",
+  "log_dir": "D:\\KKI2\\KKI2026\\simulation\\logs\\run_20260815_163719",
+  "total_gates": 10,
+  "passed_valid": 2,
+  "missed": 1,
+  "buoy_touches": 0,
+  "wall_touches": 27,
+  "score_percent": 20.0,
+  "gates": {
+    "gate_1": {
+      "name": "Gate 1 (Slalom Kanan 1)",
+      "status": "PASSED_VALID",
+      "crossed_at": 193818.361159,
+      "crossing_coord": [
+        10.79,
+        -6.0
+      ]
+    },
+    "gate_2": {
+      "name": "Gate 2 (Slalom Kanan 2)",
+      "status": "PASSED_VALID",
+      "crossed_at": 193821.544159,
+      "crossing_coord": [
+        9.54,
+        0.0
+      ]
+    },
+    "gate_3": {
+      "name": "Gate 3 (Slalom Kanan 3)",
+      "status": "MISSED_OUTSIDE",
+      "crossed_at": 193828.8155515,
+      "crossing_coord": [
+        13.35,
+        6.0
+      ]
+    },
+    "gate_4": {
+      "name": "Gate 4 (Koridor Atas 1)",
+      "status": "PENDING",
+      "crossed_at": null,
+      "crossing_coord": null
+    },
+    "gate_5": {
+      "name": "Gate 5 (Koridor Atas 2)",
+      "status": "PENDING",
+      "crossed_at": null,
+      "crossing_coord": null
+    },
+    "gate_6": {
+      "name": "Gate 6 (Koridor Atas 3)",
+      "status": "PENDING",
+      "crossed_at": null,
+      "crossing_coord": null
+    },
+    "gate_7": {
+      "name": "Gate 7 (Koridor Atas 4)",
+      "status": "PENDING",
+      "crossed_at": null,
+      "crossing_coord": null
+    },
+    "gate_8": {
+      "name": "Gate 8 (Slalom Kiri 1)",
+      "status": "PENDING",
+      "crossed_at": null,
+      "crossing_coord": null
+    },
+    "gate_9": {
+      "name": "Gate 9 (Slalom Kiri 2)",
+      "status": "PENDING",
+      "crossed_at": null,
+      "crossing_coord": null
+    },
+    "gate_10": {
+      "name": "Gate 10 (Slalom Kiri 3)",
+      "status": "PENDING",
+      "crossed_at": null,
+      "crossing_coord": null
+    }
+  },
+  "buoy_collisions": [],
+  "wall_collisions": [
+    {
+      "timestamp": "2026-08-15T16:37:34.608891+00:00",
+      "wall_name": "DINDING_TIMUR_EAST",
+      "boat_x": 13.8,
+      "boat_y": 6.33,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-15T16:37:35.076715+00:00",
+      "wall_name": "DINDING_TIMUR_EAST",
+      "boat_x": 13.8,
+      "boat_y": 6.34,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-15T16:37:37.081531+00:00",
+      "wall_name": "DINDING_TIMUR_EAST",
+      "boat_x": 13.8,
+      "boat_y": 6.37,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-15T16:37:39.070610+00:00",
+      "wall_name": "DINDING_TIMUR_EAST",
+      "boat_x": 13.8,
+      "boat_y": 6.41,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-15T16:37:41.082880+00:00",
+      "wall_name": "DINDING_TIMUR_EAST",
+      "boat_x": 13.8,
+      "boat_y": 6.43,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-15T16:37:43.072339+00:00",
+      "wall_name": "DINDING_TIMUR_EAST",
+      "boat_x": 13.8,
+      "boat_y": 6.45,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-15T16:37:45.080034+00:00",
+      "wall_name": "DINDING_TIMUR_EAST",
+      "boat_x": 13.8,
+      "boat_y": 6.46,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-15T16:37:47.082596+00:00",
+      "wall_name": "DINDING_TIMUR_EAST",
+      "boat_x": 13.8,
+      "boat_y": 6.49,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-15T16:37:49.076834+00:00",
+      "wall_name": "DINDING_TIMUR_EAST",
+      "boat_x": 13.8,
+      "boat_y": 6.52,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-15T16:37:51.084435+00:00",
+      "wall_name": "DINDING_TIMUR_EAST",
+      "boat_x": 13.8,
+      "boat_y": 6.55,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-15T16:37:53.085766+00:00",
+      "wall_name": "DINDING_TIMUR_EAST",
+      "boat_x": 13.8,
+      "boat_y": 6.57,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-15T16:37:55.074231+00:00",
+      "wall_name": "DINDING_TIMUR_EAST",
+      "boat_x": 13.8,
+      "boat_y": 6.58,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-15T16:37:57.080769+00:00",
+      "wall_name": "DINDING_TIMUR_EAST",
+      "boat_x": 13.8,
+      "boat_y": 6.6,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-15T16:37:59.074281+00:00",
+      "wall_name": "DINDING_TIMUR_EAST",
+      "boat_x": 13.8,
+      "boat_y": 6.62,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-15T16:38:01.084435+00:00",
+      "wall_name": "DINDING_TIMUR_EAST",
+      "boat_x": 13.8,
+      "boat_y": 6.64,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-15T16:38:03.086685+00:00",
+      "wall_name": "DINDING_TIMUR_EAST",
+      "boat_x": 13.8,
+      "boat_y": 6.66,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-15T16:38:05.085584+00:00",
+      "wall_name": "DINDING_TIMUR_EAST",
+      "boat_x": 13.8,
+      "boat_y": 6.68,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-15T16:38:07.092184+00:00",
+      "wall_name": "DINDING_TIMUR_EAST",
+      "boat_x": 13.8,
+      "boat_y": 6.7,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-15T16:38:09.099809+00:00",
+      "wall_name": "DINDING_TIMUR_EAST",
+      "boat_x": 13.8,
+      "boat_y": 6.74,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-15T16:38:11.078293+00:00",
+      "wall_name": "DINDING_TIMUR_EAST",
+      "boat_x": 13.8,
+      "boat_y": 6.76,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-15T16:38:13.080700+00:00",
+      "wall_name": "DINDING_TIMUR_EAST",
+      "boat_x": 13.8,
+      "boat_y": 6.78,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-15T16:38:15.077430+00:00",
+      "wall_name": "DINDING_TIMUR_EAST",
+      "boat_x": 13.8,
+      "boat_y": 6.79,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-15T16:38:17.080445+00:00",
+      "wall_name": "DINDING_TIMUR_EAST",
+      "boat_x": 13.8,
+      "boat_y": 6.81,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-15T16:38:19.079437+00:00",
+      "wall_name": "DINDING_TIMUR_EAST",
+      "boat_x": 13.8,
+      "boat_y": 6.83,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-15T16:38:21.079890+00:00",
+      "wall_name": "DINDING_TIMUR_EAST",
+      "boat_x": 13.8,
+      "boat_y": 6.86,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-15T16:38:23.077998+00:00",
+      "wall_name": "DINDING_TIMUR_EAST",
+      "boat_x": 13.8,
+      "boat_y": 6.88,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-15T16:38:25.092066+00:00",
+      "wall_name": "DINDING_TIMUR_EAST",
+      "boat_x": 13.8,
+      "boat_y": 6.89,
+      "speed_mps": 0.0
+    }
+  ]
+}

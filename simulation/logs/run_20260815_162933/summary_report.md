@@ -1,0 +1,88 @@
+# Laporan Hasil Uji Simulasi ASV KKI 2026 - run_20260815_162933
+
+- **Waktu Mulai**: 2026-08-15T16:29:33.936824+00:00
+- **Waktu Update**: 2026-08-15T16:31:45.542218+00:00
+- **Durasi Sesi**: 131.6 detik
+- **Posisi Akhir Kapal**: X = 13.80 m, Y = -10.63 m
+- **Skor Validasi Gate**: **4 / 10 Gate (40.0%)**
+- **Gate Terlewati (Valid)**: 4
+- **Gate Missed (Luar)**: 1
+- **Sensor Sentuh Buoy (Buoy Collisions)**: **2 Kali**
+- **Sensor Tabrak Pembatas (Wall Collisions)**: **50 Kali**
+
+## 1. Detail Pelanggaran Tabrakan / Sentuh Buoy
+
+| No | Nama Buoy | Waktu Sentuh (UTC) | Posisi Kapal [X, Y] | Jarak Kontak (m) |
+|---|---|---|---|---|
+| 1 | gate_4_red | 2026-08-15T16:29:48.999385+00:00 | [6.36, 8.91] | 0.373 |
+| 2 | gate_2_red | 2026-08-15T16:30:00.801722+00:00 | [8.12, 0.37] | 0.392 |
+
+## 2. Detail Tabrakan Dinding / Pembatas Kolam
+
+| No | Nama Dinding Pembatas | Waktu Tabrak (UTC) | Posisi Kapal [X, Y] | Kecepatan Benturan (m/s) |
+|---|---|---|---|---|
+| 1 | DINDING_TIMUR_EAST | 2026-08-15T16:30:08.569647+00:00 | [13.8, -9.04] | 0.0 |
+| 2 | DINDING_TIMUR_EAST | 2026-08-15T16:30:09.071037+00:00 | [13.8, -9.06] | 0.0 |
+| 3 | DINDING_TIMUR_EAST | 2026-08-15T16:30:11.084182+00:00 | [13.8, -9.11] | 0.0 |
+| 4 | DINDING_TIMUR_EAST | 2026-08-15T16:30:13.082233+00:00 | [13.8, -9.14] | 0.0 |
+| 5 | DINDING_TIMUR_EAST | 2026-08-15T16:30:15.085583+00:00 | [13.8, -9.17] | 0.0 |
+| 6 | DINDING_TIMUR_EAST | 2026-08-15T16:30:17.077952+00:00 | [13.8, -9.21] | 0.0 |
+| 7 | DINDING_TIMUR_EAST | 2026-08-15T16:30:19.083542+00:00 | [13.8, -9.27] | 0.0 |
+| 8 | DINDING_TIMUR_EAST | 2026-08-15T16:30:21.082403+00:00 | [13.8, -9.3] | 0.0 |
+| 9 | DINDING_TIMUR_EAST | 2026-08-15T16:30:23.074862+00:00 | [13.8, -9.32] | 0.0 |
+| 10 | DINDING_TIMUR_EAST | 2026-08-15T16:30:25.071133+00:00 | [13.8, -9.35] | 0.0 |
+| 11 | DINDING_TIMUR_EAST | 2026-08-15T16:30:27.079209+00:00 | [13.8, -9.37] | 0.0 |
+| 12 | DINDING_TIMUR_EAST | 2026-08-15T16:30:29.081341+00:00 | [13.8, -9.4] | 0.0 |
+| 13 | DINDING_TIMUR_EAST | 2026-08-15T16:30:31.072324+00:00 | [13.8, -9.42] | 0.0 |
+| 14 | DINDING_TIMUR_EAST | 2026-08-15T16:30:33.088534+00:00 | [13.8, -9.46] | 0.0 |
+| 15 | DINDING_TIMUR_EAST | 2026-08-15T16:30:35.079080+00:00 | [13.8, -9.51] | 0.0 |
+| 16 | DINDING_TIMUR_EAST | 2026-08-15T16:30:37.078492+00:00 | [13.8, -9.54] | 0.0 |
+| 17 | DINDING_TIMUR_EAST | 2026-08-15T16:30:39.086904+00:00 | [13.8, -9.56] | 0.0 |
+| 18 | DINDING_TIMUR_EAST | 2026-08-15T16:30:41.080295+00:00 | [13.8, -9.59] | 0.0 |
+| 19 | DINDING_TIMUR_EAST | 2026-08-15T16:30:43.090845+00:00 | [13.8, -9.62] | 0.0 |
+| 20 | DINDING_TIMUR_EAST | 2026-08-15T16:30:45.086163+00:00 | [13.8, -9.66] | 0.0 |
+| 21 | DINDING_TIMUR_EAST | 2026-08-15T16:30:47.088372+00:00 | [13.8, -9.68] | 0.0 |
+| 22 | DINDING_TIMUR_EAST | 2026-08-15T16:30:49.080768+00:00 | [13.8, -9.72] | 0.0 |
+| 23 | DINDING_TIMUR_EAST | 2026-08-15T16:30:51.079121+00:00 | [13.8, -9.74] | 0.0 |
+| 24 | DINDING_TIMUR_EAST | 2026-08-15T16:30:53.071230+00:00 | [13.8, -9.77] | 0.0 |
+| 25 | DINDING_TIMUR_EAST | 2026-08-15T16:30:55.092787+00:00 | [13.8, -9.8] | 0.0 |
+| 26 | DINDING_TIMUR_EAST | 2026-08-15T16:30:57.072063+00:00 | [13.8, -9.84] | 0.0 |
+| 27 | DINDING_TIMUR_EAST | 2026-08-15T16:30:59.072712+00:00 | [13.8, -9.87] | 0.0 |
+| 28 | DINDING_TIMUR_EAST | 2026-08-15T16:31:01.079169+00:00 | [13.8, -9.93] | 0.0 |
+| 29 | DINDING_TIMUR_EAST | 2026-08-15T16:31:03.078323+00:00 | [13.8, -9.95] | 0.0 |
+| 30 | DINDING_TIMUR_EAST | 2026-08-15T16:31:05.080130+00:00 | [13.8, -9.98] | 0.0 |
+| 31 | DINDING_TIMUR_EAST | 2026-08-15T16:31:07.076741+00:00 | [13.8, -10.01] | 0.0 |
+| 32 | DINDING_TIMUR_EAST | 2026-08-15T16:31:09.081747+00:00 | [13.8, -10.04] | 0.0 |
+| 33 | DINDING_TIMUR_EAST | 2026-08-15T16:31:11.086861+00:00 | [13.8, -10.07] | 0.0 |
+| 34 | DINDING_TIMUR_EAST | 2026-08-15T16:31:13.070992+00:00 | [13.8, -10.1] | 0.0 |
+| 35 | DINDING_TIMUR_EAST | 2026-08-15T16:31:15.074521+00:00 | [13.8, -10.14] | 0.0 |
+| 36 | DINDING_TIMUR_EAST | 2026-08-15T16:31:17.072837+00:00 | [13.8, -10.16] | 0.0 |
+| 37 | DINDING_TIMUR_EAST | 2026-08-15T16:31:19.086628+00:00 | [13.8, -10.21] | 0.0 |
+| 38 | DINDING_TIMUR_EAST | 2026-08-15T16:31:21.086685+00:00 | [13.8, -10.25] | 0.0 |
+| 39 | DINDING_TIMUR_EAST | 2026-08-15T16:31:23.087205+00:00 | [13.8, -10.29] | 0.0 |
+| 40 | DINDING_TIMUR_EAST | 2026-08-15T16:31:25.076009+00:00 | [13.8, -10.32] | 0.0 |
+| 41 | DINDING_TIMUR_EAST | 2026-08-15T16:31:27.082713+00:00 | [13.8, -10.35] | 0.0 |
+| 42 | DINDING_TIMUR_EAST | 2026-08-15T16:31:29.085207+00:00 | [13.8, -10.37] | 0.0 |
+| 43 | DINDING_TIMUR_EAST | 2026-08-15T16:31:31.079617+00:00 | [13.8, -10.4] | 0.0 |
+| 44 | DINDING_TIMUR_EAST | 2026-08-15T16:31:33.076233+00:00 | [13.8, -10.42] | 0.0 |
+| 45 | DINDING_TIMUR_EAST | 2026-08-15T16:31:35.079283+00:00 | [13.8, -10.45] | 0.0 |
+| 46 | DINDING_TIMUR_EAST | 2026-08-15T16:31:37.089414+00:00 | [13.8, -10.47] | 0.0 |
+| 47 | DINDING_TIMUR_EAST | 2026-08-15T16:31:39.084334+00:00 | [13.8, -10.5] | 0.0 |
+| 48 | DINDING_TIMUR_EAST | 2026-08-15T16:31:41.076999+00:00 | [13.8, -10.54] | 0.0 |
+| 49 | DINDING_TIMUR_EAST | 2026-08-15T16:31:43.082518+00:00 | [13.8, -10.58] | 0.0 |
+| 50 | DINDING_TIMUR_EAST | 2026-08-15T16:31:45.083188+00:00 | [13.8, -10.62] | 0.0 |
+
+## Detail Setiap Gerbang Buoy (Jarak 2.0m)
+
+| ID Gerbang | Nama Gate | Status | Koordinat Crossing | Waktu (s) |
+|---|---|---|---|---|
+| gate_1 | Gate 1 (Slalom Kanan 1) | **PASSED (VALID)** | [10.93, -6.0] | 193352.6 |
+| gate_2 | Gate 2 (Slalom Kanan 2) | **PASSED (VALID)** | [9.15, 0.0] | 193356.3 |
+| gate_3 | Gate 3 (Slalom Kanan 3) | **MISSED** | [8.02, 6.0] | 193362.4 |
+| gate_4 | Gate 4 (Koridor Atas 1) | **PASSED (VALID)** | [6.0, 9.28] | 193364.2 |
+| gate_5 | Gate 5 (Koridor Atas 2) | **PASSED (VALID)** | [2.0, 9.94] | 193366.6 |
+| gate_6 | Gate 6 (Koridor Atas 3) | **PENDING** | - | - |
+| gate_7 | Gate 7 (Koridor Atas 4) | **PENDING** | - | - |
+| gate_8 | Gate 8 (Slalom Kiri 1) | **PENDING** | - | - |
+| gate_9 | Gate 9 (Slalom Kiri 2) | **PENDING** | - | - |
+| gate_10 | Gate 10 (Slalom Kiri 3) | **PENDING** | - | - |

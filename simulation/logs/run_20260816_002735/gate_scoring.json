@@ -1,0 +1,110 @@
+{
+  "run_id": "run_20260816_002735",
+  "log_dir": "D:\\KKI2\\KKI2026\\simulation\\logs\\run_20260816_002735",
+  "total_gates": 10,
+  "passed_valid": 4,
+  "missed": 3,
+  "buoy_touches": 2,
+  "wall_touches": 0,
+  "score_percent": 40.0,
+  "gates": {
+    "gate_1": {
+      "name": "Gate 1 (Slalom Kanan 1)",
+      "status": "PASSED_VALID",
+      "crossed_at": 222034.5425395,
+      "crossing_coord": [
+        10.6,
+        -6.0
+      ]
+    },
+    "gate_2": {
+      "name": "Gate 2 (Slalom Kanan 2)",
+      "status": "PASSED_VALID",
+      "crossed_at": 222037.5914566,
+      "crossing_coord": [
+        9.33,
+        0.0
+      ]
+    },
+    "gate_3": {
+      "name": "Gate 3 (Slalom Kanan 3)",
+      "status": "MISSED_OUTSIDE",
+      "crossed_at": 222040.6014215,
+      "crossing_coord": [
+        6.56,
+        6.0
+      ]
+    },
+    "gate_4": {
+      "name": "Gate 4 (Koridor Atas 1)",
+      "status": "MISSED_OUTSIDE",
+      "crossed_at": 222041.2354064,
+      "crossing_coord": [
+        6.0,
+        7.13
+      ]
+    },
+    "gate_5": {
+      "name": "Gate 5 (Koridor Atas 2)",
+      "status": "MISSED_OUTSIDE",
+      "crossed_at": 222044.9246055,
+      "crossing_coord": [
+        2.0,
+        11.37
+      ]
+    },
+    "gate_6": {
+      "name": "Gate 6 (Koridor Atas 3)",
+      "status": "PASSED_VALID",
+      "crossed_at": 222048.3052911,
+      "crossing_coord": [
+        -2.0,
+        10.36
+      ]
+    },
+    "gate_7": {
+      "name": "Gate 7 (Koridor Atas 4)",
+      "status": "PASSED_VALID",
+      "crossed_at": 222051.0917949,
+      "crossing_coord": [
+        -6.0,
+        9.16
+      ]
+    },
+    "gate_8": {
+      "name": "Gate 8 (Slalom Kiri 1)",
+      "status": "PENDING",
+      "crossed_at": null,
+      "crossing_coord": null
+    },
+    "gate_9": {
+      "name": "Gate 9 (Slalom Kiri 2)",
+      "status": "PENDING",
+      "crossed_at": null,
+      "crossing_coord": null
+    },
+    "gate_10": {
+      "name": "Gate 10 (Slalom Kiri 3)",
+      "status": "PENDING",
+      "crossed_at": null,
+      "crossing_coord": null
+    }
+  },
+  "buoy_collisions": [
+    {
+      "timestamp": "2026-08-16T00:27:48.727569+00:00",
+      "buoy_name": "gate_5_green",
+      "boat_x": 2.24,
+      "boat_y": 11.31,
+      "distance_m": 0.394
+    },
+    {
+      "timestamp": "2026-08-16T00:27:54.808864+00:00",
+      "buoy_name": "gate_7_red",
+      "boat_x": -5.64,
+      "boat_y": 9.15,
+      "distance_m": 0.39
+    }
+  ],
+  "wall_collisions": []
+}

@@ -1,0 +1,180 @@
+{
+  "run_id": "run_20260815_163148",
+  "log_dir": "D:\\KKI2\\KKI2026\\simulation\\logs\\run_20260815_163148",
+  "total_gates": 10,
+  "passed_valid": 5,
+  "missed": 4,
+  "buoy_touches": 2,
+  "wall_touches": 9,
+  "score_percent": 50.0,
+  "gates": {
+    "gate_1": {
+      "name": "Gate 1 (Slalom Kanan 1)",
+      "status": "PASSED_VALID",
+      "crossed_at": 193486.6648966,
+      "crossing_coord": [
+        10.88,
+        -6.0
+      ]
+    },
+    "gate_2": {
+      "name": "Gate 2 (Slalom Kanan 2)",
+      "status": "PASSED_VALID",
+      "crossed_at": 193490.3139498,
+      "crossing_coord": [
+        9.1,
+        0.0
+      ]
+    },
+    "gate_3": {
+      "name": "Gate 3 (Slalom Kanan 3)",
+      "status": "MISSED_OUTSIDE",
+      "crossed_at": 193496.9076409,
+      "crossing_coord": [
+        5.84,
+        6.0
+      ]
+    },
+    "gate_4": {
+      "name": "Gate 4 (Koridor Atas 1)",
+      "status": "MISSED_OUTSIDE",
+      "crossed_at": 193496.7640546,
+      "crossing_coord": [
+        6.0,
+        5.71
+      ]
+    },
+    "gate_5": {
+      "name": "Gate 5 (Koridor Atas 2)",
+      "status": "PASSED_VALID",
+      "crossed_at": 193499.4934727,
+      "crossing_coord": [
+        2.0,
+        9.6
+      ]
+    },
+    "gate_6": {
+      "name": "Gate 6 (Koridor Atas 3)",
+      "status": "MISSED_OUTSIDE",
+      "crossed_at": 193501.3918608,
+      "crossing_coord": [
+        -2.0,
+        8.58
+      ]
+    },
+    "gate_7": {
+      "name": "Gate 7 (Koridor Atas 4)",
+      "status": "PENDING",
+      "crossed_at": null,
+      "crossing_coord": null
+    },
+    "gate_8": {
+      "name": "Gate 8 (Slalom Kiri 1)",
+      "status": "MISSED_OUTSIDE",
+      "crossed_at": 193505.737353,
+      "crossing_coord": [
+        -4.61,
+        6.0
+      ]
+    },
+    "gate_9": {
+      "name": "Gate 9 (Slalom Kiri 2)",
+      "status": "PASSED_VALID",
+      "crossed_at": 193509.0605732,
+      "crossing_coord": [
+        -8.35,
+        0.0
+      ]
+    },
+    "gate_10": {
+      "name": "Gate 10 (Slalom Kiri 3)",
+      "status": "PASSED_VALID",
+      "crossed_at": 193512.4557439,
+      "crossing_coord": [
+        -10.57,
+        -6.0
+      ]
+    }
+  },
+  "buoy_collisions": [
+    {
+      "timestamp": "2026-08-15T16:32:06.310602+00:00",
+      "buoy_name": "gate_6_red",
+      "boat_x": -1.71,
+      "boat_y": 8.74,
+      "distance_m": 0.393
+    },
+    {
+      "timestamp": "2026-08-15T16:32:13.792676+00:00",
+      "buoy_name": "gate_9_red",
+      "boat_x": -7.93,
+      "boat_y": 0.37,
+      "distance_m": 0.374
+    }
+  ],
+  "wall_collisions": [
+    {
+      "timestamp": "2026-08-15T16:32:27.439370+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -11.36,
+      "boat_y": -13.8,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-15T16:32:29.084213+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -11.36,
+      "boat_y": -13.8,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-15T16:32:31.161138+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -11.37,
+      "boat_y": -13.8,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-15T16:32:33.078787+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -11.37,
+      "boat_y": -13.8,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-15T16:32:35.072325+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -11.37,
+      "boat_y": -13.8,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-15T16:32:37.076053+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -11.38,
+      "boat_y": -13.8,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-15T16:32:39.077515+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -11.38,
+      "boat_y": -13.8,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-15T16:32:41.114351+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -11.38,
+      "boat_y": -13.8,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-15T16:32:43.079137+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -11.39,
+      "boat_y": -13.8,
+      "speed_mps": 0.0
+    }
+  ]
+}

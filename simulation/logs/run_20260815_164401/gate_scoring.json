@@ -1,0 +1,206 @@
+{
+  "run_id": "run_20260815_164401",
+  "log_dir": "D:\\KKI2\\KKI2026\\simulation\\logs\\run_20260815_164401",
+  "total_gates": 10,
+  "passed_valid": 4,
+  "missed": 2,
+  "buoy_touches": 3,
+  "wall_touches": 13,
+  "score_percent": 40.0,
+  "gates": {
+    "gate_1": {
+      "name": "Gate 1 (Slalom Kanan 1)",
+      "status": "PASSED_VALID",
+      "crossed_at": 194219.566773,
+      "crossing_coord": [
+        11.06,
+        -6.0
+      ]
+    },
+    "gate_2": {
+      "name": "Gate 2 (Slalom Kanan 2)",
+      "status": "PASSED_VALID",
+      "crossed_at": 194223.1551626,
+      "crossing_coord": [
+        9.3,
+        0.0
+      ]
+    },
+    "gate_3": {
+      "name": "Gate 3 (Slalom Kanan 3)",
+      "status": "MISSED_OUTSIDE",
+      "crossed_at": 194226.6243007,
+      "crossing_coord": [
+        4.83,
+        6.0
+      ]
+    },
+    "gate_4": {
+      "name": "Gate 4 (Koridor Atas 1)",
+      "status": "PENDING",
+      "crossed_at": null,
+      "crossing_coord": null
+    },
+    "gate_5": {
+      "name": "Gate 5 (Koridor Atas 2)",
+      "status": "MISSED_OUTSIDE",
+      "crossed_at": 194228.5681761,
+      "crossing_coord": [
+        2.0,
+        8.74
+      ]
+    },
+    "gate_6": {
+      "name": "Gate 6 (Koridor Atas 3)",
+      "status": "PASSED_VALID",
+      "crossed_at": 194233.2579158,
+      "crossing_coord": [
+        -2.0,
+        9.14
+      ]
+    },
+    "gate_7": {
+      "name": "Gate 7 (Koridor Atas 4)",
+      "status": "PASSED_VALID",
+      "crossed_at": 194235.4879987,
+      "crossing_coord": [
+        -6.0,
+        8.85
+      ]
+    },
+    "gate_8": {
+      "name": "Gate 8 (Slalom Kiri 1)",
+      "status": "PENDING",
+      "crossed_at": null,
+      "crossing_coord": null
+    },
+    "gate_9": {
+      "name": "Gate 9 (Slalom Kiri 2)",
+      "status": "PENDING",
+      "crossed_at": null,
+      "crossing_coord": null
+    },
+    "gate_10": {
+      "name": "Gate 10 (Slalom Kiri 3)",
+      "status": "PENDING",
+      "crossed_at": null,
+      "crossing_coord": null
+    }
+  },
+  "buoy_collisions": [
+    {
+      "timestamp": "2026-08-15T16:44:13.500947+00:00",
+      "buoy_name": "gate_5_red",
+      "boat_x": 2.12,
+      "boat_y": 8.63,
+      "distance_m": 0.389
+    },
+    {
+      "timestamp": "2026-08-15T16:44:18.173778+00:00",
+      "buoy_name": "gate_6_red",
+      "boat_x": -1.72,
+      "boat_y": 9.23,
+      "distance_m": 0.365
+    },
+    {
+      "timestamp": "2026-08-15T16:44:20.334310+00:00",
+      "buoy_name": "gate_7_red",
+      "boat_x": -5.68,
+      "boat_y": 8.81,
+      "distance_m": 0.369
+    }
+  ],
+  "wall_collisions": [
+    {
+      "timestamp": "2026-08-15T16:44:31.986896+00:00",
+      "wall_name": "DINDING_UTARA_NORTH",
+      "boat_x": -12.93,
+      "boat_y": 13.8,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-15T16:44:33.075587+00:00",
+      "wall_name": "DINDING_UTARA_NORTH",
+      "boat_x": -12.94,
+      "boat_y": 13.8,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-15T16:44:35.079758+00:00",
+      "wall_name": "DINDING_UTARA_NORTH",
+      "boat_x": -12.97,
+      "boat_y": 13.8,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-15T16:44:37.087569+00:00",
+      "wall_name": "DINDING_UTARA_NORTH",
+      "boat_x": -13.01,
+      "boat_y": 13.8,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-15T16:44:39.076197+00:00",
+      "wall_name": "DINDING_UTARA_NORTH",
+      "boat_x": -13.03,
+      "boat_y": 13.8,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-15T16:44:41.071625+00:00",
+      "wall_name": "DINDING_UTARA_NORTH",
+      "boat_x": -13.06,
+      "boat_y": 13.8,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-15T16:44:43.076051+00:00",
+      "wall_name": "DINDING_UTARA_NORTH",
+      "boat_x": -13.09,
+      "boat_y": 13.8,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-15T16:44:45.085698+00:00",
+      "wall_name": "DINDING_UTARA_NORTH",
+      "boat_x": -13.12,
+      "boat_y": 13.8,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-15T16:44:47.069950+00:00",
+      "wall_name": "DINDING_UTARA_NORTH",
+      "boat_x": -13.15,
+      "boat_y": 13.8,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-15T16:44:49.094034+00:00",
+      "wall_name": "DINDING_UTARA_NORTH",
+      "boat_x": -13.18,
+      "boat_y": 13.8,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-15T16:44:51.073647+00:00",
+      "wall_name": "DINDING_UTARA_NORTH",
+      "boat_x": -13.22,
+      "boat_y": 13.8,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-15T16:44:53.088336+00:00",
+      "wall_name": "DINDING_UTARA_NORTH",
+      "boat_x": -13.27,
+      "boat_y": 13.8,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-15T16:44:55.071858+00:00",
+      "wall_name": "DINDING_UTARA_NORTH",
+      "boat_x": -13.32,
+      "boat_y": 13.8,
+      "speed_mps": 0.0
+    }
+  ]
+}

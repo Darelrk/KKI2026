@@ -1,0 +1,245 @@
+#VRML_SIM R2025a utf8
+
+PROTO KKIBoat [
+  field SFVec3f    translation       10.0 -11.5 0.04
+  field SFRotation rotation          0 0 1 1.5708
+  field SFString   name              "kki_boat"
+  field SFString   controller        "asv_sim_agent"
+  field MFString   controllerArgs    [ ]
+  field SFBool     supervisor        TRUE
+  field SFInt32    cameraWidth       640
+  field SFInt32    cameraHeight      480
+  field SFFloat    cameraFov         1.1
+] {
+  Robot {
+    translation IS translation
+    rotation IS rotation
+    name IS name
+    controller IS controller
+    controllerArgs IS controllerArgs
+    supervisor IS supervisor
+    children [
+      # Main Hull Lower (0.70m x 0.30m x 0.10m, dark grey below waterline)
+      Transform {
+        translation 0 0 0.01
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor 0.18 0.20 0.24
+              roughness 0.3
+              metalness 0.1
+            }
+            geometry Box {
+              size 0.700 0.300 0.100
+            }
+          }
+        ]
+      }
+      # Main Hull Upper / Deck (White Freeboard above water)
+      Transform {
+        translation 0 0 0.075
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor 0.98 0.98 0.98
+              roughness 0.3
+              metalness 0.1
+            }
+            geometry Box {
+              size 0.700 0.300 0.030
+            }
+          }
+        ]
+      }
+      # Bow Section (0.20m x 0.27m x 0.12m, Coast Guard Orange)
+      Transform {
+        translation 0.350 0 0.03
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor 0.98 0.35 0.05
+              roughness 0.3
+              metalness 0.1
+            }
+            geometry Box {
+              size 0.200 0.270 0.120
+            }
+          }
+        ]
+      }
+      # Cabin / Wheelhouse (0.24m x 0.18m x 0.09m)
+      Transform {
+        translation 0.050 0 0.130
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor 0.18 0.20 0.25
+              roughness 0.4
+              metalness 0.4
+            }
+            geometry Box {
+              size 0.240 0.180 0.090
+            }
+          }
+        ]
+      }
+      # Cabin Roof (Light Grey)
+      Transform {
+        translation 0.050 0 0.180
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor 0.90 0.90 0.92
+              roughness 0.5
+            }
+            geometry Box {
+              size 0.250 0.190 0.015
+            }
+          }
+        ]
+      }
+      # Radar / Mast
+      Transform {
+        translation 0.080 0 0.225
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor 0.85 0.85 0.88
+              roughness 0.6
+            }
+            geometry Cylinder {
+              radius 0.008
+              height 0.080
+            }
+          }
+        ]
+      }
+      # Surface Camera (Logitech Webcam at Bow Deck)
+      Transform {
+        translation 0.350 0 0.115
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor 0.12 0.12 0.15
+              roughness 0.6
+            }
+            geometry Box {
+              size 0.040 0.080 0.035
+            }
+          }
+          Camera {
+            name "surface_camera"
+            width IS cameraWidth
+            height IS cameraHeight
+            fieldOfView IS cameraFov
+          }
+        ]
+      }
+      # Navigation GPS
+      GPS {
+        name "gps"
+        accuracy 0.05
+      }
+      # Navigation Compass
+      Compass {
+        name "compass"
+      }
+      # Navigation IMU
+      InertialUnit {
+        name "inertial_unit"
+      }
+      # Steering Rudder (HingeJoint on Z Axis)
+      HingeJoint {
+        jointParameters HingeJointParameters {
+          axis 0 0 1
+          anchor -0.460 0 -0.010
+        }
+        device [
+          RotationalMotor {
+            name "rudder_motor"
+            minPosition -0.785
+            maxPosition 0.785
+            maxVelocity 4.0
+            maxTorque 15.0
+          }
+          PositionSensor {
+            name "rudder_sensor"
+          }
+        ]
+        endPoint Solid {
+          name "rudder_blade"
+          translation -0.490 0 -0.010
+          children [
+            Shape {
+              appearance PBRAppearance {
+                baseColor 0.15 0.15 0.15
+                roughness 0.5
+              }
+              geometry Box {
+                size 0.060 0.008 0.090
+              }
+            }
+          ]
+          boundingObject Box {
+            size 0.060 0.008 0.090
+          }
+        }
+      }
+      # Main Thruster (HingeJoint on X Axis)
+      HingeJoint {
+        jointParameters HingeJointParameters {
+          axis 1 0 0
+          anchor -0.440 0 -0.020
+        }
+        device [
+          RotationalMotor {
+            name "thruster_motor"
+            maxVelocity 150.0
+            maxTorque 30.0
+          }
+        ]
+        endPoint Solid {
+          name "propeller"
+          translation -0.440 0 -0.020
+          children [
+            Shape {
+              appearance PBRAppearance {
+                baseColor 0.90 0.70 0.15
+                metalness 0.8
+                roughness 0.2
+              }
+              geometry Cylinder {
+                radius 0.038
+                height 0.020
+              }
+            }
+          ]
+          boundingObject Cylinder {
+            radius 0.038
+            height 0.020
+          }
+        }
+      }
+    ]
+    boundingObject Group {
+      children [
+        Transform {
+          translation 0 0 0.04
+          children [
+            Box {
+              size 0.700 0.300 0.140
+            }
+          ]
+        }
+        Transform {
+          translation 0.350 0 0.04
+          children [
+            Box {
+              size 0.200 0.270 0.140
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
