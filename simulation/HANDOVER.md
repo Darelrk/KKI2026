@@ -4,22 +4,23 @@ Dokumen ini ditujukan untuk developer / AI Agent yang melanjutkan pengembangan m
 
 ---
 
-## 1. Objektif
+## 1. Objektif dan status terakhir
 
-Menyempurnakan algoritma navigasi otonom berbasis **Computer Vision (YOLOv8) + Kompas IMU** agar kapal berhasil melewati **10 Gerbang** secara berurutan tanpa menabrak buoy atau dinding arena.
+Menguji navigasi otonom 10 gate di Webots dengan waypoint berurutan,
+heading kompas, throttle aman saat belok, dan reset evaluasi yang
+deterministik.
 
-### Acceptance Criteria
-1. `evaluate_batch.py` mencatat **10/10 Gate** berstatus `PASSED_VALID`.
-2. `wall_touches = 0` (tidak menabrak dinding arena).
-3. `buoy_touches = 0` (tidak menabrak tiang buoy).
-4. Total waktu tempuh < 60 detik.
+### Status verifikasi terakhir
+- Run: `logs/run_20260816_021150/`
+- Gate valid: **10/10**
+- Buoy touch: **1** (`gate_3_red`, jarak 0.3976 m)
+- Wall collision: **0**
+- Durasi: **86.1 detik**
+- Kesimpulan: rute selesai penuh, tetapi belum clean run; jangan klaim
+  `buoy_touches=0`.
 
-### Baseline Saat Ini
-- **Gate 1 & 2**: Konsisten `PASSED_VALID` (kecepatan 2.2 m/s).
-- **Gate 3**: Kadang `PASSED_VALID`, kadang `MISSED_OUTSIDE` tergantung timing belokan.
-- **Gate 4–10**: Belum pernah tercapai secara konsisten; kapal menabrak dinding utara setelah Gate 3.
-
----
+Run logger sekarang membuat folder baru saat `POST /reset`; jangan memakai
+summary log lama untuk menyimpulkan hasil run baru.
 
 ## 2. Struktur File
 
@@ -82,14 +83,14 @@ simulation/
                                       │
                          MAVLink TCP :5762
                                       │
-                    ┌─────────────────┴──────────────────────────-─┐
-                    │          vision_test.py                       │
-                    │  - Baca MJPEG stream dari :8889               │
-                    │  - Inferensi YOLO (model/best.pt)             │
-                    │  - State machine navigasi per sektor          │
-                    │  - Kirim RC_OVERRIDE (steering + throttle)    │
-                    │  - Baca telemetry (px, py, heading)           │
-                    └──────────────────────────────────────────────-┘
+                    ┌──────────────────────────────────────────────-─┐
+                    │          vision_test.py                        │
+                    │  - Baca MJPEG stream dari :8889                │
+                    │  - Inferensi YOLO (model/best.pt)               │
+                    │  - CourseRouteController untuk mode simulasi    │
+                    │  - Kirim RC_OVERRIDE via bridge                 │
+                    │  - Baca telemetry + gate_count                  │
+                    └──────────────────────────────────────────────-─┘
 
                     ┌──────────────────────────────────────────────-┐
                     │          evaluate_batch.py                    │
@@ -155,210 +156,139 @@ Arena kolam: 30m × 30m. Koordinat pusat = (0, 0). Dinding di ±15.0m. Sensor di
 
 ---
 
-## 5. State Machine Navigasi (`vision_test.py`)
+## 5. Navigasi (`vision_test.py`)
 
-### 5.1 Alur Urutan State
+### 5.1 Jalur simulasi utama
+
+Jika telemetry Webots membawa `NAMED_VALUE_INT("gate_count")`, loop navigasi
+memakai `CourseRouteController` dari `vision_route.py`. Controller ini policy
+pure dengan waypoint berurutan:
 
 ```text
-START [10.0, -11.5] heading 0° (North)
-  │
-  ▼
-┌─────────────────────┐
-│  Default Vision     │  Deteksi YOLO aktif: cari red/green buoy
-│  (target_x based)   │  steering = visual servoing ke titik tengah gate
-│                      │  throttle = 1565 (cruise)
-└──────┬──────────────┘
-       │  Masuk zona py ∈ [0, 6) & px ≥ 5.0
-       ▼
-┌─────────────────────┐
-│  RIGHT_SLALOM_      │  Heading kompas → 30° NNE
-│  2_TO_3_BLEND       │  max_pwm_delta = 140
-│                      │  throttle = 1565
-└──────┬──────────────┘
-       │  Masuk zona py ≥ 6.0 & px ≥ 9.8 & hdg < 260 or > 320
-       ▼
-┌─────────────────────┐
-│  SECTOR_TURN_       │  >>> BELOKAN KRITIS 90° <<<
-│  3_TO_4             │  Heading kompas → 270° (West)
-│                      │  max_pwm_delta = 250 (rudder penuh)
-│                      │  throttle = 1555
-└──────┬──────────────┘
-       │  Masuk zona py ≥ 7.0 & -6.0 < px < 9.5
-       ▼
-┌─────────────────────┐
-│  TOP_CORRIDOR_      │  PD line hold: Y = 10.0m + heading 270°
-│  BLEND              │  Blend 60% vision + 40% kompas
-│                      │  max_pwm_delta = 120
-│                      │  throttle = 1565
-└──────┬──────────────┘
-       │  Masuk zona px ≤ -6.0 & py ≥ 5.0 & hdg < 170 or > 240
-       ▼
-┌─────────────────────┐
-│  SECTOR_TURN_       │  >>> BELOKAN KRITIS 90° <<<
-│  7_TO_8             │  Heading kompas → 195° (SSW)
-│                      │  max_pwm_delta = 250
-│                      │  throttle = 1555
-└──────┬──────────────┘
-       │  Masuk zona px ≤ -5.0 & py ∈ [0, 5) atau py < 0
-       ▼
-┌─────────────────────┐
-│  LEFT_SLALOM_       │  Heading waypoint: 150° (gate 8→9) atau 205° (gate 9→10)
-│  BLEND              │  Blend 55% vision + 45% kompas
-│                      │  max_pwm_delta = 120
-│                      │  throttle = 1560
-└──────┴──────────────┘
+(11,-6) → (9,0) → (11,6) → (6,10) → (2,10) → (-2,10)
+→ (-6,10) → (-11,6) → (-9,0) → (-11,-6) → FINISH
 ```
 
-### 5.2 Fallback States
+Phase controller:
 
-| State               | Kondisi Trigger                        | Aksi                                          |
-|----------------------|----------------------------------------|-----------------------------------------------|
-| `SEARCH_SCANNING`    | Tidak ada buoy terdeteksi              | Sweep steering ±40 PWM, throttle 1545         |
-| `VISION_TARGET_HOLD` | Buoy terakhir hilang < hold_s detik    | Pertahankan target_x terakhir                 |
-| `UNSTUCK_REVERSE`    | speed < 0.10 m/s selama > 4 detik     | Mundur (throttle 1420, steer 1200) selama 1.5s|
-| `E-STOP`             | abs(px) atau abs(py) ≥ 13.80m         | Script berhenti total (break loop)            |
+- `APPROACH`: menuju waypoint berikutnya;
+- `TURN`: throttle `1525` saat belokan besar;
+- `CORRIDOR`: throttle `1540` pada koridor atas;
+- `FINISH`: steering dan throttle netral setelah gate 10.
 
-### 5.3 Penentuan Sektor (Baris 948–952 di `vision_test.py`)
+Heading dihitung dengan kompas dari posisi kapal ke waypoint. Steering
+dibatasi agar tidak overshoot. Gate 10 juga memakai throttle turn saat
+berada dalam 3 m dari garis gate.
 
-```python
-is_right_slalom_gate2_3 = (py ∈ [0, 6) and px ≥ 5.0)
-is_turn_sector_3_to_4   = (py ≥ 6.0 and px ≥ 9.8 and hdg ∉ [260, 320])
-is_top_corridor          = (py ≥ 7.0 and px ∈ (-6.0, 9.5))
-is_turn_sector_7_to_8   = (px ≤ -6.0 and py ≥ 5.0 and hdg ∉ [170, 240])
-is_left_slalom_gate8_9   = (px ≤ -5.0 and py ∈ [0, 5))
-is_left_slalom_gate9_10  = (px ≤ -5.0 and py < 0)
-```
+### 5.2 Sumber progress dan fallback
 
-> **Prioritas**: `if-elif` berurutan. `is_turn_sector_3_to_4` dicek sebelum `is_right_slalom_gate2_3` karena zona overlap di Y=6.0.
+`asv_sim_agent.py` menerbitkan `gate_count` melalui `NAMED_VALUE_INT`.
+`sim_pixhawk_bridge.py` meneruskan MAVLink tanpa mengubah RC override.
+`PixhawkLink.telemetry()` membaca nilai tersebut hanya jika nama field tepat.
+
+Jika `gate_count` tidak tersedia—misalnya perangkat keras nyata—kode lama
+berbasis visual/kompas tetap menjadi fallback. Hardware nyata tidak boleh
+menganggap telemetry simulator sebagai progress valid.
+
+Fallback umum tetap tersedia:
+
+| Kondisi | Aksi |
+|---|---|
+| Buoy hilang sementara | tahan target terakhir lalu scan |
+| Tidak ada target | sweep visual dengan throttle rendah |
+| Kapal stuck | jalankan recovery yang sudah ada |
+| Keluar batas arena | E-stop / hentikan loop |
+
+### 5.3 Kontrak reset evaluasi
+
+`POST http://127.0.0.1:8889/reset` hanya mengatur flag reset pada HTTP handler.
+Loop Supervisor kemudian mengembalikan posisi ke `(10.0, -11.5, 0.04)`,
+heading utara, PWM netral, gate tracker kosong, dan membuat folder log baru.
+Evaluator menunggu status awal bersih sebelum memulai timer.
 
 ---
 
-## 6. Masalah Kritis & Root Cause
+## 6. Tuning dan risiko yang masih terbuka
 
-### Masalah 1: Inersia Belokan Gate 3 → Gate 4
+### 6.1 Kontrol waypoint
 
-**Situasi**: Setelah melewati Gate 3 (Y=6.0m), kapal harus berbelok 90° ke Barat. Dinding utara di Y=13.8m. Jarak tersisa = 7.8m.
-
-**Root Cause**: Pada kecepatan 2.2 m/s, kapal membutuhkan ~3.5 detik untuk memutar haluan 90°. Selama waktu itu, momentum membawa kapal ~7.7m ke utara → menabrak dinding.
-
-**Rekomendasi Solusi**:
-1. **Turunkan throttle saat belokan**: Ubah `throttle_pwm` dari `1555` ke `1530` di blok `SECTOR_TURN_3_TO_4`. Ini menurunkan kecepatan dari 2.2 ke ~1.0 m/s, memberi ruang belok.
-2. **Mulai belok lebih awal**: Ubah threshold `py ≥ 6.0` ke `py ≥ 5.5` agar rudder mulai memutar sebelum melewati tiang Gate 3. Risiko: bisa menyebabkan `MISSED_OUTSIDE` jika terlalu dini.
-3. **Aktifkan rudder + reverse brake**: Saat sudut error > 60°, tambahkan `throttle_pwm = 1470` (reverse ringan) untuk membantu pivot.
-
-### Masalah 2: Blindspot Kamera saat Memutar Haluan
-
-**Situasi**: Kamera depan (FOV ~60°) kehilangan visual buoy selama 1–2 detik saat kapal memutar 90°.
-
-**Root Cause**: Saat `SECTOR_TURN_3_TO_4` aktif, state machine sudah benar menggunakan `compute_pd_heading_pwm` (kompas murni, tanpa visual). Namun saat belokan selesai dan kapal masuk `TOP_CORRIDOR_BLEND`, buoy belum terdeteksi → fallback ke `SEARCH_SCANNING` yang terlalu lambat.
-
-**Rekomendasi**: Tambahkan transisi delay: setelah `SECTOR_TURN` selesai (heading error < 15°), berikan 2 detik grace period dengan heading hold murni sebelum mengaktifkan visual blend.
-
-### Masalah 3: Kapal Stuck / Speed 0 setelah Tabrak Buoy
-
-**Situasi**: Jika kapal menyerempet buoy, fisika Webots memperlambat hingga 0 m/s. Anti-stuck timer baru aktif setelah 4 detik delay.
-
-**Rekomendasi**: Turunkan `stuck_timer` threshold dari 4.0s ke 2.5s (baris ~1057).
-
----
-
-## 7. Parameter Kunci untuk Tuning
-
-### 7.1 File `vision_test.py` — Kontrol Kemudi
-
-| Parameter | Lokasi | Default | Fungsi |
-|-----------|--------|---------|--------|
-| `compute_pd_heading_pwm(target, current, last_err, dt, max_pwm_delta)` | baris 623 | — | PD controller heading kompas. `kp=1.5, kd=0.15` hardcoded. |
-| `max_pwm_delta` (turn sectors) | baris 949, 967 | 250 | Batas rudder saat belokan tajam. Naikkan = belok lebih agresif. |
-| `max_pwm_delta` (corridor/slalom) | baris 979, 995 | 120 | Batas rudder saat jalur lurus/slalom. Terlalu tinggi = overshoot. |
-| `throttle_pwm` (cruise) | baris 989, 962 | 1565 | Kecepatan jalur lurus (~2.2 m/s). |
-| `throttle_pwm` (turn) | baris 951, 969 | 1555 | Kecepatan saat belokan 90°. **Turunkan ke 1530 untuk mengurangi inersia.** |
-| `search_controller` | baris 760 | center=1500, delta=40, period=5s, throttle=1545 | Sweep pola saat kehilangan visual. |
-
-### 7.2 File `vision_test.py` — Visual Servoing
-
-| Parameter | Default | Fungsi |
-|-----------|---------|--------|
-| `gain` di `compute_steering_pwm()` | 0.90 | Pengali koreksi visual (naikkan = respons cepat, risiko oscillation). |
-| `max_delta` di `compute_steering_pwm()` | 75 | Batas deviasi PWM visual dari netral. |
-| Blend ratio koridor | 0.60 vis / 0.40 kompas | Bobot campuran visual vs kompas di koridor atas. |
-| Blend ratio slalom kiri | 0.55 vis / 0.45 kompas | Bobot campuran visual vs kompas di slalom kiri. |
-
-### 7.3 File `vision_route.py` — Konstanta
-
-| Konstanta | Nilai | Fungsi |
-|-----------|-------|--------|
-| `NEUTRAL_PWM` | 1500 | Titik tengah servo (lurus / diam). |
-| `PWM_MIN` | 1000 | Batas bawah PWM (kiri penuh / mundur penuh). |
-| `PWM_MAX` | 2000 | Batas atas PWM (kanan penuh / maju penuh). |
-| `STEERING_MAX_DELTA` | 400 | Deviasi absolut maksimum dari netral. |
-
-### 7.4 File `asv_sim_agent.py` — Sensor & Fisika
+`CourseRouteController` adalah jalur utama ketika `gate_count` simulator
+valid. Konfigurasi default:
 
 | Parameter | Nilai | Fungsi |
-|-----------|-------|--------|
-| `BUOY_TOUCH_RADIUS` | 0.40m | Jarak sentuh buoy (kapal 0.15m + buoy 0.22m + margin). |
-| `WALL_LIMIT_X/Y` | 13.80m | Jarak dari pusat kolam saat sensor dinding aktif. |
-| `basicTimeStep` | 16ms | Resolusi simulasi Webots (~62.5 Hz). |
-| Gate crossing tolerance | ±0.25m | Margin kelulusan di luar batas tiang buoy. |
+|---|---:|---|
+| `cruise_pwm` | 1555 | Kecepatan lintasan normal |
+| `approach_pwm` | 1545 | Mendekati waypoint |
+| `turn_pwm` | 1525 | Belokan besar dan gate 10 |
+| `corridor_pwm` | 1540 | Koridor atas |
+| `finish_pwm` | 1500 | Netral setelah gate 10 |
+| `turn_error_deg` | 35° | Ambang throttle turn |
+| `max_steering_delta` | 180 PWM | Batas koreksi heading |
 
-### 7.5 Range PWM & Efek Fisik
+### 6.2 Risiko terakhir
 
-| PWM Range | Steering (Ch 1) | Throttle (Ch 3) |
-|-----------|------------------|------------------|
-| 1000 | Kiri penuh (rudder max kiri) | Mundur penuh |
-| 1200 | Kiri sedang | Mundur ringan |
-| 1420 | Kiri ringan | Mundur darurat (unstuck) |
-| 1500 | Lurus (netral) | Diam (netral) |
-| 1530 | — | Maju lambat (~1.0 m/s) |
-| 1545 | — | Maju scanning (~1.3 m/s) |
-| 1555 | — | Maju manuver (~1.6 m/s) |
-| 1565 | — | Maju cruise (~2.2 m/s) |
-| 1800 | Kanan sedang | Maju cepat |
-| 2000 | Kanan penuh | Maju penuh |
+Run terakhir menyelesaikan semua gate, tetapi menyentuh `gate_3_red` pada
+jarak 0.3976 m. Penyebab belum dipastikan; jangan mengubah beberapa
+parameter sekaligus. Ulangi satu hipotesis per run setelah observasi
+berikutnya.
+
+Sensor tetap:
+
+| Parameter | Nilai |
+|---|---:|
+| `BUOY_TOUCH_RADIUS` | 0.40 m |
+| `WALL_LIMIT_X/Y` | 13.80 m |
+| `basicTimeStep` | 16 ms |
+| Gate crossing tolerance | ±0.25 m |
 
 ---
 
-## 8. Cara Menjalankan
+## 7. Cara Menjalankan
 
 ### Prasyarat
+
 ```bash
 pip install ultralytics opencv-python pymavlink numpy
 ```
+
 Webots R2025a atau lebih baru harus terinstall.
 
-### Langkah Eksekusi (3 Terminal)
+### Langkah Eksekusi
 
 ```bash
-# Terminal 1: Buka Arena Webots (atau klik start_webots.bat)
+# Terminal 1: Buka arena Webots
+cd simulation
+start_webots.bat
 # Tekan Play (Real-Time mode)
 
-# Terminal 2: Jalankan MAVLink Bridge
+# Terminal 2: Jalankan MAVLink bridge
 cd simulation
 python sim_pixhawk_bridge.py
 
-# Terminal 3: Jalankan Navigasi Vision
+# Terminal 3: Jalankan navigasi vision
 cd simulation
-python vision_test.py --source http://127.0.0.1:8889/stream.mjpg --model model/best.pt --mavlink tcp:127.0.0.1:5762 --sim-mode
-```
+python vision_test.py --camera http://127.0.0.1:8889/stream.mjpg \
+  --model ..\model\best.pt --endpoint tcp:127.0.0.1:5762
 
-### Evaluasi Otomatis (Terminal 4)
-```bash
+# Terminal 4: Reset + evaluasi deterministik
 cd simulation
 python evaluate_batch.py
 ```
 
-### Argumen Penting `vision_test.py`
+Evaluator mengirim `POST /reset`, menunggu status awal bersih, lalu
+menghentikan polling saat wall hit atau Gate 10 valid.
+
+### Argumen penting
+
 | Flag | Default | Fungsi |
-|------|---------|--------|
-| `--source` | `0` (webcam lokal) | Sumber video. Pakai URL MJPEG untuk simulasi. |
-| `--model` | `model/best.pt` | Path ke model YOLO. |
-| `--mavlink` / `--endpoint` | `tcp:127.0.0.1:5762` | Endpoint MAVLink. |
-| `--sim-mode` | off | Aktifkan mode simulasi (nonaktifkan fitur hardware). |
-| `--conf` | `0.25` | Threshold confidence YOLO. |
-| `--vision-fps` | `4` | Target FPS inferensi YOLO. |
-| `--manual-rc` | off | Mode RC manual (hanya deteksi, tanpa kontrol). |
-| `--invert-steering` | off | Balik arah steering (mirror kamera). |
+|---|---|---|
+| `--camera` | `0` | Webcam index atau URL MJPEG |
+| `--model` | `D:\KKI2\model\best.pt` | Model YOLO |
+| `--endpoint` | `tcp:127.0.0.1:5762` | Endpoint MAVLink |
+| `--conf` | `0.35` | Confidence minimum |
+| `--vision-fps` | `4.0` | Batas inferensi per detik |
+| `--manual-rc` | off | Monitoring saja tanpa MAVLink |
+| `--invert-steering` | off | Balik arah steering |
 
 ---
 
@@ -367,9 +297,10 @@ python evaluate_batch.py
 ### Log Realtime dari `vision_test.py`
 Setiap 0.25 detik, output ke terminal:
 ```
-[SECTOR_TURN_3_TO_4] Pos=(9.21, 6.44) Hdg=1.9° | Belok West (270°) ke Gate 4 [Err: -91.9°] | S=1200 T=1555 | det=red_buoy
+[COURSE_TURN] Pos=(8.44, 1.06) Hdg=345° | Gate 2/10
+hdg 350° err +5° target=(11.0,6.0) | S=1510 T=1525 | det=green_buoy
 ```
-Format: `[STATE] Pos=(x, y) Hdg=heading° | nav_target_info | S=steering T=throttle | det=labels`
+Format: `[COURSE_*] Pos=(x, y) Hdg=heading° | Gate n/10 ... | S=steering T=throttle`.
 
 ### Endpoint HTTP (dari asv_sim_agent di Webots)
 | URL | Response |
@@ -385,40 +316,27 @@ Format: `[STATE] Pos=(x, y) Hdg=heading° | nav_target_info | S=steering T=throt
 
 ---
 
-## 10. Strategi Pengembangan yang Disarankan
+## 10. Strategi Pengembangan Berikutnya
 
-### Prioritas 1: Fix Belokan Gate 3 → 4
-1. Turunkan `throttle_pwm` ke `1530` di `SECTOR_TURN_3_TO_4`.
-2. Jalankan `evaluate_batch.py` dan konfirmasi Gate 3 masih `PASSED_VALID` + Gate 4 tercapai.
-3. Jika masih menabrak dinding: geser threshold `py ≥ 6.0` ke `py ≥ 5.5`.
+Run terakhir masih memiliki satu sentuhan di `gate_3_red`. Lanjutkan
+dengan satu hipotesis per iterasi:
 
-### Prioritas 2: Fix Koridor Atas (Gate 4–7)
-1. Pastikan `TOP_CORRIDOR_BLEND` menjaga kapal di Y ≈ 10.0m.
-2. Tune `y_err * 20.0` gain jika kapal terlalu jauh dari garis tengah.
-3. Verifikasi 4 gate vertikal tercapai berurutan.
+1. bandingkan telemetry dan `vision_test` log di sekitar Gate 3;
+2. ubah hanya satu parameter heading/throttle;
+3. reset Webots sebelum setiap evaluasi;
+4. baca `summary_report.md` dan `buoy_collisions.jsonl`;
+5. pertahankan perubahan hanya jika gate tetap 10/10 dan touch berkurang.
 
-### Prioritas 3: Fix Belokan Gate 7 → 8
-1. Sama seperti Gate 3→4: turunkan throttle, pastikan heading target 195° tepat.
-2. Verifikasi kapal tidak menabrak dinding barat (X = -13.8m).
+Evaluator bukan read-only: evaluator mengirim `POST /reset`, tetapi tidak
+mengendalikan aktuator.
 
-### Prioritas 4: Slalom Kiri (Gate 8–10)
-1. Tune heading waypoint: 150° (gate 8→9) dan 205° (gate 9→10).
-2. Tune blend ratio vision vs kompas.
+### Catatan teknis penting
 
-### Cycle Iterasi yang Efektif
-```
-Edit vision_test.py → Restart vision_pipeline →
-Tunggu evaluate_batch.py → Cek summary_report.md →
-Analisis gate mana yang gagal → Edit ulang
-```
-
----
-
-## 11. Catatan Teknis Penting
-
-1. **Jangan ubah `asv_sim_agent.py` atau `sim_pixhawk_bridge.py`** kecuali perlu mengubah fisika simulasi atau format telemetry. Fokus pengembangan ada di `vision_test.py`.
-2. **Webots harus dalam mode Real-Time** (bukan Fast). Mode Fast menyebabkan timing navigasi kacau.
-3. **`evaluate_batch.py` bersifat read-only**: hanya membaca `/status` dari Webots, tidak mengontrol kapal.
-4. **Gate crossing hanya dicek sekali per gate** (status `PENDING` → `PASSED_VALID` atau `MISSED_OUTSIDE`). Tidak ada retry.
-5. **Sensor dinding di ±13.8m** berbeda dari dinding fisik di ±15.0m. Kapal punya ~1.2m margin sebelum benar-benar menabrak dinding fisik Webots.
-6. **`vision_test.py` di folder `simulation/` adalah COPY** dari `KKI2026/vision_test.py`. Setelah selesai tuning, salin balik ke root project.
+1. Webots sebaiknya mode Real-Time; mode Fast mengubah timing fisika.
+2. Sensor dinding aktif pada ±13.8 m, sedangkan dinding fisik berada pada
+   ±15.0 m.
+3. Root dan `simulation/` memiliki `vision_route.py` yang sama. `simulation/vision_test.py`
+   menambahkan jalur simulator `gate_count`; jangan menyalin seluruh file ke
+   runtime hardware tanpa meninjau kontrak Pixhawk.
+4. `POST /reset` membuat sesi logger baru; gunakan `run_id` dari endpoint
+   `/gates` untuk menemukan log yang benar.

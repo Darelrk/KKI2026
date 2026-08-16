@@ -878,3 +878,177 @@ class RouteController:
             )
 
         raise RuntimeError(f"unknown route state: {self.state}")
+
+
+COURSE_WAYPOINTS: tuple[tuple[float, float], ...] = (
+    (11.0, -6.0),
+    (9.0, 0.0),
+    (11.0, 6.0),
+    (6.0, 10.0),
+    (2.0, 10.0),
+    (-2.0, 10.0),
+    (-6.0, 10.0),
+    (-11.0, 6.0),
+    (-9.0, 0.0),
+    (-11.0, -6.0),
+)
+
+
+class CoursePhase(str, Enum):
+    APPROACH = "APPROACH"
+    TURN = "TURN"
+    CORRIDOR = "CORRIDOR"
+    FINISH = "FINISH"
+
+
+@dataclass(frozen=True)
+class CourseRouteConfig:
+    cruise_pwm: int = 1555
+    approach_pwm: int = 1545
+    turn_pwm: int = 1525
+    corridor_pwm: int = 1540
+    finish_pwm: int = NEUTRAL_PWM
+    heading_tolerance_deg: float = 4.0
+    turn_error_deg: float = 35.0
+    max_steering_delta: int = 180
+    heading_slew_deg_per_step: float = 12.0
+
+    def __post_init__(self) -> None:
+        for name in (
+            "cruise_pwm",
+            "approach_pwm",
+            "turn_pwm",
+            "corridor_pwm",
+            "finish_pwm",
+        ):
+            value = getattr(self, name)
+            if not PWM_MIN <= value <= PWM_MAX:
+                raise ValueError(f"{name} must be between 1000 and 2000")
+        if self.heading_tolerance_deg <= 0.0:
+            raise ValueError("heading_tolerance_deg must be positive")
+        if self.turn_error_deg <= self.heading_tolerance_deg:
+            raise ValueError("turn_error_deg must exceed heading_tolerance_deg")
+        if not 0 <= self.max_steering_delta <= STEERING_MAX_DELTA:
+            raise ValueError("max_steering_delta must be within steering limits")
+        if self.heading_slew_deg_per_step <= 0.0:
+            raise ValueError("heading_slew_deg_per_step must be positive")
+
+
+@dataclass(frozen=True)
+class CourseDecision:
+    phase: CoursePhase
+    steering_pwm: int
+    throttle_pwm: int
+    target_waypoint: tuple[float, float] | None
+    target_heading_deg: float | None
+    heading_error_deg: float
+    gate_count: int
+    finished: bool = False
+
+
+def _heading_to_point(
+    x: float,
+    y: float,
+    target_x: float,
+    target_y: float,
+) -> float:
+    """Return compass heading: 0° north, 90° east."""
+    return normalize_heading(math.degrees(math.atan2(target_x - x, target_y - y)))
+
+
+class CourseRouteController:
+    """Monotonic gate-center controller for the fixed 10-gate Webots course."""
+
+    def __init__(self, config: CourseRouteConfig | None = None) -> None:
+        self.config = config or CourseRouteConfig()
+        self._gate_count = 0
+        self._target_heading_deg: float | None = None
+
+    @property
+    def gate_count(self) -> int:
+        return self._gate_count
+
+    def reset(self) -> None:
+        self._gate_count = 0
+        self._target_heading_deg = None
+
+
+    def step(
+        self,
+        *,
+        gate_count: int,
+        x: float,
+        y: float,
+        heading_deg: float | None,
+    ) -> CourseDecision:
+        self._gate_count = max(self._gate_count, min(len(COURSE_WAYPOINTS), int(gate_count)))
+        if self._gate_count >= len(COURSE_WAYPOINTS):
+            return CourseDecision(
+                phase=CoursePhase.FINISH,
+                steering_pwm=NEUTRAL_PWM,
+                throttle_pwm=self.config.finish_pwm,
+                target_waypoint=None,
+                target_heading_deg=None,
+                heading_error_deg=0.0,
+                gate_count=self._gate_count,
+                finished=True,
+            )
+
+        target_waypoint = COURSE_WAYPOINTS[self._gate_count]
+        desired_heading = _heading_to_point(x, y, *target_waypoint)
+        if self._target_heading_deg is None:
+            self._target_heading_deg = desired_heading
+        else:
+            heading_delta = signed_heading_error(
+                desired_heading,
+                self._target_heading_deg,
+            )
+            max_step = self.config.heading_slew_deg_per_step
+            self._target_heading_deg = normalize_heading(
+                self._target_heading_deg
+                + max(-max_step, min(max_step, heading_delta))
+            )
+        target_heading = self._target_heading_deg
+        if heading_deg is None:
+            return CourseDecision(
+                phase=CoursePhase.APPROACH,
+                steering_pwm=NEUTRAL_PWM,
+                throttle_pwm=NEUTRAL_PWM,
+                target_waypoint=target_waypoint,
+                target_heading_deg=target_heading,
+                heading_error_deg=0.0,
+                gate_count=self._gate_count,
+            )
+
+        error = signed_heading_error(target_heading, heading_deg)
+        if self._gate_count in (3, 7):
+            phase = CoursePhase.TURN
+        elif 3 < self._gate_count < 7:
+            phase = CoursePhase.CORRIDOR
+        else:
+            phase = CoursePhase.APPROACH
+
+        if self._gate_count in (1, 2, 7, 8, 9) and abs(y - target_waypoint[1]) <= 3.0:
+            throttle = self.config.turn_pwm
+        elif phase is CoursePhase.TURN or abs(error) >= self.config.turn_error_deg:
+            throttle = self.config.turn_pwm
+        elif phase is CoursePhase.CORRIDOR:
+            throttle = self.config.corridor_pwm
+        elif abs(error) > self.config.heading_tolerance_deg:
+            throttle = self.config.approach_pwm
+        else:
+            throttle = self.config.cruise_pwm
+
+        steering = compute_heading_steering_pwm(
+            error,
+            max_delta=self.config.max_steering_delta,
+        )
+        return CourseDecision(
+            phase=phase,
+            steering_pwm=steering,
+            throttle_pwm=throttle,
+            target_waypoint=target_waypoint,
+            target_heading_deg=target_heading,
+            heading_error_deg=error,
+            gate_count=self._gate_count,
+        )

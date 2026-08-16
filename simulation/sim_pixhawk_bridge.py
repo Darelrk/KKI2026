@@ -44,6 +44,8 @@ class BridgeState:
         self.clients: set[socket.socket] = set()
         self.clients_lock = threading.Lock()
 
+        self.gate_count: int = 0
+
 
 state = BridgeState()
 actuator_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -146,6 +148,7 @@ def start_telemetry_broadcast_loop() -> None:
                     spd = state.speed_mps
                     steer = state.steering_pwm
                     thr = state.throttle_pwm
+                    gate_count = state.gate_count
 
                 lat = BASE_LAT + (y / METERS_PER_DEG_LAT)
                 lon = BASE_LON + (
@@ -176,6 +179,12 @@ def start_telemetry_broadcast_loop() -> None:
                     0.0,
                     0.0,
                 )
+                gate_msg = mav_out.named_value_int_encode(
+                    int(now * 1000) & 0xFFFFFFFF,
+                    b"gate_count",
+                    gate_count,
+                )
+                gate_buf = gate_msg.pack(mav_out)
                 hud_buf = hud_msg.pack(mav_out)
 
                 # RC_CHANNELS_RAW
@@ -194,7 +203,7 @@ def start_telemetry_broadcast_loop() -> None:
                 )
                 rc_buf = rc_msg.pack(mav_out)
 
-                total_buf = pos_buf + hud_buf + rc_buf
+                total_buf = pos_buf + hud_buf + gate_buf + rc_buf
                 for sock in active_clients:
                     try:
                         sock.sendall(total_buf)
@@ -240,6 +249,17 @@ def start_webots_udp_listener(port: int = 14550) -> None:
                         elif msg_type == "VFR_HUD":
                             state.speed_mps = float(getattr(msg, "groundspeed", 0.0))
                             state.heading_deg = float(getattr(msg, "heading", state.heading_deg))
+                        elif msg_type == "NAMED_VALUE_INT":
+                            raw_name = getattr(msg, "name", b"")
+                            if isinstance(raw_name, bytes):
+                                name = raw_name.split(b"\0", 1)[0].decode("ascii", errors="ignore")
+                            else:
+                                name = str(raw_name).split("\0", 1)[0]
+                            if name == "gate_count":
+                                state.gate_count = max(
+                                    0,
+                                    min(10, int(getattr(msg, "value", 0))),
+                                )
             except Exception:
                 time.sleep(0.01)
 

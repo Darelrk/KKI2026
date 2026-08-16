@@ -16,6 +16,6 @@ timeout /t 2 /nobreak >nul
 
 echo.
 echo [3/3] Menjalankan Navigasi Vision YOLO (Webots Stream)...
-python vision_test.py --source http://127.0.0.1:8889/stream.mjpg --model model/best.pt --mavlink tcp:127.0.0.1:5762 --sim-mode
+python vision_test.py --camera http://127.0.0.1:8889/stream.mjpg --model ..\model\best.pt --endpoint tcp:127.0.0.1:5762 --duration 0
 
 pause

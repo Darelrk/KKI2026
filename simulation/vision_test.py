@@ -15,6 +15,7 @@ With Mission Planner connected on COM5, enable MAVLink forwarding to TCP
 from __future__ import annotations
 
 import argparse
+import math
 import json
 import threading
 import time
@@ -24,6 +25,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Sequence
 from vision_route import (
+    CoursePhase,
+    CourseRouteController,
     Detection,
     GateFeature,
     GateTracker,
@@ -257,12 +260,11 @@ class PixhawkLink:
         self._target_throttle = NEUTRAL_PWM
         self._override_active = False
         self._running = True
-        self._last_heartbeat = None
-        self._last_heartbeat_time = 0.0
         self._last_servo_output = None
         self._last_rc_channels = None
         self._last_vfr_hud = None
         self._last_global_pos = None
+        self._last_gate_count: int | None = None
 
         with self._mav_lock:
             connected = self._try_connect(endpoint)
@@ -367,7 +369,14 @@ class PixhawkLink:
             try:
                 while True:
                     message = self.connection.recv_match(
-                        type=["HEARTBEAT", "RC_CHANNELS", "SERVO_OUTPUT_RAW", "VFR_HUD", "GLOBAL_POSITION_INT"],
+                        type=[
+                            "HEARTBEAT",
+                            "RC_CHANNELS",
+                            "SERVO_OUTPUT_RAW",
+                            "VFR_HUD",
+                            "GLOBAL_POSITION_INT",
+                            "NAMED_VALUE_INT",
+                        ],
                         blocking=False,
                     )
                     if message is None:
@@ -384,8 +393,23 @@ class PixhawkLink:
                         self._last_vfr_hud = message
                     elif message_type == "GLOBAL_POSITION_INT":
                         self._last_global_pos = message
+                    elif message_type == "NAMED_VALUE_INT":
+                        raw_name = getattr(message, "name", b"")
+                        if isinstance(raw_name, bytes):
+                            name = raw_name.split(b"\0", 1)[0].decode("ascii", errors="ignore")
+                        else:
+                            name = str(raw_name).split("\0", 1)[0]
+                        if name == "gate_count":
+                            self._last_gate_count = max(
+                                0, min(10, int(getattr(message, "value", 0)))
+                            )
             except Exception:
-                pass
+                self._last_heartbeat = None
+                self._last_rc_channels = None
+                self._last_servo_output = None
+                self._last_vfr_hud = None
+                self._last_global_pos = None
+                self._last_gate_count = None
         heartbeat = self._last_heartbeat
         armed = False
         base_mode = None
@@ -422,6 +446,7 @@ class PixhawkLink:
             "x": pos_x,
             "y": pos_y,
             "speed_mps": spd,
+            "gate_count": self._last_gate_count,
             "rc1": getattr(rc, "chan1_raw", None),
             "rc3": getattr(rc, "chan3_raw", None),
             "servo1": getattr(servo, "servo1_raw", None),
@@ -764,6 +789,7 @@ def main() -> None:
         smoothing_alpha=args.target_smoothing,
     )
     gate_tracker = GateTracker(crossing_y=0.65, cooldown_s=1.5)
+    course_controller = CourseRouteController()
     last_hdg_err: float = 0.0
     last_hdg_now: float = 0.0
     unstuck_until: float = 0.0
@@ -943,8 +969,57 @@ def main() -> None:
                     nav_target_info = ""
                     has_red = any(d.label == "red_buoy" for d in last_detections)
                     has_green = any(d.label == "green_buoy" for d in last_detections)
+                    is_right_slalom_gate2_3 = (
+                        px is not None and py is not None and 0.0 <= py < 6.0 and px >= 5.0
+                    )
+                    is_turn_sector_3_to_4 = (
+                        px is not None
+                        and py is not None
+                        and current_hdg is not None
+                        and py >= 6.0
+                        and px >= 9.8
+                        and not 260.0 <= current_hdg <= 320.0
+                    )
+                    is_top_corridor = (
+                        px is not None and py is not None and py >= 7.0 and -6.0 < px < 9.5
+                    )
+                    is_turn_sector_7_to_8 = (
+                        px is not None
+                        and py is not None
+                        and current_hdg is not None
+                        and px <= -6.0
+                        and py >= 5.0
+                        and not 170.0 <= current_hdg <= 240.0
+                    )
+                    is_left_slalom_gate8_9 = (
+                        px is not None and py is not None and px <= -5.0 and 0.0 <= py < 5.0
+                    )
+                    is_left_slalom_gate9_10 = (
+                        px is not None and py is not None and px <= -5.0 and py < 0.0
+                    )
+                    sim_gate_count = telemetry.get("gate_count") if telemetry else None
 
-                    if is_turn_sector_3_to_4:
+                    if sim_gate_count is not None and px is not None and py is not None and current_hdg is not None:
+                        course_decision = course_controller.step(
+                            gate_count=int(sim_gate_count),
+                            x=float(px),
+                            y=float(py),
+                            heading_deg=float(current_hdg),
+                        )
+                        steering_pwm = course_decision.steering_pwm
+                        throttle_pwm = course_decision.throttle_pwm
+                        nav_state = f"COURSE_{course_decision.phase.value}"
+                        target = course_decision.target_waypoint
+                        if target:
+                            nav_target_info = (
+                                f"Gate {course_decision.gate_count}/10 "
+                                f"hdg {course_decision.target_heading_deg:.1f}° "
+                                f"err {course_decision.heading_error_deg:+.1f}° "
+                                f"target=({target[0]:.1f},{target[1]:.1f})"
+                            )
+                        else:
+                            nav_target_info = "Gate 10 selesai"
+                    elif is_turn_sector_3_to_4:
                         dt_hdg = now - last_hdg_now
                         steering_pwm, last_hdg_err = compute_pd_heading_pwm(270.0, current_hdg, last_hdg_err, dt_hdg, max_pwm_delta=250.0)
                         last_hdg_now = now

@@ -2,6 +2,8 @@ import pytest
 from types import SimpleNamespace
 
 from vision_route import (
+    CoursePhase,
+    CourseRouteController,
     Detection,
     GateFeature,
     GateTracker,
@@ -419,3 +421,102 @@ def test_visual_target_tracker_smooths_pair_midpoint_motion() -> None:
 
     assert tracker.update(first_pair, now=0.0) == 320.0
     assert tracker.update(second_pair, now=0.2) == 340.0
+
+
+def test_course_route_targets_each_gate_center_in_order() -> None:
+    controller = CourseRouteController()
+    expected = [
+        (11.0, -6.0),
+        (9.0, 0.0),
+        (11.0, 6.0),
+        (6.0, 10.0),
+        (2.0, 10.0),
+        (-2.0, 10.0),
+        (-6.0, 10.0),
+        (-11.0, 6.0),
+        (-9.0, 0.0),
+        (-11.0, -6.0),
+    ]
+    for gate_count, waypoint in enumerate(expected):
+        decision = controller.step(
+            gate_count=gate_count,
+            x=0.0,
+            y=0.0,
+            heading_deg=0.0,
+        )
+        assert decision.target_waypoint == waypoint
+        assert decision.gate_count == gate_count
+        assert decision.finished is False
+
+
+def test_course_route_uses_smallest_heading_error_across_north() -> None:
+    decision = CourseRouteController().step(
+        gate_count=0,
+        x=11.0,
+        y=-7.0,
+        heading_deg=359.0,
+    )
+    assert decision.target_heading_deg == pytest.approx(0.0)
+    assert decision.steering_pwm > 1500
+
+
+def test_course_route_slows_before_large_turn() -> None:
+    controller = CourseRouteController()
+    cruise = controller.step(gate_count=0, x=10.0, y=-10.0, heading_deg=0.0)
+    turn = controller.step(gate_count=3, x=10.0, y=6.0, heading_deg=20.0)
+    assert turn.throttle_pwm < cruise.throttle_pwm
+    assert turn.phase is CoursePhase.TURN
+
+
+def test_course_route_finishes_at_gate_ten() -> None:
+    decision = CourseRouteController().step(
+        gate_count=10,
+        x=-11.0,
+        y=-6.0,
+        heading_deg=180.0,
+    )
+    assert decision.finished is True
+    assert decision.target_waypoint is None
+    assert decision.throttle_pwm == 1500
+
+
+def test_course_route_targets_gate_center_before_crossing() -> None:
+    decision = CourseRouteController().step(
+        gate_count=0,
+        x=10.0,
+        y=-6.8,
+        heading_deg=0.0,
+    )
+    assert decision.target_waypoint == (11.0, -6.0)
+    assert decision.target_heading_deg == pytest.approx(51.34019174590991)
+
+
+def test_course_route_slows_gate_ten_approach_before_buoy_line() -> None:
+    decision = CourseRouteController().step(
+        gate_count=9,
+        x=-8.0,
+        y=-3.0,
+        heading_deg=220.0,
+    )
+    assert decision.throttle_pwm == 1525
+
+
+def test_course_route_keeps_gate_center_while_pre_turning() -> None:
+    decision = CourseRouteController().step(
+        gate_count=2,
+        x=10.0,
+        y=5.0,
+        heading_deg=20.0,
+    )
+    assert decision.target_waypoint == (11.0, 6.0)
+    assert decision.throttle_pwm == 1525
+
+
+def test_course_route_slews_heading_across_gate_transition() -> None:
+    controller = CourseRouteController()
+    previous = controller.step(gate_count=2, x=10.0, y=5.0, heading_deg=20.0)
+    decision = controller.step(gate_count=3, x=10.0, y=6.0, heading_deg=20.0)
+    assert (
+        abs(signed_heading_error(decision.target_heading_deg, previous.target_heading_deg))
+        <= 12.0
+    )

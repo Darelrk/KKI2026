@@ -15,6 +15,7 @@ With Mission Planner connected on COM5, enable MAVLink forwarding to TCP
 from __future__ import annotations
 
 import argparse
+import math
 import json
 import threading
 import time
@@ -943,6 +944,34 @@ def main() -> None:
                     nav_target_info = ""
                     has_red = any(d.label == "red_buoy" for d in last_detections)
                     has_green = any(d.label == "green_buoy" for d in last_detections)
+                    is_right_slalom_gate2_3 = (
+                        px is not None and py is not None and 0.0 <= py < 6.0 and px >= 5.0
+                    )
+                    is_turn_sector_3_to_4 = (
+                        px is not None
+                        and py is not None
+                        and current_hdg is not None
+                        and py >= 6.0
+                        and px >= 9.8
+                        and not 260.0 <= current_hdg <= 320.0
+                    )
+                    is_top_corridor = (
+                        px is not None and py is not None and py >= 7.0 and -6.0 < px < 9.5
+                    )
+                    is_turn_sector_7_to_8 = (
+                        px is not None
+                        and py is not None
+                        and current_hdg is not None
+                        and px <= -6.0
+                        and py >= 5.0
+                        and not 170.0 <= current_hdg <= 240.0
+                    )
+                    is_left_slalom_gate8_9 = (
+                        px is not None and py is not None and px <= -5.0 and 0.0 <= py < 5.0
+                    )
+                    is_left_slalom_gate9_10 = (
+                        px is not None and py is not None and px <= -5.0 and py < 0.0
+                    )
 
                     if is_turn_sector_3_to_4:
                         dt_hdg = now - last_hdg_now

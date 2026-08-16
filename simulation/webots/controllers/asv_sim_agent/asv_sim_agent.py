@@ -173,7 +173,13 @@ class RunLogger:
 
     def __init__(self, base_dir: Path | str = "D:/KKI2/KKI2026/simulation/logs") -> None:
         self.base_dir = Path(base_dir)
-        self.run_id = datetime.now(timezone.utc).strftime("run_%Y%m%d_%H%M%S")
+        self.base_dir.mkdir(parents=True, exist_ok=True)
+        self.test_number = 1 + sum(
+            1 for path in self.base_dir.glob("run_*") if path.is_dir()
+        )
+        self.started_at = datetime.now(timezone.utc)
+        self.started_at_local = self.started_at.astimezone()
+        self.run_id = self.started_at.strftime("run_%Y%m%d_%H%M%S")
         self.run_dir = self.base_dir / self.run_id
         self.run_dir.mkdir(parents=True, exist_ok=True)
 
@@ -182,8 +188,38 @@ class RunLogger:
         self.wall_collisions_file = open(self.run_dir / "wall_collisions.jsonl", "a", encoding="utf-8")
         self.scoring_file = self.run_dir / "gate_scoring.json"
         self.report_file = self.run_dir / "summary_report.md"
+        print(
+            f"[LOGGER] Test #{self.test_number} started at "
+            f"{self.started_at_local.strftime('%Y-%m-%d %H:%M:%S %Z')} | "
+            f"Session log directory: {self.run_dir}"
+        )
+
+    def start_new_run(self) -> None:
+        """Close the current files and begin a fresh log session."""
+        self.track_file.close()
+        self.buoy_collisions_file.close()
+        self.wall_collisions_file.close()
+        self.test_number += 1
         self.started_at = datetime.now(timezone.utc)
-        print(f"[LOGGER] Session log directory created: {self.run_dir}")
+        self.started_at_local = self.started_at.astimezone()
+        base_run_id = self.started_at.strftime("run_%Y%m%d_%H%M%S")
+        self.run_id = base_run_id
+        suffix = 2
+        while (self.base_dir / self.run_id).exists():
+            self.run_id = f"{base_run_id}_{suffix}"
+            suffix += 1
+        self.run_dir = self.base_dir / self.run_id
+        self.run_dir.mkdir(parents=True, exist_ok=False)
+        self.track_file = open(self.run_dir / "telemetry_track.jsonl", "a", encoding="utf-8")
+        self.buoy_collisions_file = open(self.run_dir / "buoy_collisions.jsonl", "a", encoding="utf-8")
+        self.wall_collisions_file = open(self.run_dir / "wall_collisions.jsonl", "a", encoding="utf-8")
+        self.scoring_file = self.run_dir / "gate_scoring.json"
+        self.report_file = self.run_dir / "summary_report.md"
+        print(
+            f"[LOGGER] Test #{self.test_number} started at "
+            f"{self.started_at_local.strftime('%Y-%m-%d %H:%M:%S %Z')} | "
+            f"Session log directory: {self.run_dir}"
+        )
 
     def log_point(
         self,
@@ -195,6 +231,8 @@ class RunLogger:
         thr_pwm: int,
     ) -> None:
         record = {
+            "test_number": self.test_number,
+            "test_started_at": self.started_at_local.isoformat(),
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "x": round(x, 4),
             "y": round(y, 4),
@@ -208,6 +246,8 @@ class RunLogger:
 
     def log_buoy_collision(self, buoy_name: str, x: float, y: float, dist: float) -> None:
         record = {
+            "test_number": self.test_number,
+            "test_started_at": self.started_at_local.isoformat(),
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "event": "BUOY_TOUCH_ERROR",
             "buoy_name": buoy_name,
@@ -220,6 +260,8 @@ class RunLogger:
 
     def log_wall_collision(self, wall_name: str, x: float, y: float, speed: float) -> None:
         record = {
+            "test_number": self.test_number,
+            "test_started_at": self.started_at_local.isoformat(),
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "event": "WALL_COLLISION_ERROR",
             "wall_name": wall_name,
@@ -230,8 +272,11 @@ class RunLogger:
         self.wall_collisions_file.write(json.dumps(record) + "\n")
         self.wall_collisions_file.flush()
     def save_gate_scoring(self, scoring_data: dict[str, object]) -> None:
+        payload = dict(scoring_data)
+        payload["test_number"] = self.test_number
+        payload["test_started_at"] = self.started_at_local.isoformat()
         with open(self.scoring_file, "w", encoding="utf-8") as f:
-            json.dump(scoring_data, f, indent=2)
+            json.dump(payload, f, indent=2)
 
     def write_summary_report(
         self,
@@ -253,8 +298,10 @@ class RunLogger:
         lines = [
             f"# Laporan Hasil Uji Simulasi ASV KKI 2026 - {self.run_id}",
             "",
-            f"- **Waktu Mulai**: {self.started_at.isoformat()}",
-            f"- **Waktu Update**: {now.isoformat()}",
+            f"- **No. Uji**: {self.test_number}",
+            f"- **Jam Mulai (lokal)**: {self.started_at_local.strftime('%Y-%m-%d %H:%M:%S %Z')}",
+            f"- **Waktu Mulai (UTC)**: {self.started_at.isoformat()}",
+            f"- **Waktu Update (UTC)**: {now.isoformat()}",
             f"- **Durasi Sesi**: {duration_s:.1f} detik",
             f"- **Posisi Akhir Kapal**: X = {final_x:.2f} m, Y = {final_y:.2f} m",
             f"- **Skor Validasi Gate**: **{passed} / {total} Gate ({score_pct}%)**",
@@ -337,6 +384,22 @@ class GateSensorTracker:
         self.wall_collisions: list[dict[str, object]] = []
         self.touched_buoys: set[str] = set()
         self.touched_walls: set[str] = set()
+
+    def reset(self) -> None:
+        with self.lock:
+            self.gate_results = {
+                g["id"]: {
+                    "name": g["name"],
+                    "status": "PENDING",
+                    "crossed_at": None,
+                    "crossing_coord": None,
+                }
+                for g in TRACK_GATES
+            }
+            self.buoy_collisions.clear()
+            self.wall_collisions.clear()
+            self.touched_buoys.clear()
+            self.touched_walls.clear()
 
     def check_buoy_touch(self, x: float, y: float) -> None:
         """Check if the boat touches or violates the safety zone of any buoy."""
@@ -481,8 +544,6 @@ class GateSensorTracker:
                 "wall_collisions": list(self.wall_collisions),
             }
 
-gate_tracker = GateSensorTracker()
-
 
 class SharedSimState:
     def __init__(self) -> None:
@@ -491,6 +552,7 @@ class SharedSimState:
         self.steering_pwm: int = NEUTRAL_PWM
         self.throttle_pwm: int = NEUTRAL_PWM
         self.last_command_at: float = time.monotonic()
+        self.reset_requested: bool = False
         self.x: float = 10.0
         self.y: float = -11.5
         self.heading_deg: float = 360.0
@@ -601,6 +663,19 @@ class CameraStreamHandler(BaseHTTPRequestHandler):
     def log_message(self, format: str, *args: object) -> None:
         pass
 
+    def do_POST(self) -> None:
+        if self.path != "/reset":
+            self.send_error(404, "Not Found")
+            return
+        with state.lock:
+            state.reset_requested = True
+        payload = b'{"status":"reset_requested"}'
+        self.send_response(202)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(payload)))
+        self.end_headers()
+        self.wfile.write(payload)
+
     def do_GET(self) -> None:
         if self.path in ("/frame.jpg", "/camera/surface"):
             with state.lock:
@@ -646,7 +721,7 @@ class CameraStreamHandler(BaseHTTPRequestHandler):
                     "y": state.y,
                     "heading_deg": state.heading_deg,
                     "speed_mps": state.speed_mps,
-                    "gate_tracking": gate_tracker.snapshot(),
+                    "gate_tracking": self.gate_tracker.snapshot(),
                 }
             payload_bytes = json.dumps(status_payload).encode()
             self.send_response(200)
@@ -657,7 +732,7 @@ class CameraStreamHandler(BaseHTTPRequestHandler):
             return
 
         if self.path in ("/gates", "/scoring", "/collisions"):
-            payload_bytes = json.dumps(gate_tracker.snapshot(), indent=2).encode()
+            payload_bytes = json.dumps(self.gate_tracker.snapshot(), indent=2).encode()
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
             self.send_header("Content-Length", str(len(payload_bytes)))
@@ -668,8 +743,16 @@ class CameraStreamHandler(BaseHTTPRequestHandler):
         self.send_error(404, "Not Found")
 
 
-def start_http_stream_server(port: int = 8889) -> ThreadingHTTPServer:
-    server = ThreadingHTTPServer(("0.0.0.0", port), CameraStreamHandler)
+def start_http_stream_server(
+    port: int = 8889,
+    gate_tracker: GateSensorTracker | None = None,
+) -> ThreadingHTTPServer:
+    class BoundCameraStreamHandler(CameraStreamHandler):
+        def __init__(self, request, client_address, server):
+            self.gate_tracker = gate_tracker
+            super().__init__(request, client_address, server)
+
+    server = ThreadingHTTPServer(("0.0.0.0", port), BoundCameraStreamHandler)
     thread = threading.Thread(target=server.serve_forever, daemon=True, name="webots-http-stream")
     thread.start()
     return server
@@ -715,7 +798,10 @@ def start_udp_actuator_receiver(port: int = 9090) -> None:
     thread.start()
 
 
-def start_mavlink_bridge_server(port: int = 14550) -> None:
+def start_mavlink_bridge_server(
+    port: int = 14550,
+    gate_tracker: GateSensorTracker | None = None,
+) -> None:
     try:
         from pymavlink import mavutil
     except ImportError:
@@ -742,6 +828,11 @@ def start_mavlink_bridge_server(port: int = 14550) -> None:
                 spd = state.speed_mps
                 steer_pwm = state.steering_pwm
                 thr_pwm = state.throttle_pwm
+            gate_count = (
+                int(gate_tracker.snapshot()["passed_valid"])
+                if gate_tracker is not None
+                else 0
+            )
 
             # 1 Hz HEARTBEAT
             if now - last_hb >= 1.0:
@@ -776,6 +867,11 @@ def start_mavlink_bridge_server(port: int = 14550) -> None:
                     50,
                     0.0,
                     0.0,
+                )
+                mav.mav.named_value_int_send(
+                    int(now * 1000) & 0xFFFFFFFF,
+                    b"gate_count",
+                    gate_count,
                 )
                 mav.mav.rc_channels_raw_send(
                     int(now * 1000) & 0xFFFFFFFF,
@@ -833,6 +929,7 @@ def main() -> None:
     if compass is not None:
         compass.enable(time_step)
 
+    gate_tracker = GateSensorTracker()
     agent = None
     if ControllerAgent is not None:
         try:
@@ -840,11 +937,16 @@ def main() -> None:
         except Exception:
             agent = None
 
-    start_http_stream_server(8889)
+    start_http_stream_server(8889, gate_tracker)
     start_udp_actuator_receiver(9090)
-    start_mavlink_bridge_server(14550)
+    start_mavlink_bridge_server(14550, gate_tracker)
 
     print("==================================================")
+    print(f" - Test No   : {run_logger.test_number}")
+    print(
+        " - Start Time : "
+        f"{run_logger.started_at_local.strftime('%Y-%m-%d %H:%M:%S %Z')}"
+    )
     print(" ASV Gate Sensor, Collision & Logging Supervisor Active")
     print(f" - Run Folder  : {run_logger.run_dir}")
     print(" - Stream URL  : http://127.0.0.1:8889/stream.mjpg")
@@ -877,6 +979,36 @@ def main() -> None:
         now = time.monotonic()
         dt = min(0.05, max(0.005, now - last_loop_time))
         last_loop_time = now
+
+        with state.lock:
+            reset_requested = state.reset_requested
+            state.reset_requested = False
+        if reset_requested:
+            if trans_field is not None:
+                trans_field.setSFVec3f([10.0, -11.5, WATER_PLANE_Z])
+            if rot_field is not None:
+                rot_field.setSFRotation([0.0, 0.0, 1.0, math.pi / 2.0])
+            if rudder_motor is not None:
+                rudder_motor.setPosition(0.0)
+            if thruster_motor is not None:
+                thruster_motor.setVelocity(0.0)
+            run_logger.start_new_run()
+            gate_tracker.reset()
+            pos_x = 10.0
+            pos_y = -11.5
+            yaw_rad = math.pi / 2.0
+            current_speed = 0.0
+            prev_x = pos_x
+            prev_y = pos_y
+            with state.lock:
+                state.steering_pwm = NEUTRAL_PWM
+                state.throttle_pwm = NEUTRAL_PWM
+                state.x = pos_x
+                state.y = pos_y
+                state.heading_deg = 0.0
+                state.speed_mps = 0.0
+                state.last_command_at = now
+            continue
 
         if agent is not None:
             agent.begin_step()
