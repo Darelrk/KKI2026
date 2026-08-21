@@ -1,0 +1,145 @@
+{
+  "run_id": "run_20260818_095938",
+  "log_dir": "E:\\KKI2026\\simulation\\logs\\run_20260818_095938",
+  "arena": "A",
+  "total_gates": 10,
+  "passed_valid": 6,
+  "missed": 1,
+  "progress_count": 7,
+  "total_markers": 2,
+  "markers_passed_valid": 0,
+  "markers_missed": 0,
+  "marker_progress_count": 0,
+  "buoy_touches": 2,
+  "wall_touches": 0,
+  "score_percent": 60.0,
+  "docked": false,
+  "docked_at": null,
+  "dock_target": [
+    11.5,
+    -13.0
+  ],
+  "dock_entry": [
+    11.5,
+    -10.45
+  ],
+  "dock_heading_deg": 180.0,
+  "dock_stable_s": 0.0,
+  "dock_position": null,
+  "gates": {
+    "gate_1": {
+      "name": "Arena A - Gate 1 (Slalom Kanan 1)",
+      "status": "PASSED_VALID",
+      "crossed_at": 240765.1121925,
+      "crossing_coord": [
+        11.18,
+        -6.0
+      ]
+    },
+    "gate_2": {
+      "name": "Arena A - Gate 2 (Slalom Kanan 2)",
+      "status": "PASSED_VALID",
+      "crossed_at": 240783.2914946,
+      "crossing_coord": [
+        9.17,
+        0.0
+      ]
+    },
+    "gate_3": {
+      "name": "Arena A - Gate 3 (Slalom Kanan 3)",
+      "status": "PASSED_VALID",
+      "crossed_at": 240806.1399023,
+      "crossing_coord": [
+        11.51,
+        6.0
+      ]
+    },
+    "gate_4": {
+      "name": "Arena A - Gate 4 (Koridor Atas 1)",
+      "status": "PASSED_VALID",
+      "crossed_at": 240834.9556108,
+      "crossing_coord": [
+        6.0,
+        10.55
+      ]
+    },
+    "gate_5": {
+      "name": "Arena A - Gate 5 (Koridor Atas 2)",
+      "status": "PASSED_VALID",
+      "crossed_at": 240846.1468434,
+      "crossing_coord": [
+        2.0,
+        10.49
+      ]
+    },
+    "gate_6": {
+      "name": "Arena A - Gate 6 (Koridor Atas 3)",
+      "status": "PASSED_VALID",
+      "crossed_at": 240864.3986508,
+      "crossing_coord": [
+        -2.0,
+        9.52
+      ]
+    },
+    "gate_7": {
+      "name": "Arena A - Gate 7 (Koridor Atas 4)",
+      "status": "MISSED_OUTSIDE",
+      "crossed_at": 240884.4261572,
+      "crossing_coord": [
+        -6.0,
+        11.64
+      ]
+    },
+    "gate_8": {
+      "name": "Arena A - Gate 8 (Slalom Kiri 1)",
+      "status": "PENDING",
+      "crossed_at": null,
+      "crossing_coord": null
+    },
+    "gate_9": {
+      "name": "Arena A - Gate 9 (Slalom Kiri 2)",
+      "status": "PENDING",
+      "crossed_at": null,
+      "crossing_coord": null
+    },
+    "gate_10": {
+      "name": "Arena A - Gate 10 (Slalom Kiri 3)",
+      "status": "PENDING",
+      "crossed_at": null,
+      "crossing_coord": null
+    }
+  },
+  "markers": {
+    "marker_biru": {
+      "name": "Arena A - Marker Biru (Bottom Checkpoint 1)",
+      "status": "PENDING",
+      "crossed_at": null,
+      "crossing_coord": null
+    },
+    "marker_hijau": {
+      "name": "Arena A - Marker Hijau (Bottom Checkpoint 2)",
+      "status": "PENDING",
+      "crossed_at": null,
+      "crossing_coord": null
+    }
+  },
+  "buoy_collisions": [
+    {
+      "timestamp": "2026-08-18T10:01:14.536595+00:00",
+      "buoy_name": "gate_5_green",
+      "boat_x": 2.3,
+      "boat_y": 10.74,
+      "distance_m": 0.398
+    },
+    {
+      "timestamp": "2026-08-18T10:01:32.573392+00:00",
+      "buoy_name": "gate_6_red",
+      "boat_x": -1.67,
+      "boat_y": 9.22,
+      "distance_m": 0.399
+    }
+  ],
+  "wall_collisions": [],
+  "test_number": 282,
+  "test_started_at": "2026-08-18T16:59:38.294902+07:00"
+}

@@ -1,0 +1,840 @@
+========================================================
+  ASV Webots Arena A & Vision Navigation Runner
+========================================================
+
+[1/3] Menjalankan Sim Pixhawk Bridge di latar belakang...
+
+[2/3] Menunggu 2 detik untuk inisialisasi socket...
+
+[3/3] Menjalankan Navigasi Vision YOLO (Webots Stream)...
+Memuat model: model\best.pt
+Pixhawk terhubung: endpoint=tcp:127.0.0.1:5762 (115200 baud), system=1, component=0, mode=MANUAL
+Tekan Q atau ESC untuk berhenti.
+Throttle dinamis: near=1540 cruise=1560 far=1600 hold=0.80s ramp=200 PWM/s
+[VISION_GATE_MIDPOINT] Pos=(11.1, -10.3) Hdg=359° | Garis Tengah Gate Merah-Hijau [Target: 303.3px] | S=1496 T=1560 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.1, -10.3) Hdg=359° | Gate 1/10 hdg 357.4° err -1.6° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.71m cv=-9PWM | S=1456 T=1591 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.1, -10.3) Hdg=359° | Gate 1/10 hdg 357.4° err -1.6° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.76m cv=-9PWM | S=1456 T=1587 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.1, -10.3) Hdg=359° | Gate 1/10 hdg 357.3° err -1.7° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.75m cv=-9PWM | S=1454 T=1583 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.1, -10.2) Hdg=359° | Gate 1/10 hdg 357.2° err -1.8° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.70m cv=-9PWM | S=1448 T=1579 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.1, -10.2) Hdg=359° | Gate 1/10 hdg 357.1° err -1.9° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.75m cv=-9PWM | S=1446 T=1576 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.1, -10.1) Hdg=359° | Gate 1/10 hdg 357.0° err -2.0° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.73m cv=-9PWM | S=1443 T=1574 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.1, -10.1) Hdg=359° | Gate 1/10 hdg 356.9° err -2.1° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.69m cv=-9PWM | S=1445 T=1572 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.1, -10.1) Hdg=359° | Gate 1/10 hdg 356.5° err -2.5° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.69m cv=-10PWM | S=1434 T=1571 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.1, -10.0) Hdg=359° | Gate 1/10 hdg 356.3° err -2.7° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.72m cv=-10PWM | S=1421 T=1569 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.1, -10.0) Hdg=359° | Gate 1/10 hdg 356.1° err -2.9° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.72m cv=-10PWM | S=1427 T=1568 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.2, -9.9) Hdg=359° | Gate 1/10 hdg 355.8° err -3.2° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.68m cv=-10PWM | S=1418 T=1567 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.2, -9.9) Hdg=359° | Gate 1/10 hdg 355.5° err -3.5° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.72m cv=-11PWM | S=1412 T=1566 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.2, -9.8) Hdg=359° | Gate 1/10 hdg 355.2° err -3.8° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.69m cv=-11PWM | S=1405 T=1565 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.2, -9.8) Hdg=359° | Gate 1/10 hdg 355.0° err -4.0° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.72m cv=-11PWM | S=1400 T=1552 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.2, -9.7) Hdg=359° | Gate 1/10 hdg 354.6° err -4.4° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.64m cv=-11PWM | S=1391 T=1552 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.2, -9.6) Hdg=359° | Gate 1/10 hdg 354.3° err -4.7° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.68m cv=-12PWM | S=1373 T=1552 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.2, -9.6) Hdg=359° | Gate 1/10 hdg 353.8° err -5.2° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.66m cv=-11PWM | S=1364 T=1552 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.2, -9.5) Hdg=359° | Gate 1/10 hdg 353.7° err -5.3° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.64m cv=-12PWM | S=1370 T=1552 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.2, -9.4) Hdg=359° | Gate 1/10 hdg 353.2° err -5.8° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.65m cv=-12PWM | S=1359 T=1552 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.2, -9.4) Hdg=359° | Gate 1/10 hdg 353.0° err -6.0° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.64m cv=-12PWM | S=1354 T=1552 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.2, -9.3) Hdg=359° | Gate 1/10 hdg 352.6° err -6.4° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.62m cv=-12PWM | S=1345 T=1552 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.2, -9.3) Hdg=359° | Gate 1/10 hdg 352.1° err -6.9° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.60m cv=-12PWM | S=1309 T=1552 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.2, -9.2) Hdg=359° | Gate 1/10 hdg 352.0° err -7.0° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.64m cv=-12PWM | S=1332 T=1552 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.2, -9.2) Hdg=359° | Gate 1/10 hdg 351.5° err -7.5° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.61m cv=-13PWM | S=1320 T=1552 | det=red_buoy,green_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.2, -9.1) Hdg=358° | Gate 1/10 hdg 351.2° err -6.8° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.60m cv=-12PWM | S=1336 T=1552 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.2, -9.1) Hdg=358° | Gate 1/10 hdg 350.8° err -7.2° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.61m cv=-12PWM | S=1321 T=1552 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.2, -9.0) Hdg=358° | Gate 1/10 hdg 350.5° err -7.5° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.64m cv=-13PWM | S=1321 T=1552 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.3, -8.9) Hdg=358° | Gate 1/10 hdg 350.1° err -7.9° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.60m cv=-12PWM | S=1312 T=1553 | det=red_buoy,green_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.3, -8.9) Hdg=358° | Gate 1/10 hdg 349.8° err -8.2° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.63m cv=-12PWM | S=1306 T=1553 | det=red_buoy,green_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.3, -8.8) Hdg=357° | Gate 1/10 hdg 349.5° err -7.5° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.58m cv=-12PWM | S=1415 T=1553 | det=red_buoy,green_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.3, -8.8) Hdg=357° | Gate 1/10 hdg 348.9° err -8.1° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.57m cv=-12PWM | S=1303 T=1553 | det=red_buoy,green_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.3, -8.7) Hdg=357° | Gate 1/10 hdg 348.7° err -8.3° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.59m cv=-11PWM | S=1299 T=1553 | det=red_buoy,green_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.3, -8.6) Hdg=357° | Gate 1/10 hdg 348.2° err -8.8° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.57m cv=-11PWM | S=1276 T=1553 | det=red_buoy,green_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.3, -8.6) Hdg=356° | Gate 1/10 hdg 348.0° err -8.0° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.54m cv=-11PWM | S=1410 T=1553 | det=red_buoy,green_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.3, -8.5) Hdg=356° | Gate 1/10 hdg 347.6° err -8.4° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.52m cv=-10PWM | S=1304 T=1553 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.3, -8.5) Hdg=356° | Gate 1/10 hdg 347.3° err -8.7° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.53m cv=-10PWM | S=1297 T=1553 | det=red_buoy,green_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.3, -8.4) Hdg=356° | Gate 1/10 hdg 346.9° err -9.1° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.57m cv=-9PWM | S=1289 T=1554 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.3, -8.4) Hdg=355° | Gate 1/10 hdg 346.6° err -8.4° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.58m cv=-8PWM | S=1301 T=1553 | det=red_buoy,green_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.3, -8.3) Hdg=355° | Gate 1/10 hdg 346.2° err -8.8° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.57m cv=-7PWM | S=1287 T=1553 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.3, -8.3) Hdg=355° | Gate 1/10 hdg 346.1° err -8.9° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.58m cv=-6PWM | S=1295 T=1553 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.3, -8.2) Hdg=354° | Gate 1/10 hdg 345.8° err -8.2° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.51m cv=-5PWM | S=1312 T=1553 | det=green_buoy,red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.3, -8.1) Hdg=354° | Gate 1/10 hdg 345.3° err -8.7° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.54m cv=-4PWM | S=1304 T=1553 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.3, -8.1) Hdg=354° | Gate 1/10 hdg 345.2° err -8.8° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.56m cv=-4PWM | S=1300 T=1553 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.3, -8.0) Hdg=353° | Gate 1/10 hdg 344.9° err -8.1° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.55m cv=-3PWM | S=1307 T=1553 | det=green_buoy,red_buoy,green_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.3, -8.0) Hdg=353° | Gate 1/10 hdg 344.7° err -8.3° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.58m cv=-3PWM | S=1302 T=1553 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.3, -7.9) Hdg=352° | Gate 1/10 hdg 344.4° err -7.6° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.54m | S=1321 T=1553 | det=green_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.3, -7.9) Hdg=352° | Gate 1/10 hdg 344.2° err -7.8° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.53m | S=1326 T=1553 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.3, -7.8) Hdg=352° | Gate 1/10 hdg 343.9° err -8.1° v=0.72m/s target=(11.0,-6.0) ultrasonic=2.57m | S=1320 T=1553 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.3, -7.7) Hdg=351° | Gate 1/10 hdg 343.6° err -7.4° v=0.72m/s target=(11.0,-6.0) ultrasonic=2.53m | S=1327 T=1553 | det=green_buoy,red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.3, -7.7) Hdg=351° | Gate 1/10 hdg 343.4° err -7.6° v=0.72m/s target=(11.0,-6.0) ultrasonic=2.45m cv=-13PWM | S=1305 T=1553 | det=green_buoy,red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.3, -7.6) Hdg=350° | Gate 1/10 hdg 343.3° err -6.7° v=0.72m/s target=(11.0,-6.0) ultrasonic=2.46m cv=-14PWM | S=1336 T=1553 | det=green_buoy,red_buoy,red_buoy,green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.3, -7.6) Hdg=350° | Gate 1/10 hdg 343.0° err -7.0° v=0.72m/s target=(11.0,-6.0) ultrasonic=2.67m cv=-14PWM | S=1331 T=1553 | det=red_buoy,green_buoy,red_buoy,green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.3, -7.5) Hdg=349° | Gate 1/10 hdg 342.9° err -6.1° v=0.72m/s target=(11.0,-6.0) ultrasonic=2.63m cv=-14PWM | S=1450 T=1553 | det=red_buoy,green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.3, -7.5) Hdg=349° | Gate 1/10 hdg 342.8° err -6.2° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.59m cv=-13PWM | S=1349 T=1553 | det=red_buoy,green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.3, -7.4) Hdg=349° | Gate 1/10 hdg 342.6° err -6.4° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.62m cv=-12PWM | S=1335 T=1553 | det=red_buoy,green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.3, -7.4) Hdg=348° | Gate 1/10 hdg 342.5° err -5.5° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.62m cv=-12PWM | S=1365 T=1553 | det=red_buoy,red_buoy,green_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.3, -7.3) Hdg=348° | Gate 1/10 hdg 342.4° err -5.6° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.62m cv=-11PWM | S=1366 T=1553 | det=red_buoy,green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.3, -7.3) Hdg=347° | Gate 1/10 hdg 342.2° err -4.8° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.65m cv=-10PWM | S=1483 T=1553 | det=red_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.3, -7.2) Hdg=347° | Gate 1/10 hdg 342.1° err -4.9° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.58m cv=-9PWM | S=1382 T=1553 | det=green_buoy,red_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.3, -7.2) Hdg=347° | Gate 1/10 hdg 342.1° err -4.9° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.56m cv=-9PWM | S=1382 T=1553 | det=red_buoy,green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.3, -7.1) Hdg=346° | Gate 1/10 hdg 341.9° err -4.1° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.66m cv=-8PWM | S=1502 T=1553 | det=red_buoy,green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.3, -7.1) Hdg=346° | Gate 1/10 hdg 341.9° err -4.1° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.65m cv=-8PWM | S=1400 T=1553 | det=red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.3, -7.0) Hdg=346° | Gate 1/10 hdg 341.8° err -4.2° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.64m cv=-7PWM | S=1399 T=1553 | det=red_buoy,green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.3, -6.9) Hdg=345° | Gate 1/10 hdg 341.7° err -3.3° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.65m cv=-7PWM | S=1415 T=1565 | det=red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.3, -6.9) Hdg=345° | Gate 1/10 hdg 341.6° err -3.4° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.72m cv=-6PWM | S=1421 T=1565 | det=red_buoy,green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.3, -6.8) Hdg=344° | Gate 1/10 hdg 341.6° err -2.4° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.75m cv=-6PWM | S=1440 T=1564 | det=red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.3, -6.8) Hdg=344° | Gate 1/10 hdg 341.6° err -2.4° v=0.82m/s target=(11.0,-6.0) ultrasonic=3.75m cv=-5PWM | S=1440 T=1557 | det=green_buoy,red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.3, -6.7) Hdg=344° | Gate 1/10 hdg 341.5° err -2.5° v=0.79m/s target=(11.0,-6.0) ultrasonic=3.70m cv=-5PWM | S=1440 T=1554 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.2, -6.7) Hdg=343° | Gate 1/10 hdg 341.5° err -1.5° v=0.74m/s target=(11.0,-6.0) ultrasonic=3.77m cv=-4PWM | S=1462 T=1552 | det=red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.2, -6.6) Hdg=343° | Gate 1/10 hdg 341.5° err -1.5° v=0.70m/s target=(11.0,-6.0) ultrasonic=3.79m cv=-4PWM | S=1461 T=1550 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.2, -6.5) Hdg=342° | Gate 1/10 hdg 341.4° err -0.6° v=0.66m/s target=(11.0,-6.0) ultrasonic=3.76m | S=1484 T=1548 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.2, -6.5) Hdg=342° | Gate 1/10 hdg 341.4° err -0.6° v=0.63m/s target=(11.0,-6.0) ultrasonic=2.75m cv=-3PWM | S=1484 T=1547 | det=red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.2, -6.4) Hdg=342° | Gate 1/10 hdg 341.5° err -0.5° v=0.59m/s target=(11.0,-6.0) ultrasonic=2.76m cv=-2PWM | S=1487 T=1545 | det=red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.2, -6.4) Hdg=341° | Gate 1/10 hdg 341.4° err +0.4° v=0.55m/s target=(11.0,-6.0) ultrasonic=1.69m cv=-2PWM | S=1509 T=1543 | det=red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.2, -6.3) Hdg=341° | Gate 1/10 hdg 341.5° err +0.5° v=0.51m/s target=(11.0,-6.0) ultrasonic=1.68m cv=+0PWM | S=1510 T=1541 | det=red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.2, -6.3) Hdg=340° | Gate 1/10 hdg 341.5° err +1.5° v=0.49m/s target=(11.0,-6.0) ultrasonic=1.68m cv=+0PWM | S=1533 T=1540 | det=red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.1, -6.2) Hdg=340° | Gate 1/10 hdg 341.5° err +1.5° v=0.44m/s target=(11.0,-6.0) ultrasonic=1.71m cv=+0PWM | S=1533 T=1500 | det=red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.1, -6.1) Hdg=340° | Gate 1/10 hdg 341.5° err +1.5° v=0.42m/s target=(11.0,-6.0) ultrasonic=2.89m cv=+0PWM | S=1534 T=1538 | det=red_buoy,green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.1, -6.1) Hdg=339° | Gate 1/10 hdg 341.5° err +2.5° v=0.42m/s target=(11.0,-6.0) ultrasonic=2.93m cv=+0PWM | S=1556 T=1538 | det=red_buoy,green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.1, -6.0) Hdg=339° | Gate 1/10 hdg 341.6° err +2.6° v=0.42m/s target=(11.0,-6.0) ultrasonic=4.10m cv=+2PWM | S=1559 T=1539 | det=red_buoy,green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.1, -6.0) Hdg=339° | Gate 2/10 hdg 340.9° err +1.9° v=0.55m/s target=(9.0,0.0) ultrasonic=4.11m cv=+8PWM | S=1549 T=1548 | det=green_buoy,red_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.0, -5.9) Hdg=338° | Gate 2/10 hdg 341.0° err +3.0° v=0.55m/s target=(9.0,0.0) ultrasonic=4.08m cv=+10PWM | S=1574 T=1548 | det=green_buoy,red_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.0, -5.9) Hdg=338° | Gate 2/10 hdg 340.9° err +2.9° v=0.55m/s target=(9.0,0.0) ultrasonic=4.08m cv=+12PWM | S=1577 T=1548 | det=green_buoy,red_buoy,red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.0, -5.8) Hdg=338° | Gate 2/10 hdg 340.9° err +2.9° v=0.55m/s target=(9.0,0.0) ultrasonic=3.57m cv=+14PWM | S=1579 T=1548 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.0, -5.8) Hdg=337° | Gate 2/10 hdg 341.0° err +4.0° v=0.55m/s target=(9.0,0.0) ultrasonic=3.57m cv=+16PWM | S=1707 T=1547 | det=green_buoy,red_buoy,red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.0, -5.8) Hdg=337° | Gate 2/10 hdg 340.9° err +3.9° v=0.55m/s target=(9.0,0.0) ultrasonic=3.56m cv=+18PWM | S=1605 T=1547 | det=green_buoy,red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.0, -5.7) Hdg=337° | Gate 2/10 hdg 341.0° err +4.0° v=0.55m/s target=(9.0,0.0) ultrasonic=2.15m cv=+20PWM | S=1609 T=1547 | det=green_buoy,red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.9, -5.7) Hdg=337° | Gate 2/10 hdg 341.0° err +4.0° v=0.55m/s target=(9.0,0.0) ultrasonic=2.11m cv=+22PWM | S=1611 T=1547 | det=green_buoy,red_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.9, -5.6) Hdg=336° | Gate 2/10 hdg 341.2° err +5.2° v=0.55m/s target=(9.0,0.0) ultrasonic=2.12m cv=+24PWM | S=1640 T=1547 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.9, -5.6) Hdg=336° | Gate 2/10 hdg 341.3° err +5.3° v=0.55m/s target=(9.0,0.0) ultrasonic=2.12m cv=+25PWM | S=1643 T=1547 | det=green_buoy,red_buoy,green_buoy,red_buoy,green_marker
+[COURSE_APPROACH] Pos=(10.9, -5.5) Hdg=336° | Gate 2/10 hdg 341.3° err +5.3° v=0.55m/s target=(9.0,0.0) ultrasonic=2.12m cv=+27PWM | S=1645 T=1547 | det=green_buoy,red_buoy,red_buoy,green_buoy,green_marker
+[COURSE_APPROACH] Pos=(10.8, -5.5) Hdg=336° | Gate 2/10 hdg 341.5° err +5.5° v=0.55m/s target=(9.0,0.0) ultrasonic=3.56m cv=+29PWM | S=1652 T=1547 | det=red_buoy,green_buoy,red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.8, -5.4) Hdg=335° | Gate 2/10 hdg 341.8° err +6.8° v=0.55m/s target=(9.0,0.0) ultrasonic=3.56m cv=+70PWM | S=1847 T=1547 | det=red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.8, -5.4) Hdg=335° | Gate 2/10 hdg 342.1° err +7.1° v=0.55m/s target=(9.0,0.0) ultrasonic=3.62m | S=1678 T=1547 | det=red_buoy,green_buoy,green_buoy
+[COURSE_APPROACH] Pos=(10.8, -5.3) Hdg=335° | Gate 2/10 hdg 342.1° err +7.1° v=0.55m/s target=(9.0,0.0) ultrasonic=4.54m cv=+58PWM | S=1717 T=1547 | det=red_buoy,green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.7, -5.3) Hdg=335° | Gate 2/10 hdg 342.4° err +7.4° v=0.55m/s target=(9.0,0.0) ultrasonic=4.62m cv=+51PWM | S=1728 T=1547 | det=red_buoy,green_buoy,red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.7, -5.2) Hdg=335° | Gate 2/10 hdg 342.8° err +7.8° v=0.55m/s target=(9.0,0.0) ultrasonic=4.57m cv=+48PWM | S=1733 T=1547 | det=red_buoy,green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.7, -5.2) Hdg=334° | Gate 2/10 hdg 343.0° err +9.0° v=0.55m/s target=(9.0,0.0) ultrasonic=4.61m cv=+45PWM | S=1758 T=1547 | det=red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.6, -5.2) Hdg=334° | Gate 2/10 hdg 343.4° err +9.4° v=0.55m/s target=(9.0,0.0) ultrasonic=4.66m cv=+45PWM | S=1753 T=1547 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.6, -5.1) Hdg=334° | Gate 2/10 hdg 343.6° err +9.6° v=0.55m/s target=(9.0,0.0) ultrasonic=4.68m cv=+45PWM | S=1773 T=1547 | det=green_buoy,red_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.6, -5.1) Hdg=334° | Gate 2/10 hdg 344.0° err +10.0° v=0.55m/s target=(9.0,0.0) ultrasonic=4.75m cv=+45PWM | S=1782 T=1548 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(10.6, -5.0) Hdg=334° | Gate 2/10 hdg 344.3° err +10.3° v=0.55m/s target=(9.0,0.0) ultrasonic=4.81m cv=+46PWM | S=1775 T=1548 | det=red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.5, -5.0) Hdg=334° | Gate 2/10 hdg 344.6° err +10.6° v=0.55m/s target=(9.0,0.0) ultrasonic=4.82m cv=+47PWM | S=1783 T=1548 | det=red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.5, -5.0) Hdg=334° | Gate 2/10 hdg 345.0° err +11.0° v=0.55m/s target=(9.0,0.0) ultrasonic=4.76m cv=+47PWM | S=1792 T=1548 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.5, -4.9) Hdg=334° | Gate 2/10 hdg 345.5° err +11.5° v=0.55m/s target=(9.0,0.0) ultrasonic=4.85m cv=+49PWM | S=1804 T=1548 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.4, -4.9) Hdg=334° | Gate 2/10 hdg 346.0° err +12.0° v=0.55m/s target=(9.0,0.0) ultrasonic=4.95m cv=+50PWM | S=1831 T=1549 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.4, -4.8) Hdg=334° | Gate 2/10 hdg 346.3° err +12.3° v=0.55m/s target=(9.0,0.0) ultrasonic=4.87m cv=+50PWM | S=1823 T=1549 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.4, -4.8) Hdg=334° | Gate 2/10 hdg 346.9° err +12.9° v=0.55m/s target=(9.0,0.0) ultrasonic=4.86m cv=+51PWM | S=1838 T=1549 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.4, -4.7) Hdg=334° | Gate 2/10 hdg 347.3° err +13.3° v=0.55m/s target=(9.0,0.0) ultrasonic=4.91m cv=+52PWM | S=1847 T=1549 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.3, -4.7) Hdg=334° | Gate 2/10 hdg 347.8° err +13.8° v=0.55m/s target=(9.0,0.0) ultrasonic=4.79m cv=+52PWM | S=1875 T=1549 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(10.3, -4.7) Hdg=334° | Gate 2/10 hdg 348.3° err +14.3° v=0.55m/s target=(9.0,0.0) ultrasonic=4.84m cv=+52PWM | S=1891 T=1550 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.3, -4.6) Hdg=334° | Gate 2/10 hdg 348.7° err +14.7° v=0.55m/s target=(9.0,0.0) ultrasonic=4.95m cv=+53PWM | S=1900 T=1550 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.2, -4.6) Hdg=334° | Gate 2/10 hdg 349.2° err +15.2° v=0.55m/s target=(9.0,0.0) ultrasonic=4.86m cv=+53PWM | S=1900 T=1550 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.2, -4.5) Hdg=335° | Gate 2/10 hdg 349.7° err +14.7° v=0.55m/s target=(9.0,0.0) ultrasonic=4.76m cv=+53PWM | S=1793 T=1550 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.2, -4.5) Hdg=335° | Gate 2/10 hdg 350.2° err +15.2° v=0.55m/s target=(9.0,0.0) ultrasonic=4.83m cv=+54PWM | S=1892 T=1551 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.1, -4.5) Hdg=335° | Gate 2/10 hdg 350.7° err +15.7° v=0.55m/s target=(9.0,0.0) ultrasonic=4.85m cv=+53PWM | S=1900 T=1551 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.1, -4.4) Hdg=335° | Gate 2/10 hdg 351.1° err +16.1° v=0.55m/s target=(9.0,0.0) ultrasonic=4.82m cv=+53PWM | S=1900 T=1551 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.1, -4.4) Hdg=336° | Gate 2/10 hdg 351.6° err +15.6° v=0.55m/s target=(9.0,0.0) ultrasonic=4.77m cv=+52PWM | S=1813 T=1551 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.1, -4.4) Hdg=336° | Gate 2/10 hdg 352.0° err +16.0° v=0.55m/s target=(9.0,0.0) ultrasonic=4.96m cv=+52PWM | S=1900 T=1551 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.0, -4.3) Hdg=336° | Gate 2/10 hdg 352.6° err +16.6° v=0.55m/s target=(9.0,0.0) ultrasonic=4.91m cv=+51PWM | S=1900 T=1551 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.0, -4.3) Hdg=337° | Gate 2/10 hdg 353.1° err +16.1° v=0.55m/s target=(9.0,0.0) ultrasonic=4.90m cv=+51PWM | S=1807 T=1552 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.0, -4.3) Hdg=337° | Gate 2/10 hdg 353.6° err +16.6° v=0.55m/s target=(9.0,0.0) ultrasonic=4.91m cv=+50PWM | S=1900 T=1552 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.0, -4.2) Hdg=337° | Gate 2/10 hdg 354.0° err +17.0° v=0.55m/s target=(9.0,0.0) ultrasonic=4.92m cv=+49PWM | S=1900 T=1552 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.1, -11.5) Hdg=359° | Gate 1/10 hdg 359.1° err +0.1° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.74m cv=+67PWM | S=1675 T=1594 | det=red_buoy,green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.1, -11.5) Hdg=359° | Gate 1/10 hdg 359.1° err +0.1° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.77m cv=+42PWM | S=1544 T=1591 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.1, -11.5) Hdg=359° | Gate 1/10 hdg 359.2° err +0.2° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.75m cv=+25PWM | S=1529 T=1588 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.1, -11.5) Hdg=359° | Gate 1/10 hdg 359.2° err +0.2° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.80m cv=+14PWM | S=1518 T=1584 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.1, -11.5) Hdg=359° | Gate 1/10 hdg 359.3° err +0.3° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.85m cv=+8PWM | S=1515 T=1584 | det=red_buoy,green_buoy,green_buoy,green_marker
+[COURSE_APPROACH] Pos=(11.0, -11.4) Hdg=359° | Gate 1/10 hdg 359.5° err +0.5° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.83m cv=+0PWM | S=1512 T=1580 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.0, -11.4) Hdg=359° | Gate 1/10 hdg 359.5° err +0.5° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.82m cv=+0PWM | S=1512 T=1578 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.0, -11.4) Hdg=0° | Gate 1/10 hdg 359.5° err -0.5° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.83m cv=+0PWM | S=1489 T=1575 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.0, -11.3) Hdg=0° | Gate 1/10 hdg 359.5° err -0.5° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.80m cv=+0PWM | S=1489 T=1573 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.0, -11.3) Hdg=0° | Gate 1/10 hdg 359.6° err -0.4° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.76m cv=+0PWM | S=1504 T=1571 | det=green_buoy,red_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.0, -11.2) Hdg=0° | Gate 1/10 hdg 359.6° err -0.4° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.81m cv=+0PWM | S=1492 T=1570 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.0, -11.2) Hdg=0° | Gate 1/10 hdg 359.6° err -0.4° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.84m cv=+0PWM | S=1491 T=1568 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.0, -11.1) Hdg=0° | Gate 1/10 hdg 359.6° err -0.4° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.84m cv=+0PWM | S=1492 T=1567 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.0, -11.1) Hdg=0° | Gate 1/10 hdg 359.6° err -0.4° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.83m cv=-5PWM | S=1487 T=1566 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.0, -11.0) Hdg=0° | Gate 1/10 hdg 359.7° err -0.3° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.87m cv=-6PWM | S=1488 T=1566 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.0, -11.0) Hdg=0° | Gate 1/10 hdg 359.7° err -0.3° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.87m cv=-6PWM | S=1488 T=1565 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.0, -10.9) Hdg=0° | Gate 1/10 hdg 359.7° err -0.3° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.85m cv=-7PWM | S=1487 T=1565 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.0, -10.9) Hdg=1° | Gate 1/10 hdg 359.7° err -1.3° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.84m cv=-7PWM | S=1357 T=1564 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.0, -10.8) Hdg=1° | Gate 1/10 hdg 359.7° err -1.3° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.85m cv=-8PWM | S=1462 T=1563 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.0, -10.8) Hdg=1° | Gate 1/10 hdg 359.6° err -1.4° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.86m cv=-8PWM | S=1461 T=1563 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.0, -10.7) Hdg=1° | Gate 1/10 hdg 359.5° err -1.5° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.86m cv=-8PWM | S=1458 T=1563 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.0, -10.6) Hdg=1° | Gate 1/10 hdg 359.4° err -1.6° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.82m cv=-9PWM | S=1452 T=1563 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.0, -10.6) Hdg=1° | Gate 1/10 hdg 359.3° err -1.7° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.85m cv=-10PWM | S=1453 T=1562 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.0, -10.5) Hdg=1° | Gate 1/10 hdg 359.1° err -1.9° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.80m cv=-10PWM | S=1443 T=1562 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.0, -10.5) Hdg=1° | Gate 1/10 hdg 359.0° err -2.0° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.82m cv=-11PWM | S=1444 T=1562 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.0, -10.4) Hdg=1° | Gate 1/10 hdg 358.8° err -2.2° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.87m cv=-11PWM | S=1440 T=1562 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.0, -10.3) Hdg=1° | Gate 1/10 hdg 358.5° err -2.5° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.77m cv=-12PWM | S=1415 T=1562 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.0, -10.3) Hdg=2° | Gate 1/10 hdg 358.4° err -3.6° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.78m cv=-13PWM | S=1407 T=1562 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.0, -10.2) Hdg=2° | Gate 1/10 hdg 358.2° err -3.8° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.86m cv=-13PWM | S=1402 T=1562 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.0, -10.1) Hdg=2° | Gate 1/10 hdg 357.9° err -4.1° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.86m cv=-14PWM | S=1395 T=1550 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.1, -10.1) Hdg=2° | Gate 1/10 hdg 357.4° err -4.6° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.87m cv=-15PWM | S=1376 T=1550 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.1, -10.0) Hdg=2° | Gate 1/10 hdg 357.3° err -4.7° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.76m cv=-16PWM | S=1379 T=1550 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.1, -10.0) Hdg=2° | Gate 1/10 hdg 356.9° err -5.1° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.82m cv=-17PWM | S=1370 T=1550 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.1, -9.9) Hdg=2° | Gate 1/10 hdg 356.5° err -5.5° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.76m cv=-18PWM | S=1359 T=1551 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.1, -9.8) Hdg=2° | Gate 1/10 hdg 356.2° err -5.8° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.78m cv=-18PWM | S=1352 T=1551 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.1, -9.8) Hdg=2° | Gate 1/10 hdg 355.8° err -6.2° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.73m cv=-20PWM | S=1342 T=1551 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.1, -9.7) Hdg=2° | Gate 1/10 hdg 355.3° err -6.7° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.77m cv=-20PWM | S=1302 T=1552 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.1, -9.6) Hdg=2° | Gate 1/10 hdg 355.1° err -6.9° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.76m cv=-20PWM | S=1316 T=1552 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.1, -9.6) Hdg=2° | Gate 1/10 hdg 354.9° err -7.1° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.75m cv=-22PWM | S=1320 T=1552 | det=red_buoy,green_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.1, -9.5) Hdg=2° | Gate 1/10 hdg 354.4° err -7.6° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.78m cv=-22PWM | S=1308 T=1552 | det=red_buoy,green_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.2, -9.5) Hdg=2° | Gate 1/10 hdg 353.9° err -8.1° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.68m cv=-23PWM | S=1292 T=1552 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.2, -9.4) Hdg=2° | Gate 1/10 hdg 353.5° err -8.5° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.71m cv=-23PWM | S=1277 T=1552 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.2, -9.4) Hdg=2° | Gate 1/10 hdg 353.1° err -8.9° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.66m cv=-24PWM | S=1266 T=1552 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.2, -9.3) Hdg=2° | Gate 1/10 hdg 352.8° err -9.2° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.63m cv=-25PWM | S=1270 T=1553 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.2, -9.2) Hdg=2° | Gate 1/10 hdg 352.2° err -9.8° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.62m cv=-25PWM | S=1258 T=1553 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.2, -9.2) Hdg=2° | Gate 1/10 hdg 351.8° err -10.2° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.66m cv=-26PWM | S=1248 T=1553 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.2, -9.2) Hdg=2° | Gate 1/10 hdg 351.5° err -10.5° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.67m cv=-26PWM | S=1241 T=1553 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.2, -9.1) Hdg=2° | Gate 1/10 hdg 351.1° err -10.9° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.68m cv=-26PWM | S=1232 T=1554 | det=red_buoy,green_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.2, -9.0) Hdg=2° | Gate 1/10 hdg 350.7° err -11.3° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.64m cv=-26PWM | S=1210 T=1554 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.3, -9.0) Hdg=1° | Gate 1/10 hdg 350.2° err -10.8° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.60m cv=-26PWM | S=1329 T=1554 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.3, -8.9) Hdg=1° | Gate 1/10 hdg 350.1° err -10.9° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.58m cv=-27PWM | S=1230 T=1554 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.3, -8.9) Hdg=1° | Gate 1/10 hdg 349.5° err -11.5° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.58m cv=-26PWM | S=1218 T=1554 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.3, -8.8) Hdg=1° | Gate 1/10 hdg 349.1° err -11.9° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.57m cv=-25PWM | S=1198 T=1554 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.3, -8.8) Hdg=0° | Gate 1/10 hdg 348.7° err -11.3° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.53m cv=-25PWM | S=1317 T=1555 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.3, -8.7) Hdg=0° | Gate 1/10 hdg 348.3° err -11.7° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.57m cv=-24PWM | S=1216 T=1555 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.3, -8.7) Hdg=0° | Gate 1/10 hdg 347.9° err -12.1° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.49m cv=-24PWM | S=1196 T=1555 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.3, -8.6) Hdg=0° | Gate 1/10 hdg 347.5° err -12.5° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.57m cv=-23PWM | S=1188 T=1555 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.3, -8.6) Hdg=359° | Gate 1/10 hdg 347.2° err -11.8° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.50m cv=-22PWM | S=1216 T=1555 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.4, -8.5) Hdg=359° | Gate 1/10 hdg 346.8° err -12.2° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.52m cv=-21PWM | S=1208 T=1555 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.4, -8.5) Hdg=359° | Gate 1/10 hdg 346.6° err -12.4° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.51m cv=-20PWM | S=1194 T=1555 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.4, -8.4) Hdg=358° | Gate 1/10 hdg 346.2° err -11.8° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.45m cv=-20PWM | S=1213 T=1555 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.4, -8.4) Hdg=358° | Gate 1/10 hdg 345.9° err -12.1° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.46m cv=-19PWM | S=1206 T=1555 | det=green_buoy,red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.4, -8.3) Hdg=358° | Gate 1/10 hdg 345.6° err -12.4° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.47m cv=-17PWM | S=1208 T=1555 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.4, -8.3) Hdg=357° | Gate 1/10 hdg 345.4° err -11.6° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.45m cv=-17PWM | S=1224 T=1555 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.4, -8.2) Hdg=357° | Gate 1/10 hdg 345.1° err -11.9° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.47m cv=-15PWM | S=1221 T=1555 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.4, -8.2) Hdg=356° | Gate 1/10 hdg 344.7° err -11.3° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.53m cv=-15PWM | S=1235 T=1555 | det=green_buoy,red_buoy,green_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.4, -8.1) Hdg=356° | Gate 1/10 hdg 344.4° err -11.6° v=0.72m/s target=(11.0,-6.0) ultrasonic=2.97m cv=-13PWM | S=1225 T=1555 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.4, -8.0) Hdg=355° | Gate 1/10 hdg 344.0° err -11.0° v=0.72m/s target=(11.0,-6.0) ultrasonic=2.93m cv=-25PWM | S=1222 T=1555 | det=red_buoy,green_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.4, -8.0) Hdg=355° | Gate 1/10 hdg 343.8° err -11.2° v=0.72m/s target=(11.0,-6.0) ultrasonic=2.94m cv=-32PWM | S=1219 T=1555 | det=green_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.4, -8.0) Hdg=354° | Gate 1/10 hdg 343.7° err -10.3° v=0.72m/s target=(11.0,-6.0) ultrasonic=2.91m cv=-31PWM | S=1239 T=1555 | det=green_buoy,red_buoy,green_buoy,red_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.4, -7.9) Hdg=354° | Gate 1/10 hdg 343.5° err -10.5° v=0.72m/s target=(11.0,-6.0) ultrasonic=2.90m cv=-29PWM | S=1238 T=1555 | det=green_buoy,green_buoy,red_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.4, -7.9) Hdg=354° | Gate 1/10 hdg 343.2° err -10.8° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.46m cv=-28PWM | S=1232 T=1555 | det=green_buoy,red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.4, -7.8) Hdg=353° | Gate 1/10 hdg 343.0° err -10.0° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.42m cv=-26PWM | S=1251 T=1555 | det=green_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.4, -7.8) Hdg=352° | Gate 1/10 hdg 342.8° err -9.2° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.39m | S=1397 T=1555 | det=green_buoy,red_buoy,green_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.5, -7.7) Hdg=352° | Gate 1/10 hdg 342.6° err -9.4° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.47m cv=-24PWM | S=1266 T=1555 | det=green_buoy,green_buoy,red_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.5, -7.7) Hdg=351° | Gate 1/10 hdg 342.4° err -8.6° v=0.72m/s target=(11.0,-6.0) ultrasonic=2.44m cv=-22PWM | S=1286 T=1555 | det=green_buoy,red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.5, -7.6) Hdg=351° | Gate 1/10 hdg 342.2° err -8.8° v=0.72m/s target=(11.0,-6.0) ultrasonic=2.38m cv=-21PWM | S=1284 T=1555 | det=green_buoy,green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.5, -7.5) Hdg=350° | Gate 1/10 hdg 342.0° err -8.0° v=0.72m/s target=(11.0,-6.0) ultrasonic=2.34m cv=-19PWM | S=1407 T=1554 | det=green_buoy,red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.5, -7.5) Hdg=350° | Gate 1/10 hdg 341.9° err -8.1° v=0.72m/s target=(11.0,-6.0) ultrasonic=2.32m cv=-18PWM | S=1302 T=1554 | det=green_buoy,green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.5, -7.4) Hdg=349° | Gate 1/10 hdg 341.7° err -7.3° v=0.72m/s target=(11.0,-6.0) ultrasonic=2.32m cv=-17PWM | S=1322 T=1554 | det=green_buoy,red_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.5, -7.4) Hdg=349° | Gate 1/10 hdg 341.6° err -7.4° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.46m cv=-15PWM | S=1312 T=1554 | det=red_buoy,green_buoy,green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.5, -7.3) Hdg=348° | Gate 1/10 hdg 341.5° err -6.5° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.50m cv=-14PWM | S=1336 T=1554 | det=red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.5, -7.3) Hdg=348° | Gate 1/10 hdg 341.4° err -6.6° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.48m cv=-13PWM | S=1340 T=1554 | det=red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.4, -7.2) Hdg=347° | Gate 1/10 hdg 341.3° err -5.7° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.46m cv=-12PWM | S=1471 T=1554 | det=red_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.4, -7.2) Hdg=347° | Gate 1/10 hdg 341.2° err -5.8° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.53m cv=-10PWM | S=1357 T=1553 | det=red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.4, -7.1) Hdg=346° | Gate 1/10 hdg 341.1° err -4.9° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.55m cv=-10PWM | S=1378 T=1553 | det=red_buoy,green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.4, -7.1) Hdg=346° | Gate 1/10 hdg 341.1° err -4.9° v=0.72m/s target=(11.0,-6.0) ultrasonic=3.47m cv=-9PWM | S=1383 T=1553 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.4, -7.0) Hdg=345° | Gate 1/10 hdg 341.0° err -4.0° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.53m cv=-8PWM | S=1404 T=1566 | det=red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.4, -6.9) Hdg=345° | Gate 1/10 hdg 341.0° err -4.0° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.56m cv=-8PWM | S=1404 T=1565 | det=green_buoy,red_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.4, -6.9) Hdg=344° | Gate 1/10 hdg 341.0° err -3.0° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.60m cv=-8PWM | S=1428 T=1565 | det=red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.4, -6.8) Hdg=344° | Gate 1/10 hdg 341.1° err -2.9° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.60m cv=-7PWM | S=1436 T=1564 | det=red_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.4, -6.7) Hdg=343° | Gate 1/10 hdg 341.0° err -2.0° v=0.95m/s target=(11.0,-6.0) ultrasonic=3.63m cv=-6PWM | S=1448 T=1564 | det=red_buoy,green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.4, -6.7) Hdg=343° | Gate 1/10 hdg 341.0° err -2.0° v=0.80m/s target=(11.0,-6.0) ultrasonic=3.65m cv=-6PWM | S=1449 T=1556 | det=red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.4, -6.6) Hdg=342° | Gate 1/10 hdg 341.0° err -1.0° v=0.76m/s target=(11.0,-6.0) ultrasonic=3.67m cv=-5PWM | S=1473 T=1553 | det=red_buoy,green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.4, -6.6) Hdg=342° | Gate 1/10 hdg 341.0° err -1.0° v=0.73m/s target=(11.0,-6.0) ultrasonic=3.67m cv=-4PWM | S=1475 T=1552 | det=red_buoy,green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.3, -6.5) Hdg=341° | Gate 1/10 hdg 341.1° err +0.1° v=0.69m/s target=(11.0,-6.0) ultrasonic=3.73m cv=-4PWM | S=1608 T=1550 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.3, -6.5) Hdg=341° | Gate 1/10 hdg 341.1° err +0.1° v=0.66m/s target=(11.0,-6.0) ultrasonic=3.70m cv=-3PWM | S=1500 T=1548 | det=red_buoy,red_buoy,green_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.3, -6.4) Hdg=340° | Gate 1/10 hdg 341.2° err +1.2° v=0.61m/s target=(11.0,-6.0) ultrasonic=2.65m cv=-2PWM | S=1634 T=1546 | det=red_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.3, -6.4) Hdg=340° | Gate 1/10 hdg 341.2° err +1.2° v=0.59m/s target=(11.0,-6.0) ultrasonic=1.60m cv=-2PWM | S=1526 T=1545 | det=red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.3, -6.3) Hdg=340° | Gate 1/10 hdg 341.3° err +1.3° v=0.56m/s target=(11.0,-6.0) ultrasonic=1.55m cv=-1PWM | S=1528 T=1543 | det=red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.3, -6.2) Hdg=339° | Gate 1/10 hdg 341.4° err +2.4° v=0.51m/s target=(11.0,-6.0) ultrasonic=1.58m cv=+0PWM | S=1553 T=1541 | det=red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.3, -6.2) Hdg=339° | Gate 1/10 hdg 341.4° err +2.4° v=0.49m/s target=(11.0,-6.0) ultrasonic=1.61m cv=+0PWM | S=1556 T=1540 | det=red_buoy,green_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.2, -6.1) Hdg=339° | Gate 1/10 hdg 341.5° err +2.5° v=0.47m/s target=(11.0,-6.0) ultrasonic=2.78m cv=+0PWM | S=1555 T=1539 | det=red_buoy,green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.2, -6.1) Hdg=338° | Gate 1/10 hdg 341.5° err +3.5° v=0.44m/s target=(11.0,-6.0) ultrasonic=2.86m cv=+0PWM | S=1578 T=1539 | det=red_buoy,green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.2, -6.0) Hdg=338° | Gate 1/10 hdg 341.6° err +3.6° v=0.42m/s target=(11.0,-6.0) ultrasonic=3.94m cv=+2PWM | S=1582 T=1500 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.2, -6.0) Hdg=337° | Gate 2/10 hdg 340.0° err +3.0° v=0.55m/s target=(9.0,0.0) ultrasonic=3.93m cv=+9PWM | S=1683 T=1547 | det=red_buoy,green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.2, -5.9) Hdg=337° | Gate 2/10 hdg 339.9° err +2.9° v=0.55m/s target=(9.0,0.0) ultrasonic=4.03m cv=+11PWM | S=1578 T=1547 | det=green_buoy,red_buoy,red_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.1, -5.9) Hdg=337° | Gate 2/10 hdg 340.0° err +3.0° v=0.55m/s target=(9.0,0.0) ultrasonic=4.13m cv=+13PWM | S=1575 T=1547 | det=green_buoy,red_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.1, -5.8) Hdg=337° | Gate 2/10 hdg 340.0° err +3.0° v=0.55m/s target=(9.0,0.0) ultrasonic=4.01m cv=+15PWM | S=1582 T=1547 | det=green_buoy,red_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.1, -5.8) Hdg=336° | Gate 2/10 hdg 340.0° err +4.0° v=0.55m/s target=(9.0,0.0) ultrasonic=3.61m cv=+17PWM | S=1605 T=1547 | det=green_buoy,red_buoy,red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.1, -5.7) Hdg=336° | Gate 2/10 hdg 340.0° err +4.0° v=0.55m/s target=(9.0,0.0) ultrasonic=3.59m cv=+20PWM | S=1613 T=1547 | det=green_buoy,red_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.1, -5.7) Hdg=336° | Gate 2/10 hdg 340.0° err +4.0° v=0.55m/s target=(9.0,0.0) ultrasonic=3.58m cv=+22PWM | S=1611 T=1547 | det=green_buoy,red_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.0, -5.6) Hdg=335° | Gate 2/10 hdg 340.2° err +5.2° v=0.55m/s target=(9.0,0.0) ultrasonic=2.23m cv=+24PWM | S=1639 T=1547 | det=green_buoy,red_buoy,red_buoy,red_buoy,green_buoy,green_marker
+[COURSE_APPROACH] Pos=(11.0, -5.6) Hdg=335° | Gate 2/10 hdg 340.2° err +5.2° v=0.55m/s target=(9.0,0.0) ultrasonic=2.19m cv=+26PWM | S=1641 T=1547 | det=green_buoy,red_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.0, -5.5) Hdg=335° | Gate 2/10 hdg 340.3° err +5.3° v=0.55m/s target=(9.0,0.0) ultrasonic=2.18m cv=+27PWM | S=1645 T=1547 | det=green_buoy,red_buoy,red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.0, -5.5) Hdg=335° | Gate 2/10 hdg 340.5° err +5.5° v=0.55m/s target=(9.0,0.0) ultrasonic=2.19m cv=+71PWM | S=1693 T=1547 | det=red_buoy,green_buoy,green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.9, -5.4) Hdg=334° | Gate 2/10 hdg 340.6° err +6.6° v=0.55m/s target=(9.0,0.0) ultrasonic=2.20m cv=+58PWM | S=1705 T=1547 | det=red_buoy,green_buoy,red_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(10.9, -5.4) Hdg=334° | Gate 2/10 hdg 340.8° err +6.8° v=0.55m/s target=(9.0,0.0) ultrasonic=3.57m cv=+51PWM | S=1701 T=1547 | det=red_buoy,red_buoy,green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(10.9, -5.4) Hdg=334° | Gate 2/10 hdg 341.0° err +7.0° v=0.55m/s target=(9.0,0.0) ultrasonic=3.64m cv=+46PWM | S=1702 T=1547 | det=red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.8, -5.3) Hdg=334° | Gate 2/10 hdg 341.3° err +7.3° v=0.55m/s target=(9.0,0.0) ultrasonic=3.57m cv=+44PWM | S=1707 T=1547 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.8, -5.3) Hdg=333° | Gate 2/10 hdg 341.6° err +8.6° v=0.55m/s target=(9.0,0.0) ultrasonic=4.53m cv=+44PWM | S=1746 T=1547 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.8, -5.2) Hdg=333° | Gate 2/10 hdg 341.9° err +8.9° v=0.55m/s target=(9.0,0.0) ultrasonic=4.57m cv=+44PWM | S=1742 T=1547 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.7, -5.2) Hdg=333° | Gate 2/10 hdg 342.3° err +9.3° v=0.55m/s target=(9.0,0.0) ultrasonic=4.62m cv=+45PWM | S=1764 T=1548 | det=red_buoy,green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.7, -5.1) Hdg=333° | Gate 2/10 hdg 342.5° err +9.5° v=0.55m/s target=(9.0,0.0) ultrasonic=4.71m cv=+45PWM | S=1757 T=1548 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(10.7, -5.1) Hdg=333° | Gate 2/10 hdg 342.9° err +9.9° v=0.55m/s target=(9.0,0.0) ultrasonic=4.63m cv=+46PWM | S=1766 T=1548 | det=red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.6, -5.0) Hdg=333° | Gate 2/10 hdg 343.4° err +10.4° v=0.55m/s target=(9.0,0.0) ultrasonic=4.75m cv=+48PWM | S=1780 T=1548 | det=red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.6, -5.0) Hdg=333° | Gate 2/10 hdg 343.6° err +10.6° v=0.55m/s target=(9.0,0.0) ultrasonic=4.76m cv=+48PWM | S=1783 T=1548 | det=red_buoy,green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.6, -5.0) Hdg=333° | Gate 2/10 hdg 344.1° err +11.1° v=0.55m/s target=(9.0,0.0) ultrasonic=4.84m cv=+50PWM | S=1797 T=1548 | det=red_buoy,green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.6, -4.9) Hdg=333° | Gate 2/10 hdg 344.6° err +11.6° v=0.55m/s target=(9.0,0.0) ultrasonic=4.82m cv=+51PWM | S=1808 T=1548 | det=red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.5, -4.9) Hdg=333° | Gate 2/10 hdg 345.2° err +12.2° v=0.55m/s target=(9.0,0.0) ultrasonic=4.82m cv=+51PWM | S=1850 T=1548 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.5, -4.8) Hdg=333° | Gate 2/10 hdg 345.4° err +12.4° v=0.55m/s target=(9.0,0.0) ultrasonic=4.85m cv=+52PWM | S=1827 T=1549 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.5, -4.8) Hdg=333° | Gate 2/10 hdg 345.8° err +12.8° v=0.55m/s target=(9.0,0.0) ultrasonic=4.88m cv=+53PWM | S=1838 T=1549 | det=red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.4, -4.8) Hdg=333° | Gate 2/10 hdg 346.3° err +13.3° v=0.55m/s target=(9.0,0.0) ultrasonic=4.88m cv=+54PWM | S=1866 T=1549 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.4, -4.7) Hdg=333° | Gate 2/10 hdg 346.6° err +13.6° v=0.55m/s target=(9.0,0.0) ultrasonic=4.84m cv=+54PWM | S=1857 T=1550 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.4, -4.7) Hdg=333° | Gate 2/10 hdg 347.1° err +14.1° v=0.55m/s target=(9.0,0.0) ultrasonic=4.86m cv=+55PWM | S=1869 T=1550 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.3, -4.6) Hdg=333° | Gate 2/10 hdg 347.7° err +14.7° v=0.55m/s target=(9.0,0.0) ultrasonic=4.85m cv=+55PWM | S=1881 T=1550 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.3, -4.6) Hdg=333° | Gate 2/10 hdg 348.2° err +15.2° v=0.55m/s target=(9.0,0.0) ultrasonic=4.84m cv=+55PWM | S=1900 T=1550 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.3, -4.6) Hdg=333° | Gate 2/10 hdg 348.4° err +15.4° v=0.55m/s target=(9.0,0.0) ultrasonic=4.92m cv=+56PWM | S=1898 T=1550 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.3, -4.5) Hdg=334° | Gate 2/10 hdg 348.9° err +14.9° v=0.55m/s target=(9.0,0.0) ultrasonic=4.86m cv=+55PWM | S=1887 T=1550 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.2, -4.5) Hdg=334° | Gate 2/10 hdg 349.4° err +15.4° v=0.55m/s target=(9.0,0.0) ultrasonic=4.87m cv=+55PWM | S=1900 T=1551 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.2, -4.5) Hdg=334° | Gate 2/10 hdg 350.0° err +16.0° v=0.55m/s target=(9.0,0.0) ultrasonic=4.82m cv=+55PWM | S=1900 T=1551 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.2, -4.4) Hdg=334° | Gate 2/10 hdg 350.5° err +16.5° v=0.55m/s target=(9.0,0.0) ultrasonic=4.77m cv=+54PWM | S=1900 T=1551 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.1, -4.4) Hdg=335° | Gate 2/10 hdg 350.9° err +15.9° v=0.55m/s target=(9.0,0.0) ultrasonic=4.84m cv=+54PWM | S=1900 T=1551 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.1, -4.4) Hdg=335° | Gate 2/10 hdg 351.2° err +16.2° v=0.55m/s target=(9.0,0.0) ultrasonic=4.86m cv=+53PWM | S=1900 T=1551 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.1, -4.4) Hdg=335° | Gate 2/10 hdg 351.5° err +16.5° v=0.55m/s target=(9.0,0.0) ultrasonic=4.96m cv=+53PWM | S=1900 T=1552 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(10.1, -4.3) Hdg=336° | Gate 2/10 hdg 352.1° err +16.1° v=0.55m/s target=(9.0,0.0) ultrasonic=4.86m cv=+52PWM | S=1900 T=1552 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.0, -4.3) Hdg=336° | Gate 2/10 hdg 352.8° err +16.8° v=0.55m/s target=(9.0,0.0) ultrasonic=4.96m cv=+51PWM | S=1900 T=1552 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.0, -4.2) Hdg=336° | Gate 2/10 hdg 353.0° err +17.0° v=0.55m/s target=(9.0,0.0) ultrasonic=4.89m cv=+50PWM | S=1900 T=1552 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.0, -4.2) Hdg=337° | Gate 2/10 hdg 353.6° err +16.6° v=0.55m/s target=(9.0,0.0) ultrasonic=4.97m cv=+49PWM | S=1900 T=1552 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.0, -4.2) Hdg=337° | Gate 2/10 hdg 354.0° err +17.0° v=0.55m/s target=(9.0,0.0) ultrasonic=4.94m cv=+48PWM | S=1900 T=1552 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.9, -4.1) Hdg=338° | Gate 2/10 hdg 354.6° err +16.6° v=0.55m/s target=(9.0,0.0) ultrasonic=4.91m cv=+47PWM | S=1900 T=1552 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.9, -4.1) Hdg=338° | Gate 2/10 hdg 355.3° err +17.3° v=0.55m/s target=(9.0,0.0) ultrasonic=4.84m cv=+45PWM | S=1900 T=1552 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.9, -4.1) Hdg=339° | Gate 2/10 hdg 355.7° err +16.7° v=0.55m/s target=(9.0,0.0) ultrasonic=4.77m cv=+44PWM | S=1900 T=1552 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.9, -4.0) Hdg=339° | Gate 2/10 hdg 356.1° err +17.1° v=0.55m/s target=(9.0,0.0) ultrasonic=4.76m cv=+43PWM | S=1900 T=1552 | det=red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.8, -4.0) Hdg=340° | Gate 2/10 hdg 356.6° err +16.6° v=0.55m/s target=(9.0,0.0) ultrasonic=4.75m cv=+41PWM | S=1830 T=1553 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.8, -4.0) Hdg=340° | Gate 2/10 hdg 357.0° err +17.0° v=0.55m/s target=(9.0,0.0) ultrasonic=4.74m cv=+40PWM | S=1900 T=1553 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.8, -3.9) Hdg=341° | Gate 2/10 hdg 357.4° err +16.4° v=0.55m/s target=(9.0,0.0) ultrasonic=4.79m cv=+38PWM | S=1900 T=1552 | det=red_buoy,green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.8, -3.9) Hdg=341° | Gate 2/10 hdg 358.1° err +17.1° v=0.55m/s target=(9.0,0.0) ultrasonic=4.74m cv=+37PWM | S=1900 T=1552 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.7, -3.8) Hdg=342° | Gate 2/10 hdg 358.6° err +16.6° v=0.55m/s target=(9.0,0.0) ultrasonic=4.76m cv=+35PWM | S=1900 T=1552 | det=red_buoy,green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.7, -3.8) Hdg=343° | Gate 2/10 hdg 359.1° err +16.1° v=0.55m/s target=(9.0,0.0) ultrasonic=4.83m cv=+33PWM | S=1813 T=1552 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.7, -3.8) Hdg=343° | Gate 2/10 hdg 359.6° err +16.6° v=0.55m/s target=(9.0,0.0) ultrasonic=4.93m cv=+32PWM | S=1900 T=1552 | det=red_buoy,green_buoy,green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.7, -3.7) Hdg=344° | Gate 2/10 hdg 0.0° err +16.0° v=0.55m/s target=(9.0,0.0) ultrasonic=4.89m cv=+30PWM | S=1886 T=1552 | det=red_buoy,green_buoy,red_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.7, -3.7) Hdg=344° | Gate 2/10 hdg 0.5° err +16.5° v=0.55m/s target=(9.0,0.0) ultrasonic=4.98m cv=+28PWM | S=1894 T=1552 | det=red_buoy,green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.6, -3.7) Hdg=345° | Gate 2/10 hdg 1.0° err +16.0° v=0.55m/s target=(9.0,0.0) ultrasonic=4.90m cv=+27PWM | S=1883 T=1553 | det=red_buoy,green_buoy,red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.6, -3.6) Hdg=345° | Gate 2/10 hdg 1.4° err +16.4° v=0.55m/s target=(9.0,0.0) ultrasonic=4.95m cv=+25PWM | S=1890 T=1553 | det=red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.6, -3.6) Hdg=346° | Gate 2/10 hdg 1.8° err +15.8° v=0.55m/s target=(9.0,0.0) ultrasonic=4.99m cv=+24PWM | S=1875 T=1553 | det=green_buoy,red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.6, -3.5) Hdg=346° | Gate 2/10 hdg 2.5° err +16.5° v=0.55m/s target=(9.0,0.0) ultrasonic=4.96m cv=+22PWM | S=1900 T=1552 | det=red_buoy,green_buoy,red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.6, -3.5) Hdg=347° | Gate 2/10 hdg 2.8° err +15.8° v=0.55m/s target=(9.0,0.0) ultrasonic=4.94m cv=+20PWM | S=1871 T=1552 | det=green_buoy,red_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.6, -3.5) Hdg=347° | Gate 2/10 hdg 3.1° err +16.1° v=0.55m/s target=(9.0,0.0) ultrasonic=4.98m cv=+19PWM | S=1876 T=1552 | det=red_buoy,green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.5, -3.4) Hdg=348° | Gate 2/10 hdg 3.6° err +15.6° v=0.55m/s target=(9.0,0.0) ultrasonic=4.94m cv=+17PWM | S=1863 T=1552 | det=red_buoy,green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.5, -3.4) Hdg=349° | Gate 2/10 hdg 4.1° err +15.1° v=0.55m/s target=(9.0,0.0) ultrasonic=4.89m cv=+15PWM | S=1851 T=1552 | det=red_buoy,green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.5, -3.4) Hdg=349° | Gate 2/10 hdg 4.6° err +15.6° v=0.55m/s target=(9.0,0.0) ultrasonic=5.00m cv=+14PWM | S=1890 T=1552 | det=red_buoy,green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.5, -3.3) Hdg=350° | Gate 2/10 hdg 5.0° err +15.0° v=0.55m/s target=(9.0,0.0) ultrasonic=4.95m cv=+12PWM | S=1852 T=1552 | det=red_buoy,green_buoy,red_buoy,green_marker
+[COURSE_APPROACH] Pos=(9.5, -3.3) Hdg=351° | Gate 2/10 hdg 5.6° err +14.6° v=0.55m/s target=(9.0,0.0) ultrasonic=4.90m cv=+11PWM | S=1743 T=1552 | det=green_buoy,red_buoy,red_buoy,green_buoy,green_marker
+[COURSE_APPROACH] Pos=(9.4, -3.2) Hdg=351° | Gate 2/10 hdg 5.8° err +14.8° v=0.55m/s target=(9.0,0.0) ultrasonic=4.90m cv=+9PWM | S=1839 T=1552 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.4, -3.2) Hdg=352° | Gate 2/10 hdg 6.4° err +14.4° v=0.55m/s target=(9.0,0.0) ultrasonic=4.97m cv=+8PWM | S=1742 T=1552 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.4, -3.1) Hdg=352° | Gate 2/10 hdg 6.8° err +14.8° v=0.55m/s target=(9.0,0.0) ultrasonic=4.95m cv=+6PWM | S=1849 T=1552 | det=red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.4, -3.1) Hdg=353° | Gate 2/10 hdg 7.1° err +14.1° v=0.55m/s target=(9.0,0.0) ultrasonic=4.89m cv=+5PWM | S=1818 T=1552 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.4, -3.1) Hdg=353° | Gate 2/10 hdg 7.4° err +14.4° v=0.55m/s target=(9.0,0.0) ultrasonic=4.98m cv=+3PWM | S=1823 T=1552 | det=red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.4, -3.0) Hdg=354° | Gate 2/10 hdg 7.9° err +13.9° v=0.55m/s target=(9.0,0.0) ultrasonic=4.99m cv=+0PWM | S=1830 T=1551 | det=red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.4, -3.0) Hdg=354° | Gate 2/10 hdg 8.4° err +14.4° v=0.55m/s target=(9.0,0.0) ultrasonic=4.94m cv=+0PWM | S=1833 T=1551 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.3, -2.9) Hdg=355° | Gate 2/10 hdg 9.0° err +14.0° v=0.55m/s target=(9.0,0.0) ultrasonic=4.95m cv=+0PWM | S=1844 T=1551 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.3, -2.9) Hdg=356° | Gate 2/10 hdg 9.2° err +13.2° v=0.55m/s target=(9.0,0.0) ultrasonic=4.97m cv=-2PWM | S=1792 T=1551 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.3, -2.9) Hdg=356° | Gate 2/10 hdg 9.7° err +13.7° v=0.55m/s target=(9.0,0.0) ultrasonic=4.92m cv=-4PWM | S=1841 T=1551 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.3, -2.8) Hdg=357° | Gate 2/10 hdg 10.0° err +13.0° v=0.55m/s target=(9.0,0.0) ultrasonic=4.94m cv=-5PWM | S=1790 T=1551 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.3, -2.8) Hdg=357° | Gate 2/10 hdg 10.4° err +13.4° v=0.55m/s target=(9.0,0.0) ultrasonic=4.95m cv=-7PWM | S=1790 T=1551 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.3, -2.7) Hdg=358° | Gate 2/10 hdg 10.8° err +12.8° v=0.55m/s target=(9.0,0.0) ultrasonic=4.14m cv=-8PWM | S=1777 T=1551 | det=red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.3, -2.7) Hdg=359° | Gate 2/10 hdg 11.2° err +12.2° v=0.55m/s target=(9.0,0.0) ultrasonic=4.09m cv=-9PWM | S=1669 T=1550 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.3, -2.6) Hdg=359° | Gate 2/10 hdg 11.6° err +12.6° v=0.55m/s target=(9.0,0.0) ultrasonic=4.07m cv=-11PWM | S=1775 T=1550 | det=red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.2, -2.6) Hdg=0° | Gate 2/10 hdg 11.9° err +11.9° v=0.55m/s target=(9.0,0.0) ultrasonic=4.07m cv=-11PWM | S=1753 T=1550 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.2, -2.5) Hdg=0° | Gate 2/10 hdg 12.3° err +12.3° v=0.55m/s target=(9.0,0.0) ultrasonic=4.06m cv=-12PWM | S=1761 T=1550 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.2, -2.5) Hdg=1° | Gate 2/10 hdg 12.5° err +11.5° v=0.55m/s target=(9.0,0.0) ultrasonic=3.98m cv=-13PWM | S=1742 T=1550 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.2, -2.4) Hdg=1° | Gate 2/10 hdg 12.9° err +11.9° v=0.55m/s target=(9.0,0.0) ultrasonic=4.06m cv=-13PWM | S=1765 T=1550 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.2, -2.4) Hdg=2° | Gate 2/10 hdg 13.3° err +11.3° v=0.55m/s target=(9.0,0.0) ultrasonic=4.03m cv=-13PWM | S=1764 T=1549 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.2, -2.4) Hdg=2° | Gate 2/10 hdg 13.5° err +11.5° v=0.55m/s target=(9.0,0.0) ultrasonic=3.98m cv=-14PWM | S=1742 T=1549 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.2, -2.3) Hdg=3° | Gate 2/10 hdg 14.0° err +11.0° v=0.55m/s target=(9.0,0.0) ultrasonic=3.01m cv=-14PWM | S=1730 T=1549 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.2, -2.2) Hdg=4° | Gate 2/10 hdg 14.2° err +10.2° v=0.55m/s target=(9.0,0.0) ultrasonic=3.99m | S=1727 T=1549 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.2, -2.2) Hdg=4° | Gate 2/10 hdg 14.6° err +10.6° v=0.55m/s target=(9.0,0.0) ultrasonic=3.94m | S=1749 T=1549 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.2, -2.2) Hdg=4° | Gate 2/10 hdg 14.8° err +10.8° v=0.55m/s target=(9.0,0.0) ultrasonic=3.95m | S=1740 T=1549 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.2, -2.1) Hdg=5° | Gate 2/10 hdg 15.3° err +10.3° v=0.55m/s target=(9.0,0.0) ultrasonic=3.94m | S=1729 T=1549 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.2, -2.0) Hdg=6° | Gate 2/10 hdg 15.6° err +9.6° v=0.55m/s target=(9.0,0.0) ultrasonic=3.93m | S=1713 T=1549 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.2, -2.0) Hdg=6° | Gate 2/10 hdg 15.9° err +9.9° v=0.55m/s target=(9.0,0.0) ultrasonic=3.90m | S=1720 T=1549 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.2, -2.0) Hdg=7° | Gate 2/10 hdg 16.1° err +9.1° v=0.55m/s target=(9.0,0.0) ultrasonic=3.92m | S=1701 T=1549 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.2, -1.9) Hdg=7° | Gate 2/10 hdg 16.2° err +9.2° v=0.55m/s target=(9.0,0.0) ultrasonic=3.91m | S=1705 T=1548 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.2, -1.9) Hdg=7° | Gate 2/10 hdg 16.5° err +9.5° v=0.55m/s target=(9.0,0.0) ultrasonic=4.94m cv=-4PWM | S=1707 T=1548 | det=red_buoy,green_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.2, -1.8) Hdg=8° | Gate 2/10 hdg 16.7° err +8.7° v=0.55m/s target=(9.0,0.0) ultrasonic=4.90m cv=+0PWM | S=1694 T=1548 | det=green_buoy,red_buoy,green_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.2, -1.8) Hdg=9° | Gate 2/10 hdg 17.0° err +8.0° v=0.55m/s target=(9.0,0.0) ultrasonic=4.98m cv=+3PWM | S=1681 T=1548 | det=red_buoy,green_buoy,green_buoy,green_marker
+[COURSE_APPROACH] Pos=(9.2, -1.7) Hdg=9° | Gate 2/10 hdg 17.3° err +8.3° v=0.55m/s target=(9.0,0.0) ultrasonic=4.97m cv=+4PWM | S=1699 T=1548 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.2, -1.7) Hdg=9° | Gate 2/10 hdg 17.4° err +8.4° v=0.55m/s target=(9.0,0.0) ultrasonic=4.89m cv=+5PWM | S=1692 T=1548 | det=green_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.2, -1.6) Hdg=10° | Gate 2/10 hdg 17.7° err +7.7° v=0.55m/s target=(9.0,0.0) ultrasonic=4.92m cv=+5PWM | S=1677 T=1548 | det=green_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.2, -1.6) Hdg=11° | Gate 2/10 hdg 17.9° err +6.9° v=0.55m/s target=(9.0,0.0) ultrasonic=4.93m cv=+4PWM | S=1558 T=1548 | det=green_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.2, -1.5) Hdg=11° | Gate 2/10 hdg 18.2° err +7.2° v=0.55m/s target=(9.0,0.0) ultrasonic=4.94m cv=+4PWM | S=1675 T=1548 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.2, -1.4) Hdg=12° | Gate 2/10 hdg 18.5° err +6.5° v=0.55m/s target=(9.0,0.0) ultrasonic=4.94m | S=1644 T=1548 | det=green_buoy
+[COURSE_APPROACH] Pos=(9.2, -1.4) Hdg=12° | Gate 2/10 hdg 18.6° err +6.6° v=0.55m/s target=(9.0,0.0) ultrasonic=4.95m | S=1647 T=1548 | det=green_buoy,green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.2, -1.4) Hdg=13° | Gate 2/10 hdg 18.7° err +5.7° v=0.55m/s target=(9.0,0.0) ultrasonic=3.67m cv=+3PWM | S=1630 T=1548 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.2, -1.3) Hdg=13° | Gate 2/10 hdg 19.0° err +6.0° v=0.55m/s target=(9.0,0.0) ultrasonic=3.64m cv=+2PWM | S=1635 T=1547 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.2, -1.3) Hdg=13° | Gate 2/10 hdg 19.1° err +6.1° v=0.55m/s target=(9.0,0.0) ultrasonic=3.62m | S=1632 T=1547 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.2, -1.2) Hdg=14° | Gate 2/10 hdg 19.3° err +5.3° v=0.55m/s target=(9.0,0.0) ultrasonic=3.61m cv=+0PWM | S=1628 T=1547 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.2, -1.1) Hdg=14° | Gate 2/10 hdg 19.5° err +5.5° v=0.55m/s target=(9.0,0.0) ultrasonic=3.55m cv=+0PWM | S=1627 T=1547 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.2, -1.1) Hdg=15° | Gate 2/10 hdg 19.6° err +4.6° v=0.55m/s target=(9.0,0.0) ultrasonic=3.62m cv=+0PWM | S=1601 T=1547 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.2, -1.0) Hdg=15° | Gate 2/10 hdg 19.9° err +4.9° v=0.55m/s target=(9.0,0.0) ultrasonic=3.54m cv=+0PWM | S=1608 T=1547 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.2, -1.0) Hdg=16° | Gate 2/10 hdg 20.0° err +4.0° v=0.55m/s target=(9.0,0.0) ultrasonic=2.09m cv=-2PWM | S=1595 T=1547 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.2, -0.9) Hdg=16° | Gate 2/10 hdg 20.1° err +4.1° v=0.55m/s target=(9.0,0.0) ultrasonic=2.06m cv=-2PWM | S=1594 T=1547 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.2, -0.9) Hdg=17° | Gate 2/10 hdg 20.3° err +3.3° v=0.55m/s target=(9.0,0.0) ultrasonic=2.01m cv=-3PWM | S=1570 T=1547 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.3, -0.8) Hdg=17° | Gate 2/10 hdg 20.4° err +3.4° v=0.55m/s target=(9.0,0.0) ultrasonic=1.96m cv=-4PWM | S=1571 T=1547 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.3, -0.8) Hdg=18° | Gate 2/10 hdg 20.5° err +2.5° v=0.55m/s target=(9.0,0.0) ultrasonic=1.96m cv=-4PWM | S=1551 T=1547 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.3, -0.7) Hdg=18° | Gate 2/10 hdg 20.6° err +2.6° v=0.52m/s target=(9.0,0.0) ultrasonic=1.93m cv=-5PWM | S=1554 T=1545 | det=red_buoy,green_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.3, -0.7) Hdg=18° | Gate 2/10 hdg 20.8° err +2.8° v=0.51m/s target=(9.0,0.0) ultrasonic=1.89m cv=-6PWM | S=1556 T=1544 | det=green_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.3, -0.6) Hdg=19° | Gate 2/10 hdg 21.0° err +2.0° v=0.50m/s target=(9.0,0.0) ultrasonic=1.89m cv=-6PWM | S=1545 T=1544 | det=red_buoy,green_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.3, -0.5) Hdg=19° | Gate 2/10 hdg 21.1° err +2.1° v=0.49m/s target=(9.0,0.0) ultrasonic=2.42m cv=-7PWM | S=1546 T=1544 | det=red_buoy,green_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.3, -0.5) Hdg=19° | Gate 2/10 hdg 21.1° err +2.1° v=0.49m/s target=(9.0,0.0) ultrasonic=2.39m cv=-8PWM | S=1539 T=1544 | det=red_buoy,green_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.3, -0.4) Hdg=20° | Gate 2/10 hdg 21.3° err +1.3° v=0.48m/s target=(9.0,0.0) ultrasonic=2.40m cv=-8PWM | S=1521 T=1543 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.4, -0.4) Hdg=20° | Gate 2/10 hdg 21.4° err +1.4° v=0.48m/s target=(9.0,0.0) ultrasonic=3.70m cv=-9PWM | S=1526 T=1543 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.4, -0.3) Hdg=21° | Gate 2/10 hdg 21.6° err +0.6° v=0.47m/s target=(9.0,0.0) ultrasonic=3.70m cv=-10PWM | S=1510 T=1543 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.4, -0.3) Hdg=21° | Gate 2/10 hdg 21.6° err +0.6° v=0.47m/s target=(9.0,0.0) ultrasonic=3.72m cv=-10PWM | S=1504 T=1543 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.4, -0.2) Hdg=21° | Gate 2/10 hdg 21.8° err +0.8° v=0.47m/s target=(9.0,0.0) ultrasonic=3.76m cv=-11PWM | S=1506 T=1543 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.4, -0.2) Hdg=22° | Gate 2/10 hdg 21.9° err -0.1° v=0.46m/s target=(9.0,0.0) ultrasonic=5.00m cv=-12PWM | S=1492 T=1542 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.4, -0.1) Hdg=22° | Gate 2/10 hdg 22.1° err +0.1° v=0.46m/s target=(9.0,0.0) ultrasonic=4.95m cv=-12PWM | S=1493 T=1542 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.5, -0.1) Hdg=22° | Gate 2/10 hdg 22.2° err +0.2° v=0.47m/s target=(9.0,0.0) ultrasonic=4.99m cv=-13PWM | S=1491 T=1543 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.5, -0.0) Hdg=23° | Gate 2/10 hdg 22.3° err -0.7° v=0.47m/s target=(9.0,0.0) ultrasonic=4.94m cv=-13PWM | S=1472 T=1543 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.5, 0.0) Hdg=23° | Gate 3/10 hdg 18.6° err -4.4° v=0.55m/s target=(11.0,6.0) ultrasonic=3.46m cv=-56PWM | S=1346 T=1547 | det=red_buoy,green_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.5, 0.0) Hdg=23° | Gate 3/10 hdg 18.5° err -4.5° v=0.55m/s target=(11.0,6.0) ultrasonic=3.39m cv=-58PWM | S=1342 T=1547 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.5, 0.1) Hdg=24° | Gate 3/10 hdg 18.5° err -5.5° v=0.55m/s target=(11.0,6.0) ultrasonic=0.21m | S=1325 T=1547 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.6, 0.2) Hdg=24° | Gate 3/10 hdg 18.4° err -5.6° v=0.55m/s target=(11.0,6.0) ultrasonic=0.17m | S=1317 T=1547 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.6, 0.2) Hdg=24° | Gate 3/10 hdg 18.3° err -5.7° v=0.55m/s target=(11.0,6.0) ultrasonic=0.17m | S=1299 T=1547 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.6, 0.2) Hdg=25° | Gate 3/10 hdg 18.3° err -6.7° v=0.55m/s target=(11.0,6.0) ultrasonic=0.17m | S=1183 T=1548 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.6, 0.3) Hdg=25° | Gate 3/10 hdg 18.2° err -6.8° v=0.55m/s target=(11.0,6.0) ultrasonic=1.78m cv=-70PWM | S=1275 T=1548 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.6, 0.3) Hdg=25° | Gate 3/10 hdg 18.2° err -6.8° v=0.55m/s target=(11.0,6.0) ultrasonic=3.40m cv=-73PWM | S=1283 T=1548 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.7, 0.4) Hdg=25° | Gate 3/10 hdg 18.0° err -7.0° v=0.55m/s target=(11.0,6.0) ultrasonic=4.94m cv=-76PWM | S=1269 T=1548 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.7, 0.4) Hdg=26° | Gate 3/10 hdg 17.9° err -8.1° v=0.55m/s target=(11.0,6.0) ultrasonic=4.92m cv=-79PWM | S=1240 T=1547 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.7, 0.5) Hdg=26° | Gate 3/10 hdg 17.7° err -8.3° v=0.55m/s target=(11.0,6.0) ultrasonic=4.95m cv=-81PWM | S=1234 T=1547 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.8, 0.5) Hdg=26° | Gate 3/10 hdg 17.5° err -8.5° v=0.55m/s target=(11.0,6.0) ultrasonic=4.94m cv=-85PWM | S=1219 T=1548 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(9.8, 0.6) Hdg=26° | Gate 3/10 hdg 17.4° err -8.6° v=0.55m/s target=(11.0,6.0) ultrasonic=4.91m cv=-88PWM | S=1221 T=1548 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.8, 0.6) Hdg=27° | Gate 3/10 hdg 17.1° err -9.9° v=0.55m/s target=(11.0,6.0) ultrasonic=4.98m cv=-91PWM | S=1190 T=1548 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.8, 0.6) Hdg=27° | Gate 3/10 hdg 17.1° err -9.9° v=0.55m/s target=(11.0,6.0) ultrasonic=4.88m cv=-93PWM | S=1187 T=1548 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.9, 0.7) Hdg=27° | Gate 3/10 hdg 16.7° err -10.3° v=0.55m/s target=(11.0,6.0) ultrasonic=4.94m cv=-95PWM | S=1177 T=1548 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.9, 0.7) Hdg=27° | Gate 3/10 hdg 16.7° err -10.3° v=0.55m/s target=(11.0,6.0) ultrasonic=4.91m cv=-97PWM | S=1174 T=1548 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(9.9, 0.8) Hdg=27° | Gate 3/10 hdg 16.2° err -10.8° v=0.55m/s target=(11.0,6.0) ultrasonic=4.88m cv=-99PWM | S=1162 T=1549 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(10.0, 0.8) Hdg=27° | Gate 3/10 hdg 15.8° err -11.2° v=0.55m/s target=(11.0,6.0) ultrasonic=4.85m cv=-100PWM | S=1137 T=1549 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(10.0, 0.8) Hdg=27° | Gate 3/10 hdg 15.6° err -11.4° v=0.55m/s target=(11.0,6.0) ultrasonic=4.85m cv=-102PWM | S=1145 T=1549 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(10.0, 0.9) Hdg=27° | Gate 3/10 hdg 15.2° err -11.8° v=0.55m/s target=(11.0,6.0) ultrasonic=4.80m cv=-102PWM | S=1136 T=1550 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(10.1, 0.9) Hdg=27° | Gate 3/10 hdg 14.8° err -12.2° v=0.55m/s target=(11.0,6.0) ultrasonic=4.73m cv=-104PWM | S=1109 T=1550 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(10.1, 0.9) Hdg=27° | Gate 3/10 hdg 14.3° err -12.7° v=0.55m/s target=(11.0,6.0) ultrasonic=4.77m cv=-104PWM | S=1100 T=1550 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(10.1, 1.0) Hdg=27° | Gate 3/10 hdg 14.0° err -13.0° v=0.55m/s target=(11.0,6.0) ultrasonic=4.83m cv=-104PWM | S=1107 T=1550 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(10.2, 1.0) Hdg=27° | Gate 3/10 hdg 13.5° err -13.5° v=0.55m/s target=(11.0,6.0) ultrasonic=4.74m cv=-104PWM | S=1100 T=1550 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(10.2, 1.1) Hdg=27° | Gate 3/10 hdg 12.9° err -14.1° v=0.55m/s target=(11.0,6.0) ultrasonic=4.76m cv=-104PWM | S=1100 T=1551 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(10.2, 1.1) Hdg=27° | Gate 3/10 hdg 12.5° err -14.5° v=0.55m/s target=(11.0,6.0) ultrasonic=4.73m cv=-104PWM | S=1100 T=1551 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.2, 1.1) Hdg=26° | Gate 3/10 hdg 12.0° err -14.0° v=0.55m/s target=(11.0,6.0) ultrasonic=4.73m cv=-104PWM | S=1171 T=1551 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.3, 1.2) Hdg=26° | Gate 3/10 hdg 11.4° err -14.6° v=0.55m/s target=(11.0,6.0) ultrasonic=4.81m cv=-104PWM | S=1100 T=1551 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.3, 1.2) Hdg=26° | Gate 3/10 hdg 10.9° err -15.1° v=0.55m/s target=(11.0,6.0) ultrasonic=4.73m cv=-103PWM | S=1100 T=1552 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.3, 1.2) Hdg=26° | Gate 3/10 hdg 10.5° err -15.5° v=0.55m/s target=(11.0,6.0) ultrasonic=4.75m cv=-103PWM | S=1100 T=1552 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.4, 1.3) Hdg=25° | Gate 3/10 hdg 9.6° err -15.4° v=0.55m/s target=(11.0,6.0) ultrasonic=4.74m cv=-102PWM | S=1100 T=1552 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.4, 1.3) Hdg=25° | Gate 3/10 hdg 9.3° err -15.7° v=0.55m/s target=(11.0,6.0) ultrasonic=4.72m cv=-102PWM | S=1100 T=1552 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.4, 1.3) Hdg=25° | Gate 3/10 hdg 8.7° err -16.3° v=0.55m/s target=(11.0,6.0) ultrasonic=4.68m cv=-101PWM | S=1100 T=1552 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.4, 1.4) Hdg=25° | Gate 3/10 hdg 8.0° err -17.0° v=0.55m/s target=(11.0,6.0) ultrasonic=4.74m cv=-99PWM | S=1100 T=1552 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.5, 1.4) Hdg=24° | Gate 3/10 hdg 7.2° err -16.8° v=0.55m/s target=(11.0,6.0) ultrasonic=4.67m cv=-98PWM | S=1100 T=1552 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.5, 1.4) Hdg=24° | Gate 3/10 hdg 6.7° err -17.3° v=0.55m/s target=(11.0,6.0) ultrasonic=4.62m cv=-98PWM | S=1100 T=1552 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.5, 1.5) Hdg=23° | Gate 3/10 hdg 5.8° err -17.2° v=0.55m/s target=(11.0,6.0) ultrasonic=4.64m cv=-96PWM | S=1100 T=1552 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.6, 1.5) Hdg=23° | Gate 3/10 hdg 5.4° err -17.6° v=0.55m/s target=(11.0,6.0) ultrasonic=4.60m cv=-96PWM | S=1100 T=1552 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.6, 1.5) Hdg=22° | Gate 3/10 hdg 4.8° err -17.2° v=0.55m/s target=(11.0,6.0) ultrasonic=4.66m cv=-94PWM | S=1104 T=1552 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.6, 1.5) Hdg=22° | Gate 3/10 hdg 4.3° err -17.7° v=0.55m/s target=(11.0,6.0) ultrasonic=4.57m cv=-93PWM | S=1100 T=1552 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.6, 1.6) Hdg=22° | Gate 3/10 hdg 3.4° err -18.6° v=0.42m/s target=(11.0,6.0) ultrasonic=4.57m cv=-91PWM | S=1100 T=1545 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.6, 1.6) Hdg=21° | Gate 3/10 hdg 3.0° err -18.0° v=0.42m/s target=(11.0,6.0) ultrasonic=4.61m cv=-89PWM | S=1100 T=1545 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.7, 1.7) Hdg=21° | Gate 3/10 hdg 2.1° err -18.9° v=0.42m/s target=(11.0,6.0) ultrasonic=4.51m cv=-88PWM | S=1100 T=1546 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.7, 1.7) Hdg=20° | Gate 3/10 hdg 1.3° err -18.7° v=0.42m/s target=(11.0,6.0) ultrasonic=4.46m cv=-86PWM | S=1100 T=1546 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.7, 1.7) Hdg=20° | Gate 3/10 hdg 0.6° err -19.4° v=0.42m/s target=(11.0,6.0) ultrasonic=4.52m cv=-85PWM | S=1100 T=1546 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.8, 1.8) Hdg=19° | Gate 3/10 hdg 359.7° err -19.3° v=0.42m/s target=(11.0,6.0) ultrasonic=4.33m cv=-83PWM | S=1100 T=1546 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.8, 1.8) Hdg=18° | Gate 3/10 hdg 359.3° err -18.7° v=0.42m/s target=(11.0,6.0) ultrasonic=4.25m cv=-81PWM | S=1100 T=1546 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.8, 1.8) Hdg=18° | Gate 3/10 hdg 358.5° err -19.5° v=0.42m/s target=(11.0,6.0) ultrasonic=4.27m cv=-79PWM | S=1100 T=1546 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.8, 1.9) Hdg=17° | Gate 3/10 hdg 357.9° err -19.1° v=0.42m/s target=(11.0,6.0) ultrasonic=4.22m cv=-78PWM | S=1100 T=1546 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.8, 1.9) Hdg=17° | Gate 3/10 hdg 357.2° err -19.8° v=0.42m/s target=(11.0,6.0) ultrasonic=4.21m cv=-76PWM | S=1100 T=1546 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.9, 1.9) Hdg=16° | Gate 3/10 hdg 356.4° err -19.6° v=0.42m/s target=(11.0,6.0) ultrasonic=4.20m cv=-74PWM | S=1100 T=1547 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.9, 2.0) Hdg=16° | Gate 3/10 hdg 355.9° err -20.1° v=0.42m/s target=(11.0,6.0) ultrasonic=4.17m cv=-73PWM | S=1100 T=1547 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.9, 2.0) Hdg=15° | Gate 3/10 hdg 355.1° err -19.9° v=0.42m/s target=(11.0,6.0) ultrasonic=4.12m cv=-71PWM | S=1100 T=1547 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.9, 2.0) Hdg=15° | Gate 3/10 hdg 354.5° err -20.5° v=0.42m/s target=(11.0,6.0) ultrasonic=4.08m cv=-69PWM | S=1100 T=1547 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(10.9, 2.1) Hdg=14° | Gate 3/10 hdg 353.8° err -20.2° v=0.42m/s target=(11.0,6.0) ultrasonic=4.02m cv=-68PWM | S=1100 T=1547 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.0, 2.1) Hdg=14° | Gate 3/10 hdg 352.9° err -21.1° v=0.42m/s target=(11.0,6.0) ultrasonic=4.02m cv=-66PWM | S=1100 T=1547 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.0, 2.1) Hdg=13° | Gate 3/10 hdg 352.1° err -20.9° v=0.42m/s target=(11.0,6.0) ultrasonic=4.00m cv=-64PWM | S=1100 T=1547 | det=green_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.0, 2.2) Hdg=12° | Gate 3/10 hdg 351.3° err -20.7° v=0.42m/s target=(11.0,6.0) ultrasonic=3.94m cv=-62PWM | S=1100 T=1547 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.0, 2.2) Hdg=12° | Gate 3/10 hdg 350.7° err -21.3° v=0.42m/s target=(11.0,6.0) ultrasonic=3.93m cv=-60PWM | S=1100 T=1547 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.0, 2.3) Hdg=11° | Gate 3/10 hdg 349.8° err -21.2° v=0.42m/s target=(11.0,6.0) ultrasonic=3.89m cv=-58PWM | S=1100 T=1547 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.0, 2.3) Hdg=11° | Gate 3/10 hdg 349.5° err -21.5° v=0.42m/s target=(11.0,6.0) ultrasonic=3.85m cv=-57PWM | S=1100 T=1547 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.1, 2.3) Hdg=10° | Gate 3/10 hdg 348.6° err -21.4° v=0.42m/s target=(11.0,6.0) ultrasonic=3.88m cv=-55PWM | S=1100 T=1547 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.1, 2.4) Hdg=10° | Gate 3/10 hdg 348.0° err -22.0° v=0.42m/s target=(11.0,6.0) ultrasonic=3.87m cv=-54PWM | S=1100 T=1547 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.1, 2.4) Hdg=9° | Gate 3/10 hdg 347.1° err -21.9° v=0.42m/s target=(11.0,6.0) ultrasonic=3.78m cv=-52PWM | S=1100 T=1547 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.1, 2.4) Hdg=8° | Gate 3/10 hdg 346.5° err -21.5° v=0.42m/s target=(11.0,6.0) ultrasonic=3.80m cv=-51PWM | S=1100 T=1547 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.1, 2.5) Hdg=8° | Gate 3/10 hdg 345.7° err -22.3° v=0.42m/s target=(11.0,6.0) ultrasonic=3.78m cv=-49PWM | S=1100 T=1547 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.2, 2.5) Hdg=7° | Gate 3/10 hdg 345.1° err -21.9° v=0.42m/s target=(11.0,6.0) ultrasonic=3.74m cv=-47PWM | S=1100 T=1547 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.2, 2.5) Hdg=7° | Gate 3/10 hdg 344.2° err -22.8° v=0.42m/s target=(11.0,6.0) ultrasonic=3.71m cv=-46PWM | S=1100 T=1547 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.2, 2.6) Hdg=6° | Gate 3/10 hdg 343.4° err -22.6° v=0.42m/s target=(11.0,6.0) ultrasonic=3.69m cv=-44PWM | S=1100 T=1547 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.2, 2.6) Hdg=6° | Gate 3/10 hdg 343.1° err -22.9° v=0.42m/s target=(11.0,6.0) ultrasonic=3.70m cv=-43PWM | S=1100 T=1547 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.2, 2.6) Hdg=5° | Gate 3/10 hdg 342.3° err -22.7° v=0.42m/s target=(11.0,6.0) ultrasonic=3.68m cv=-41PWM | S=1100 T=1547 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.2, 2.7) Hdg=5° | Gate 3/10 hdg 341.7° err -23.3° v=0.42m/s target=(11.0,6.0) ultrasonic=3.67m cv=-39PWM | S=1100 T=1547 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.2, 2.7) Hdg=4° | Gate 3/10 hdg 340.8° err -23.2° v=0.42m/s target=(11.0,6.0) ultrasonic=3.68m cv=-38PWM | S=1100 T=1547 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.3, 2.8) Hdg=3° | Gate 3/10 hdg 340.2° err -22.8° v=0.42m/s target=(11.0,6.0) ultrasonic=3.64m cv=-36PWM | S=1100 T=1547 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.3, 2.8) Hdg=3° | Gate 3/10 hdg 339.7° err -23.3° v=0.42m/s target=(11.0,6.0) ultrasonic=3.60m cv=-34PWM | S=1100 T=1547 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.3, 2.8) Hdg=2° | Gate 3/10 hdg 338.8° err -23.2° v=0.42m/s target=(11.0,6.0) ultrasonic=3.59m cv=-33PWM | S=1100 T=1547 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.3, 2.9) Hdg=2° | Gate 3/10 hdg 338.2° err -23.8° v=0.42m/s target=(11.0,6.0) ultrasonic=3.57m cv=-32PWM | S=1100 T=1547 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.3, 2.9) Hdg=1° | Gate 3/10 hdg 337.1° err -23.9° v=0.42m/s target=(11.0,6.0) ultrasonic=3.50m cv=-30PWM | S=1100 T=1547 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.3, 3.0) Hdg=1° | Gate 3/10 hdg 336.6° err -24.4° v=0.42m/s target=(11.0,6.0) ultrasonic=3.55m cv=-28PWM | S=1100 T=1547 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.3, 3.0) Hdg=0° | Gate 3/10 hdg 336.0° err -24.0° v=0.42m/s target=(11.0,6.0) ultrasonic=3.54m cv=-27PWM | S=1100 T=1547 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.3, 3.0) Hdg=359° | Gate 3/10 hdg 335.4° err -23.6° v=0.42m/s target=(11.0,6.0) ultrasonic=3.54m cv=-26PWM | S=1100 T=1547 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.3, 3.1) Hdg=359° | Gate 3/10 hdg 334.8° err -24.2° v=0.42m/s target=(11.0,6.0) ultrasonic=3.47m cv=-24PWM | S=1100 T=1547 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.4, 3.1) Hdg=358° | Gate 3/10 hdg 334.2° err -23.8° v=0.42m/s target=(11.0,6.0) ultrasonic=3.52m cv=-22PWM | S=1100 T=1547 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.4, 3.1) Hdg=358° | Gate 3/10 hdg 333.4° err -24.6° v=0.42m/s target=(11.0,6.0) ultrasonic=3.45m cv=-21PWM | S=1100 T=1547 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.4, 3.2) Hdg=357° | Gate 3/10 hdg 332.7° err -24.3° v=0.42m/s target=(11.0,6.0) ultrasonic=3.53m cv=-19PWM | S=1100 T=1547 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.4, 3.2) Hdg=356° | Gate 3/10 hdg 332.2° err -23.8° v=0.42m/s target=(11.0,6.0) ultrasonic=3.47m cv=-18PWM | S=1100 T=1547 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.4, 3.3) Hdg=356° | Gate 3/10 hdg 331.6° err -24.4° v=0.42m/s target=(11.0,6.0) ultrasonic=3.48m cv=-16PWM | S=1100 T=1547 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.4, 3.3) Hdg=355° | Gate 3/10 hdg 331.0° err -24.0° v=0.42m/s target=(11.0,6.0) ultrasonic=3.48m cv=-15PWM | S=1100 T=1547 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.4, 3.3) Hdg=355° | Gate 3/10 hdg 330.6° err -24.4° v=0.42m/s target=(11.0,6.0) ultrasonic=3.48m cv=-13PWM | S=1100 T=1547 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.4, 3.4) Hdg=354° | Gate 3/10 hdg 329.6° err -24.4° v=0.42m/s target=(11.0,6.0) ultrasonic=3.43m cv=-12PWM | S=1100 T=1547 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.4, 3.4) Hdg=353° | Gate 3/10 hdg 329.0° err -24.0° v=0.42m/s target=(11.0,6.0) ultrasonic=3.41m cv=-10PWM | S=1100 T=1547 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.4, 3.5) Hdg=353° | Gate 3/10 hdg 328.4° err -24.6° v=0.42m/s target=(11.0,6.0) ultrasonic=3.47m cv=-9PWM | S=1100 T=1547 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.4, 3.5) Hdg=352° | Gate 3/10 hdg 327.7° err -24.3° v=0.42m/s target=(11.0,6.0) ultrasonic=3.40m cv=-7PWM | S=1100 T=1547 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.4, 3.5) Hdg=352° | Gate 3/10 hdg 327.4° err -24.6° v=0.42m/s target=(11.0,6.0) ultrasonic=3.43m cv=-6PWM | S=1100 T=1547 | det=red_buoy,green_buoy,green_marker
+[COURSE_APPROACH] Pos=(11.4, 3.6) Hdg=351° | Gate 3/10 hdg 326.7° err -24.3° v=0.42m/s target=(11.0,6.0) ultrasonic=3.44m cv=-4PWM | S=1100 T=1547 | det=red_buoy,green_buoy,green_marker
+[COURSE_APPROACH] Pos=(11.4, 3.6) Hdg=350° | Gate 3/10 hdg 326.1° err -23.9° v=0.42m/s target=(11.0,6.0) ultrasonic=3.45m cv=-3PWM | S=1100 T=1547 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.4, 3.7) Hdg=350° | Gate 3/10 hdg 325.7° err -24.3° v=0.42m/s target=(11.0,6.0) ultrasonic=3.44m cv=+0PWM | S=1100 T=1547 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.5, 3.7) Hdg=349° | Gate 3/10 hdg 325.1° err -23.9° v=0.42m/s target=(11.0,6.0) ultrasonic=3.48m cv=+0PWM | S=1100 T=1547 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.5, 3.7) Hdg=349° | Gate 3/10 hdg 324.4° err -24.6° v=0.42m/s target=(11.0,6.0) ultrasonic=3.43m cv=+0PWM | S=1100 T=1547 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.5, 3.8) Hdg=348° | Gate 3/10 hdg 324.0° err -24.0° v=0.42m/s target=(11.0,6.0) ultrasonic=3.49m cv=+0PWM | S=1100 T=1547 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.5, 3.8) Hdg=348° | Gate 3/10 hdg 323.6° err -24.4° v=0.42m/s target=(11.0,6.0) ultrasonic=3.49m cv=+0PWM | S=1100 T=1547 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.5, 3.9) Hdg=347° | Gate 3/10 hdg 322.9° err -24.1° v=0.42m/s target=(11.0,6.0) ultrasonic=3.49m cv=+2PWM | S=1102 T=1547 | det=green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.5, 3.9) Hdg=346° | Gate 3/10 hdg 322.4° err -23.6° v=0.42m/s target=(11.0,6.0) ultrasonic=3.51m cv=+3PWM | S=1103 T=1547 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.5, 3.9) Hdg=346° | Gate 3/10 hdg 322.0° err -24.0° v=0.42m/s target=(11.0,6.0) ultrasonic=3.48m cv=+3PWM | S=1103 T=1547 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.5, 4.0) Hdg=345° | Gate 3/10 hdg 321.4° err -23.6° v=0.42m/s target=(11.0,6.0) ultrasonic=2.63m cv=+4PWM | S=1104 T=1547 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.5, 4.0) Hdg=345° | Gate 3/10 hdg 321.0° err -24.0° v=0.42m/s target=(11.0,6.0) ultrasonic=2.63m cv=+4PWM | S=1104 T=1547 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.5, 4.1) Hdg=344° | Gate 3/10 hdg 320.6° err -23.4° v=0.42m/s target=(11.0,6.0) ultrasonic=2.58m cv=+5PWM | S=1105 T=1547 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.5, 4.1) Hdg=343° | Gate 3/10 hdg 320.1° err -22.9° v=0.42m/s target=(11.0,6.0) ultrasonic=3.56m | S=1100 T=1547 | det=red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.5, 4.1) Hdg=343° | Gate 3/10 hdg 319.8° err -23.2° v=0.42m/s target=(11.0,6.0) ultrasonic=3.53m | S=1100 T=1547 | det=red_buoy
+[COURSE_APPROACH] Pos=(11.5, 4.2) Hdg=342° | Gate 3/10 hdg 319.2° err -22.8° v=0.42m/s target=(11.0,6.0) ultrasonic=3.58m | S=1100 T=1547 | det=red_buoy
+[COURSE_APPROACH] Pos=(11.5, 4.2) Hdg=342° | Gate 3/10 hdg 318.8° err -23.2° v=0.42m/s target=(11.0,6.0) ultrasonic=3.58m | S=1100 T=1547 | det=red_buoy
+[COURSE_APPROACH] Pos=(11.5, 4.2) Hdg=341° | Gate 3/10 hdg 318.6° err -22.4° v=0.42m/s target=(11.0,6.0) ultrasonic=3.59m | S=1100 T=1547 | det=red_buoy
+[COURSE_APPROACH] Pos=(11.5, 4.3) Hdg=341° | Gate 3/10 hdg 318.1° err -22.9° v=0.42m/s target=(11.0,6.0) ultrasonic=3.61m | S=1100 T=1547 | det=red_buoy,green_marker
+[COURSE_APPROACH] Pos=(11.5, 4.3) Hdg=340° | Gate 3/10 hdg 317.8° err -22.2° v=0.42m/s target=(11.0,6.0) ultrasonic=3.64m | S=1100 T=1547 | det=red_buoy,green_marker
+[COURSE_APPROACH] Pos=(11.5, 4.4) Hdg=339° | Gate 3/10 hdg 317.3° err -21.7° v=0.42m/s target=(11.0,6.0) ultrasonic=3.69m | S=1111 T=1547 | det=red_buoy
+[COURSE_APPROACH] Pos=(11.4, 4.4) Hdg=339° | Gate 3/10 hdg 317.1° err -21.9° v=0.42m/s target=(11.0,6.0) ultrasonic=3.69m | S=1100 T=1547 | det=red_buoy
+[COURSE_APPROACH] Pos=(11.4, 4.4) Hdg=338° | Gate 3/10 hdg 316.6° err -21.4° v=0.42m/s target=(11.0,6.0) ultrasonic=3.65m | S=1131 T=1547 | det=red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.4, 4.5) Hdg=338° | Gate 3/10 hdg 316.4° err -21.6° v=0.42m/s target=(11.0,6.0) ultrasonic=3.62m | S=1100 T=1547 | det=red_buoy
+[COURSE_APPROACH] Pos=(11.4, 4.5) Hdg=337° | Gate 3/10 hdg 315.9° err -21.1° v=0.42m/s target=(11.0,6.0) ultrasonic=3.69m | S=1100 T=1547 | det=red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.4, 4.5) Hdg=337° | Gate 3/10 hdg 315.7° err -21.3° v=0.42m/s target=(11.0,6.0) ultrasonic=3.69m | S=1100 T=1547 | det=red_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.4, 4.6) Hdg=336° | Gate 3/10 hdg 315.4° err -20.6° v=0.42m/s target=(11.0,6.0) ultrasonic=3.76m | S=1100 T=1547 | det=red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.4, 4.6) Hdg=335° | Gate 3/10 hdg 315.0° err -20.0° v=0.42m/s target=(11.0,6.0) ultrasonic=3.77m | S=1100 T=1547 | det=red_buoy
+[COURSE_APPROACH] Pos=(11.4, 4.7) Hdg=335° | Gate 3/10 hdg 314.7° err -20.3° v=0.42m/s target=(11.0,6.0) ultrasonic=3.80m | S=1100 T=1547 | det=red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.4, 4.7) Hdg=334° | Gate 3/10 hdg 314.4° err -19.6° v=0.42m/s target=(11.0,6.0) ultrasonic=3.81m | S=1100 T=1547 | det=red_buoy
+[COURSE_APPROACH] Pos=(11.4, 4.8) Hdg=334° | Gate 3/10 hdg 314.1° err -19.9° v=0.42m/s target=(11.0,6.0) ultrasonic=3.75m | S=1100 T=1547 | det=red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.4, 4.8) Hdg=333° | Gate 3/10 hdg 313.9° err -19.1° v=0.42m/s target=(11.0,6.0) ultrasonic=3.78m | S=1100 T=1547 | det=red_buoy
+[COURSE_APPROACH] Pos=(11.4, 4.8) Hdg=333° | Gate 3/10 hdg 313.6° err -19.4° v=0.42m/s target=(11.0,6.0) ultrasonic=3.74m | S=1100 T=1547 | det=red_buoy
+[COURSE_APPROACH] Pos=(11.4, 4.9) Hdg=332° | Gate 3/10 hdg 313.3° err -18.7° v=0.42m/s target=(11.0,6.0) ultrasonic=3.72m | S=1100 T=1547 | det=red_buoy
+[COURSE_APPROACH] Pos=(11.4, 4.9) Hdg=331° | Gate 3/10 hdg 313.0° err -18.0° v=0.55m/s target=(11.0,6.0) ultrasonic=3.65m | S=1100 T=1554 | det=red_buoy
+[COURSE_APPROACH] Pos=(11.4, 4.9) Hdg=331° | Gate 3/10 hdg 312.9° err -18.1° v=0.42m/s target=(11.0,6.0) ultrasonic=3.74m | S=1100 T=1547 | det=red_buoy
+[COURSE_APPROACH] Pos=(11.3, 5.0) Hdg=330° | Gate 3/10 hdg 312.6° err -17.4° v=0.55m/s target=(11.0,6.0) ultrasonic=3.69m | S=1219 T=1554 | det=red_buoy
+[COURSE_APPROACH] Pos=(11.3, 5.0) Hdg=330° | Gate 3/10 hdg 312.5° err -17.5° v=0.55m/s target=(11.0,6.0) ultrasonic=3.72m | S=1110 T=1554 | det=none
+[COURSE_APPROACH] Pos=(11.3, 5.1) Hdg=329° | Gate 3/10 hdg 312.1° err -16.9° v=0.55m/s target=(11.0,6.0) ultrasonic=3.61m | S=1213 T=1554 | det=red_buoy
+[COURSE_APPROACH] Pos=(11.3, 5.1) Hdg=329° | Gate 3/10 hdg 311.9° err -17.1° v=0.55m/s target=(11.0,6.0) ultrasonic=3.68m | S=1110 T=1554 | det=red_buoy
+[COURSE_APPROACH] Pos=(11.3, 5.1) Hdg=328° | Gate 3/10 hdg 311.8° err -16.2° v=0.55m/s target=(11.0,6.0) ultrasonic=2.33m | S=1139 T=1553 | det=red_buoy
+[COURSE_APPROACH] Pos=(11.3, 5.2) Hdg=328° | Gate 3/10 hdg 311.5° err -16.5° v=0.55m/s target=(11.0,6.0) ultrasonic=2.29m | S=1126 T=1553 | det=red_buoy
+[COURSE_APPROACH] Pos=(11.3, 5.2) Hdg=327° | Gate 3/10 hdg 311.3° err -15.7° v=0.55m/s target=(11.0,6.0) ultrasonic=2.26m | S=1150 T=1553 | det=red_buoy,red_buoy,green_marker
+[COURSE_APPROACH] Pos=(11.3, 5.3) Hdg=326° | Gate 3/10 hdg 311.2° err -14.8° v=0.55m/s target=(11.0,6.0) ultrasonic=2.22m | S=1167 T=1553 | det=red_buoy,red_buoy,green_marker
+[COURSE_APPROACH] Pos=(11.3, 5.3) Hdg=326° | Gate 3/10 hdg 311.0° err -15.0° v=0.55m/s target=(11.0,6.0) ultrasonic=2.21m | S=1166 T=1553 | det=red_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.2, 5.3) Hdg=325° | Gate 3/10 hdg 310.8° err -14.2° v=0.55m/s target=(11.0,6.0) ultrasonic=2.19m | S=1184 T=1553 | det=red_buoy,red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.2, 5.4) Hdg=324° | Gate 3/10 hdg 310.6° err -13.4° v=0.51m/s target=(11.0,6.0) ultrasonic=1.94m | S=1201 T=1550 | det=red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.2, 5.4) Hdg=324° | Gate 3/10 hdg 310.4° err -13.6° v=0.50m/s target=(11.0,6.0) ultrasonic=1.99m | S=1196 T=1549 | det=red_buoy
+[COURSE_APPROACH] Pos=(11.2, 5.5) Hdg=323° | Gate 3/10 hdg 310.2° err -12.8° v=0.49m/s target=(11.0,6.0) ultrasonic=1.98m | S=1202 T=1548 | det=red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.2, 5.5) Hdg=323° | Gate 3/10 hdg 310.1° err -12.9° v=0.48m/s target=(11.0,6.0) ultrasonic=2.00m | S=1213 T=1548 | det=red_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.2, 5.5) Hdg=322° | Gate 3/10 hdg 309.9° err -12.1° v=0.47m/s target=(11.0,6.0) ultrasonic=2.10m cv=-4PWM | S=1227 T=1547 | det=red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.1, 5.6) Hdg=322° | Gate 3/10 hdg 309.9° err -12.1° v=0.47m/s target=(11.0,6.0) ultrasonic=2.12m | S=1231 T=1547 | det=red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.1, 5.6) Hdg=321° | Gate 3/10 hdg 309.7° err -11.3° v=0.46m/s target=(11.0,6.0) ultrasonic=3.50m | S=1246 T=1546 | det=red_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.1, 5.7) Hdg=320° | Gate 3/10 hdg 309.5° err -10.5° v=0.45m/s target=(11.0,6.0) ultrasonic=3.52m | S=1371 T=1546 | det=red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.1, 5.7) Hdg=320° | Gate 3/10 hdg 309.4° err -10.6° v=0.44m/s target=(11.0,6.0) ultrasonic=3.53m cv=-9PWM | S=1255 T=1545 | det=red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.0, 5.7) Hdg=319° | Gate 3/10 hdg 309.3° err -9.7° v=0.43m/s target=(11.0,6.0) ultrasonic=3.50m cv=-12PWM | S=1372 T=1544 | det=red_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.0, 5.8) Hdg=319° | Gate 3/10 hdg 309.1° err -9.9° v=0.42m/s target=(11.0,6.0) ultrasonic=3.53m cv=-17PWM | S=1261 T=1544 | det=red_buoy,red_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(11.0, 5.8) Hdg=318° | Gate 3/10 hdg 309.1° err -8.9° v=0.42m/s target=(11.0,6.0) ultrasonic=4.87m cv=-20PWM | S=1281 T=1543 | det=red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.0, 5.9) Hdg=318° | Gate 3/10 hdg 308.9° err -9.1° v=0.42m/s target=(11.0,6.0) ultrasonic=4.92m cv=-22PWM | S=1276 T=1543 | det=red_buoy,red_buoy,green_buoy,red_buoy
+[COURSE_APPROACH] Pos=(11.0, 5.9) Hdg=317° | Gate 3/10 hdg 308.8° err -8.2° v=0.42m/s target=(11.0,6.0) ultrasonic=4.96m cv=-23PWM | S=1296 T=1543 | det=red_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(10.9, 5.9) Hdg=317° | Gate 3/10 hdg 308.8° err -8.2° v=0.42m/s target=(11.0,6.0) ultrasonic=4.91m cv=-24PWM | S=1290 T=1543 | det=red_buoy,red_buoy,green_buoy
+[COURSE_APPROACH] Pos=(10.9, 6.0) Hdg=316° | Gate 3/10 hdg 308.7° err -7.3° v=0.42m/s target=(11.0,6.0) ultrasonic=4.97m cv=-24PWM | S=1314 T=1543 | det=red_buoy,green_buoy,red_buoy
+[COURSE_TURN] Pos=(10.9, 6.0) Hdg=316° | Gate 4/10 hdg 309.3° err -6.7° v=0.42m/s target=(6.0,10.0) ultrasonic=4.92m cv=-93PWM | S=1257 T=1543 | det=green_buoy,red_buoy,red_buoy
+[COURSE_TURN] Pos=(10.8, 6.1) Hdg=315° | Gate 4/10 hdg 309.1° err -5.9° v=0.42m/s target=(6.0,10.0) ultrasonic=4.93m cv=-92PWM | S=1268 T=1543 | det=red_buoy,red_buoy,green_buoy
+[COURSE_TURN] Pos=(10.8, 6.1) Hdg=315° | Gate 4/10 hdg 309.1° err -5.9° v=0.42m/s target=(6.0,10.0) ultrasonic=4.97m cv=-90PWM | S=1278 T=1543 | det=green_buoy,red_buoy,red_buoy,red_buoy
+[COURSE_TURN] Pos=(10.8, 6.1) Hdg=314° | Gate 4/10 hdg 308.8° err -5.2° v=0.42m/s target=(6.0,10.0) ultrasonic=4.97m cv=-88PWM | S=1279 T=1543 | det=red_buoy,green_buoy,red_buoy,red_buoy
+[COURSE_TURN] Pos=(10.8, 6.2) Hdg=314° | Gate 4/10 hdg 308.8° err -5.2° v=0.42m/s target=(6.0,10.0) ultrasonic=4.92m cv=-86PWM | S=1288 T=1543 | det=green_buoy,red_buoy,red_buoy
+[COURSE_TURN] Pos=(10.7, 6.2) Hdg=313° | Gate 4/10 hdg 308.8° err -4.2° v=0.42m/s target=(6.0,10.0) ultrasonic=4.91m cv=-84PWM | S=1322 T=1543 | det=red_buoy,green_buoy,red_buoy
+[COURSE_TURN] Pos=(10.7, 6.2) Hdg=313° | Gate 4/10 hdg 308.6° err -4.4° v=0.42m/s target=(6.0,10.0) ultrasonic=4.94m cv=-81PWM | S=1322 T=1543 | det=green_buoy,red_buoy,red_buoy
+[COURSE_TURN] Pos=(10.7, 6.3) Hdg=312° | Gate 4/10 hdg 308.5° err -3.5° v=0.42m/s target=(6.0,10.0) ultrasonic=4.97m cv=-79PWM | S=1335 T=1543 | det=red_buoy,green_buoy,red_buoy,red_buoy
+[COURSE_TURN] Pos=(10.6, 6.3) Hdg=312° | Gate 4/10 hdg 308.5° err -3.5° v=0.42m/s target=(6.0,10.0) ultrasonic=4.91m cv=-77PWM | S=1346 T=1543 | det=red_buoy,green_buoy,red_buoy
+[COURSE_TURN] Pos=(10.6, 6.3) Hdg=311° | Gate 4/10 hdg 308.3° err -2.7° v=0.42m/s target=(6.0,10.0) ultrasonic=4.95m cv=-74PWM | S=1366 T=1542 | det=red_buoy,red_buoy,green_buoy
+[COURSE_TURN] Pos=(10.6, 6.4) Hdg=311° | Gate 4/10 hdg 308.2° err -2.8° v=0.42m/s target=(6.0,10.0) ultrasonic=3.49m cv=-72PWM | S=1363 T=1542 | det=red_buoy,green_buoy,red_buoy
+[COURSE_TURN] Pos=(10.6, 6.4) Hdg=310° | Gate 4/10 hdg 308.1° err -1.9° v=0.42m/s target=(6.0,10.0) ultrasonic=3.47m cv=-70PWM | S=1386 T=1542 | det=red_buoy,green_buoy,red_buoy
+[COURSE_TURN] Pos=(10.5, 6.5) Hdg=310° | Gate 4/10 hdg 308.0° err -2.0° v=0.42m/s target=(6.0,10.0) ultrasonic=1.96m cv=-53PWM | S=1409 T=1542 | det=red_buoy,green_buoy,red_buoy
+[COURSE_TURN] Pos=(10.5, 6.5) Hdg=309° | Gate 4/10 hdg 307.9° err -1.1° v=0.42m/s target=(6.0,10.0) ultrasonic=1.93m cv=-56PWM | S=1420 T=1542 | det=red_buoy,red_buoy,green_buoy
+[COURSE_TURN] Pos=(10.5, 6.5) Hdg=309° | Gate 4/10 hdg 307.9° err -1.1° v=0.42m/s target=(6.0,10.0) ultrasonic=1.91m cv=-57PWM | S=1416 T=1542 | det=red_buoy,red_buoy,green_buoy
+[COURSE_TURN] Pos=(10.4, 6.6) Hdg=309° | Gate 4/10 hdg 307.8° err -1.2° v=0.42m/s target=(6.0,10.0) ultrasonic=1.93m cv=-56PWM | S=1418 T=1542 | det=red_buoy,green_buoy,red_buoy
+[COURSE_TURN] Pos=(10.4, 6.6) Hdg=308° | Gate 4/10 hdg 307.8° err -0.2° v=0.42m/s target=(6.0,10.0) ultrasonic=1.94m cv=-56PWM | S=1440 T=1542 | det=red_buoy,red_buoy,green_buoy
+[COURSE_TURN] Pos=(10.4, 6.6) Hdg=308° | Gate 4/10 hdg 307.7° err -0.3° v=0.42m/s target=(6.0,10.0) ultrasonic=1.95m cv=-54PWM | S=1436 T=1541 | det=red_buoy,red_buoy,green_buoy
+[COURSE_TURN] Pos=(10.3, 6.7) Hdg=307° | Gate 4/10 hdg 307.6° err +0.6° v=0.42m/s target=(6.0,10.0) ultrasonic=3.49m cv=-53PWM | S=1461 T=1542 | det=red_buoy,red_buoy,green_buoy
+[COURSE_TURN] Pos=(10.3, 6.7) Hdg=307° | Gate 4/10 hdg 307.5° err +0.5° v=0.42m/s target=(6.0,10.0) ultrasonic=3.51m cv=-51PWM | S=1461 T=1542 | det=red_buoy,red_buoy,green_buoy
+[COURSE_TURN] Pos=(10.2, 6.7) Hdg=306° | Gate 4/10 hdg 307.5° err +1.5° v=0.42m/s target=(6.0,10.0) ultrasonic=4.91m cv=-35PWM | S=1499 T=1541 | det=red_buoy,red_buoy
+[COURSE_TURN] Pos=(10.2, 6.8) Hdg=306° | Gate 4/10 hdg 307.4° err +1.4° v=0.42m/s target=(6.0,10.0) ultrasonic=4.86m | S=1528 T=1541 | det=red_buoy,green_buoy,red_buoy
+[COURSE_TURN] Pos=(10.2, 6.8) Hdg=306° | Gate 4/10 hdg 307.5° err +1.5° v=0.42m/s target=(6.0,10.0) ultrasonic=4.97m cv=-23PWM | S=1510 T=1541 | det=red_buoy,green_buoy,red_buoy,green_buoy
+[COURSE_TURN] Pos=(10.1, 6.8) Hdg=305° | Gate 4/10 hdg 307.4° err +2.4° v=0.42m/s target=(6.0,10.0) ultrasonic=4.98m cv=-15PWM | S=1539 T=1541 | det=red_buoy,green_buoy,red_buoy
+[COURSE_TURN] Pos=(10.1, 6.9) Hdg=305° | Gate 4/10 hdg 307.3° err +2.3° v=0.42m/s target=(6.0,10.0) ultrasonic=4.93m cv=-9PWM | S=1538 T=1541 | det=red_buoy
+[COURSE_TURN] Pos=(10.0, 6.9) Hdg=305° | Gate 4/10 hdg 307.4° err +2.4° v=0.42m/s target=(6.0,10.0) ultrasonic=4.99m | S=1553 T=1541 | det=red_buoy,green_buoy,red_buoy
+[COURSE_TURN] Pos=(10.0, 6.9) Hdg=304° | Gate 4/10 hdg 307.3° err +3.3° v=0.42m/s target=(6.0,10.0) ultrasonic=4.93m cv=+0PWM | S=1560 T=1541 | det=red_buoy,green_buoy,red_buoy
+[COURSE_TURN] Pos=(10.0, 7.0) Hdg=304° | Gate 4/10 hdg 307.2° err +3.2° v=0.42m/s target=(6.0,10.0) ultrasonic=4.81m cv=+0PWM | S=1557 T=1541 | det=red_buoy,green_buoy
+[COURSE_TURN] Pos=(9.9, 7.0) Hdg=304° | Gate 4/10 hdg 307.3° err +3.3° v=0.42m/s target=(6.0,10.0) ultrasonic=4.86m cv=+0PWM | S=1573 T=1541 | det=red_buoy,green_buoy
+[COURSE_TURN] Pos=(9.9, 7.0) Hdg=303° | Gate 4/10 hdg 307.4° err +4.4° v=0.42m/s target=(6.0,10.0) ultrasonic=4.71m cv=+7PWM | S=1605 T=1541 | det=red_buoy,green_buoy,red_buoy
+[COURSE_TURN] Pos=(9.9, 7.0) Hdg=303° | Gate 4/10 hdg 307.4° err +4.4° v=0.42m/s target=(6.0,10.0) ultrasonic=4.73m cv=+10PWM | S=1609 T=1541 | det=red_buoy,green_buoy,red_buoy
+[COURSE_TURN] Pos=(9.8, 7.1) Hdg=303° | Gate 4/10 hdg 307.4° err +4.4° v=0.42m/s target=(6.0,10.0) ultrasonic=4.76m cv=+12PWM | S=1608 T=1542 | det=green_buoy,red_buoy
+[COURSE_TURN] Pos=(9.8, 7.1) Hdg=302° | Gate 4/10 hdg 307.5° err +5.5° v=0.42m/s target=(6.0,10.0) ultrasonic=4.79m cv=+15PWM | S=1750 T=1541 | det=red_buoy,green_buoy
+[COURSE_TURN] Pos=(9.7, 7.1) Hdg=302° | Gate 4/10 hdg 307.5° err +5.5° v=0.42m/s target=(6.0,10.0) ultrasonic=4.79m cv=+17PWM | S=1639 T=1541 | det=red_buoy,green_buoy,red_buoy
+[COURSE_TURN] Pos=(9.7, 7.1) Hdg=302° | Gate 4/10 hdg 307.7° err +5.7° v=0.42m/s target=(6.0,10.0) ultrasonic=4.63m cv=+19PWM | S=1663 T=1541 | det=red_buoy,green_buoy,red_buoy
+[COURSE_TURN] Pos=(9.6, 7.2) Hdg=302° | Gate 4/10 hdg 307.7° err +5.7° v=0.42m/s target=(6.0,10.0) ultrasonic=4.70m cv=+21PWM | S=1641 T=1541 | det=red_buoy,green_buoy
+[COURSE_TURN] Pos=(9.6, 7.2) Hdg=301° | Gate 4/10 hdg 307.9° err +6.9° v=0.42m/s target=(6.0,10.0) ultrasonic=4.70m cv=+24PWM | S=1683 T=1541 | det=red_buoy,green_buoy
+[COURSE_TURN] Pos=(9.6, 7.2) Hdg=301° | Gate 4/10 hdg 307.9° err +6.9° v=0.42m/s target=(6.0,10.0) ultrasonic=4.72m cv=+26PWM | S=1686 T=1541 | det=red_buoy,green_buoy,red_buoy
+[COURSE_TURN] Pos=(9.5, 7.2) Hdg=301° | Gate 4/10 hdg 308.1° err +7.1° v=0.42m/s target=(6.0,10.0) ultrasonic=4.65m cv=+28PWM | S=1685 T=1541 | det=red_buoy,green_buoy,red_buoy
+[COURSE_TURN] Pos=(9.5, 7.3) Hdg=301° | Gate 4/10 hdg 308.1° err +7.1° v=0.42m/s target=(6.0,10.0) ultrasonic=4.71m cv=+30PWM | S=1685 T=1541 | det=red_buoy,green_buoy,red_buoy
+[COURSE_TURN] Pos=(9.4, 7.3) Hdg=300° | Gate 4/10 hdg 308.3° err +8.3° v=0.42m/s target=(6.0,10.0) ultrasonic=4.63m cv=+32PWM | S=1715 T=1542 | det=red_buoy,green_buoy
+[COURSE_TURN] Pos=(9.4, 7.3) Hdg=300° | Gate 4/10 hdg 308.5° err +8.5° v=0.42m/s target=(6.0,10.0) ultrasonic=4.66m cv=+35PWM | S=1723 T=1542 | det=red_buoy,green_buoy
+[COURSE_TURN] Pos=(9.4, 7.3) Hdg=300° | Gate 4/10 hdg 308.7° err +8.7° v=0.42m/s target=(6.0,10.0) ultrasonic=4.74m cv=+37PWM | S=1731 T=1542 | det=red_buoy,green_buoy
+[COURSE_TURN] Pos=(9.3, 7.3) Hdg=300° | Gate 4/10 hdg 308.8° err +8.8° v=0.42m/s target=(6.0,10.0) ultrasonic=4.65m cv=+39PWM | S=1735 T=1542 | det=green_buoy,red_buoy,red_buoy
+[COURSE_TURN] Pos=(9.3, 7.4) Hdg=300° | Gate 4/10 hdg 309.1° err +9.1° v=0.42m/s target=(6.0,10.0) ultrasonic=4.60m cv=+42PWM | S=1754 T=1542 | det=red_buoy,green_buoy,red_buoy
+[COURSE_TURN] Pos=(9.2, 7.4) Hdg=299° | Gate 4/10 hdg 309.3° err +10.3° v=0.42m/s target=(6.0,10.0) ultrasonic=4.95m cv=+44PWM | S=1794 T=1542 | det=red_buoy,green_buoy,red_buoy
+[COURSE_TURN] Pos=(9.2, 7.4) Hdg=299° | Gate 4/10 hdg 309.4° err +10.4° v=0.42m/s target=(6.0,10.0) ultrasonic=4.91m cv=+46PWM | S=1777 T=1542 | det=red_buoy,green_buoy
+[COURSE_TURN] Pos=(9.1, 7.4) Hdg=299° | Gate 4/10 hdg 309.8° err +10.8° v=0.42m/s target=(6.0,10.0) ultrasonic=4.93m cv=+49PWM | S=1788 T=1542 | det=green_buoy,red_buoy
+[COURSE_TURN] Pos=(9.1, 7.4) Hdg=299° | Gate 4/10 hdg 309.9° err +10.9° v=0.42m/s target=(6.0,10.0) ultrasonic=4.07m cv=+51PWM | S=1792 T=1542 | det=green_buoy,red_buoy,red_buoy
+[COURSE_TURN] Pos=(9.0, 7.4) Hdg=299° | Gate 4/10 hdg 310.3° err +11.3° v=0.42m/s target=(6.0,10.0) ultrasonic=3.97m cv=+53PWM | S=1827 T=1543 | det=green_buoy,red_buoy
+[COURSE_TURN] Pos=(9.0, 7.5) Hdg=299° | Gate 4/10 hdg 310.5° err +11.5° v=0.42m/s target=(6.0,10.0) ultrasonic=4.03m cv=+55PWM | S=1833 T=1543 | det=green_buoy,red_buoy,red_buoy
+[COURSE_TURN] Pos=(8.9, 7.5) Hdg=299° | Gate 4/10 hdg 310.7° err +11.7° v=0.42m/s target=(6.0,10.0) ultrasonic=4.02m cv=+57PWM | S=1817 T=1543 | det=green_buoy,red_buoy,red_buoy
+[COURSE_TURN] Pos=(8.9, 7.5) Hdg=299° | Gate 4/10 hdg 310.9° err +11.9° v=0.42m/s target=(6.0,10.0) ultrasonic=3.98m cv=+59PWM | S=1823 T=1543 | det=green_buoy,red_buoy,red_buoy
+[COURSE_TURN] Pos=(8.8, 7.5) Hdg=299° | Gate 4/10 hdg 311.3° err +12.3° v=0.42m/s target=(6.0,10.0) ultrasonic=3.90m cv=+61PWM | S=1846 T=1543 | det=red_buoy,green_buoy,red_buoy
+[COURSE_TURN] Pos=(8.8, 7.5) Hdg=299° | Gate 4/10 hdg 311.6° err +12.6° v=0.42m/s target=(6.0,10.0) ultrasonic=3.90m cv=+62PWM | S=1852 T=1543 | det=red_buoy,green_buoy,red_buoy
+[COURSE_TURN] Pos=(8.7, 7.5) Hdg=299° | Gate 4/10 hdg 311.9° err +12.9° v=0.42m/s target=(6.0,10.0) ultrasonic=3.90m cv=+64PWM | S=1863 T=1544 | det=red_buoy,green_buoy,red_buoy
+[COURSE_TURN] Pos=(8.7, 7.5) Hdg=299° | Gate 4/10 hdg 312.1° err +13.1° v=0.42m/s target=(6.0,10.0) ultrasonic=3.90m cv=+66PWM | S=1858 T=1544 | det=green_buoy,red_buoy,red_buoy
+[COURSE_TURN] Pos=(8.7, 7.6) Hdg=299° | Gate 4/10 hdg 312.5° err +13.5° v=0.42m/s target=(6.0,10.0) ultrasonic=3.84m cv=+67PWM | S=1867 T=1544 | det=green_buoy,red_buoy,red_buoy
+[COURSE_TURN] Pos=(8.6, 7.6) Hdg=299° | Gate 4/10 hdg 312.8° err +13.8° v=0.42m/s target=(6.0,10.0) ultrasonic=3.84m cv=+69PWM | S=1876 T=1544 | det=green_buoy,red_buoy,red_buoy
+[COURSE_TURN] Pos=(8.6, 7.6) Hdg=299° | Gate 4/10 hdg 313.3° err +14.3° v=0.42m/s target=(6.0,10.0) ultrasonic=3.82m cv=+70PWM | S=1900 T=1544 | det=green_buoy,red_buoy
+[COURSE_TURN] Pos=(8.5, 7.6) Hdg=299° | Gate 4/10 hdg 313.4° err +14.4° v=0.42m/s target=(6.0,10.0) ultrasonic=3.76m cv=+71PWM | S=1900 T=1544 | det=red_buoy,green_buoy
+[COURSE_TURN] Pos=(8.5, 7.6) Hdg=300° | Gate 4/10 hdg 313.7° err +13.7° v=0.42m/s target=(6.0,10.0) ultrasonic=3.80m cv=+72PWM | S=1876 T=1545 | det=red_buoy,green_buoy,red_buoy
+[COURSE_TURN] Pos=(8.4, 7.6) Hdg=300° | Gate 4/10 hdg 314.0° err +14.0° v=0.42m/s target=(6.0,10.0) ultrasonic=3.73m cv=+73PWM | S=1898 T=1545 | det=red_buoy,green_buoy
+[COURSE_TURN] Pos=(8.4, 7.6) Hdg=300° | Gate 4/10 hdg 314.3° err +14.3° v=0.42m/s target=(6.0,10.0) ultrasonic=3.71m cv=+74PWM | S=1892 T=1545 | det=green_buoy,red_buoy,red_buoy
+[COURSE_TURN] Pos=(8.4, 7.7) Hdg=300° | Gate 4/10 hdg 314.7° err +14.7° v=0.42m/s target=(6.0,10.0) ultrasonic=3.72m cv=+75PWM | S=1900 T=1545 | det=green_buoy,red_buoy,red_buoy
+[COURSE_TURN] Pos=(8.3, 7.7) Hdg=301° | Gate 4/10 hdg 315.1° err +14.1° v=0.42m/s target=(6.0,10.0) ultrasonic=3.67m cv=+75PWM | S=1811 T=1545 | det=green_buoy,red_buoy
+[COURSE_TURN] Pos=(8.3, 7.7) Hdg=301° | Gate 4/10 hdg 315.5° err +14.5° v=0.42m/s target=(6.0,10.0) ultrasonic=3.70m cv=+75PWM | S=1900 T=1545 | det=red_buoy,green_buoy,red_buoy
+[COURSE_TURN] Pos=(8.2, 7.7) Hdg=301° | Gate 4/10 hdg 315.8° err +14.8° v=0.42m/s target=(6.0,10.0) ultrasonic=3.67m cv=+76PWM | S=1900 T=1546 | det=red_buoy,green_buoy,red_buoy
+[COURSE_TURN] Pos=(8.2, 7.7) Hdg=301° | Gate 4/10 hdg 315.9° err +14.9° v=0.42m/s target=(6.0,10.0) ultrasonic=3.63m cv=+76PWM | S=1900 T=1546 | det=red_buoy,green_buoy,red_buoy
+[COURSE_TURN] Pos=(8.2, 7.7) Hdg=302° | Gate 4/10 hdg 316.5° err +14.5° v=0.42m/s target=(6.0,10.0) ultrasonic=3.03m cv=+76PWM | S=1899 T=1546 | det=red_buoy,green_buoy,red_buoy
+[COURSE_TURN] Pos=(8.1, 7.7) Hdg=302° | Gate 4/10 hdg 316.8° err +14.8° v=0.42m/s target=(6.0,10.0) ultrasonic=3.01m cv=+76PWM | S=1900 T=1546 | det=green_buoy,red_buoy,red_buoy
+[COURSE_TURN] Pos=(8.1, 7.7) Hdg=303° | Gate 4/10 hdg 317.3° err +14.3° v=0.42m/s target=(6.0,10.0) ultrasonic=2.99m cv=+75PWM | S=1900 T=1546 | det=green_buoy,red_buoy,red_buoy
+[COURSE_TURN] Pos=(8.0, 7.8) Hdg=303° | Gate 4/10 hdg 317.6° err +14.6° v=0.42m/s target=(6.0,10.0) ultrasonic=2.95m cv=+75PWM | S=1900 T=1546 | det=red_buoy,green_buoy
+[COURSE_TURN] Pos=(8.0, 7.8) Hdg=303° | Gate 4/10 hdg 317.8° err +14.8° v=0.42m/s target=(6.0,10.0) ultrasonic=2.98m cv=+75PWM | S=1900 T=1546 | det=red_buoy,green_buoy,red_buoy
+[COURSE_TURN] Pos=(8.0, 7.8) Hdg=304° | Gate 4/10 hdg 318.1° err +14.1° v=0.42m/s target=(6.0,10.0) ultrasonic=2.92m cv=+74PWM | S=1888 T=1547 | det=red_buoy,green_buoy,red_buoy
+[COURSE_TURN] Pos=(7.9, 7.8) Hdg=304° | Gate 4/10 hdg 318.6° err +14.6° v=0.42m/s target=(6.0,10.0) ultrasonic=2.88m cv=+74PWM | S=1900 T=1547 | det=green_buoy,red_buoy
+[COURSE_TURN] Pos=(7.9, 7.8) Hdg=305° | Gate 4/10 hdg 319.0° err +14.0° v=0.42m/s target=(6.0,10.0) ultrasonic=2.86m cv=+73PWM | S=1813 T=1546 | det=red_buoy,green_buoy
+[COURSE_TURN] Pos=(7.9, 7.8) Hdg=305° | Gate 4/10 hdg 319.3° err +14.3° v=0.42m/s target=(6.0,10.0) ultrasonic=2.86m cv=+72PWM | S=1893 T=1547 | det=red_buoy,green_buoy,red_buoy
+[COURSE_TURN] Pos=(7.8, 7.8) Hdg=305° | Gate 4/10 hdg 319.7° err +14.7° v=0.42m/s target=(6.0,10.0) ultrasonic=2.82m cv=+71PWM | S=1898 T=1547 | det=red_buoy,green_buoy
+[COURSE_TURN] Pos=(7.8, 7.9) Hdg=306° | Gate 4/10 hdg 320.3° err +14.3° v=0.42m/s target=(6.0,10.0) ultrasonic=3.68m cv=+70PWM | S=1887 T=1547 | det=green_buoy,red_buoy
+[COURSE_TURN] Pos=(7.7, 7.9) Hdg=307° | Gate 4/10 hdg 320.7° err +13.7° v=0.42m/s target=(6.0,10.0) ultrasonic=3.60m cv=+69PWM | S=1789 T=1546 | det=green_buoy,red_buoy,green_marker
+[COURSE_TURN] Pos=(7.7, 7.9) Hdg=307° | Gate 4/10 hdg 320.9° err +13.9° v=0.42m/s target=(6.0,10.0) ultrasonic=3.60m cv=+68PWM | S=1877 T=1547 | det=green_buoy,red_buoy,green_marker
+[COURSE_TURN] Pos=(7.7, 7.9) Hdg=307° | Gate 4/10 hdg 321.3° err +14.3° v=0.42m/s target=(6.0,10.0) ultrasonic=3.64m cv=+67PWM | S=1885 T=1546 | det=green_buoy,red_buoy,green_marker
+[COURSE_TURN] Pos=(7.6, 7.9) Hdg=308° | Gate 4/10 hdg 321.7° err +13.7° v=0.42m/s target=(6.0,10.0) ultrasonic=3.61m cv=+66PWM | S=1871 T=1546 | det=red_buoy,green_buoy,red_buoy,green_marker
+[COURSE_TURN] Pos=(7.6, 7.9) Hdg=308° | Gate 4/10 hdg 322.2° err +14.2° v=0.42m/s target=(6.0,10.0) ultrasonic=3.58m cv=+65PWM | S=1879 T=1546 | det=red_buoy,green_buoy,red_buoy,green_marker
+[COURSE_TURN] Pos=(7.5, 8.0) Hdg=309° | Gate 4/10 hdg 322.8° err +13.8° v=0.42m/s target=(6.0,10.0) ultrasonic=3.55m cv=+63PWM | S=1900 T=1546 | det=red_buoy,green_buoy,green_marker
+[COURSE_TURN] Pos=(7.5, 8.0) Hdg=310° | Gate 4/10 hdg 322.9° err +12.9° v=0.42m/s target=(6.0,10.0) ultrasonic=3.58m cv=+62PWM | S=1748 T=1546 | det=green_buoy,red_buoy,green_marker
+[COURSE_TURN] Pos=(7.5, 8.0) Hdg=310° | Gate 4/10 hdg 323.2° err +13.2° v=0.42m/s target=(6.0,10.0) ultrasonic=3.50m cv=+60PWM | S=1854 T=1546 | det=red_buoy,green_buoy,green_marker
+[COURSE_TURN] Pos=(7.5, 8.0) Hdg=310° | Gate 4/10 hdg 323.7° err +13.7° v=0.42m/s target=(6.0,10.0) ultrasonic=3.54m cv=+59PWM | S=1863 T=1546 | det=red_buoy,green_buoy,green_marker
+[COURSE_TURN] Pos=(7.4, 8.0) Hdg=311° | Gate 4/10 hdg 324.2° err +13.2° v=0.42m/s target=(6.0,10.0) ultrasonic=3.54m cv=+57PWM | S=1851 T=1546 | det=green_buoy,red_buoy,green_marker
+[COURSE_TURN] Pos=(7.4, 8.0) Hdg=312° | Gate 4/10 hdg 324.9° err +12.9° v=0.42m/s target=(6.0,10.0) ultrasonic=4.24m cv=+55PWM | S=1842 T=1546 | det=red_buoy,green_buoy,green_marker
+[COURSE_TURN] Pos=(7.3, 8.1) Hdg=312° | Gate 4/10 hdg 325.3° err +13.3° v=0.42m/s target=(6.0,10.0) ultrasonic=4.27m cv=+53PWM | S=1871 T=1546 | det=red_buoy,green_buoy,green_marker
+[COURSE_TURN] Pos=(7.3, 8.1) Hdg=313° | Gate 4/10 hdg 325.9° err +12.9° v=0.42m/s target=(6.0,10.0) ultrasonic=4.15m cv=+51PWM | S=1894 T=1546 | det=green_buoy,red_buoy,green_marker
+[COURSE_TURN] Pos=(7.3, 8.1) Hdg=313° | Gate 4/10 hdg 326.0° err +13.0° v=0.42m/s target=(6.0,10.0) ultrasonic=4.22m cv=+49PWM | S=1838 T=1546 | det=green_buoy,red_buoy,green_marker
+[COURSE_TURN] Pos=(7.2, 8.1) Hdg=314° | Gate 4/10 hdg 326.6° err +12.6° v=0.42m/s target=(6.0,10.0) ultrasonic=4.28m cv=+48PWM | S=1829 T=1546 | det=green_buoy,red_buoy,green_marker
+[COURSE_TURN] Pos=(7.2, 8.2) Hdg=314° | Gate 4/10 hdg 327.3° err +13.3° v=0.42m/s target=(6.0,10.0) ultrasonic=4.88m cv=+45PWM | S=1840 T=1546 | det=red_buoy,green_buoy,green_marker
+[COURSE_TURN] Pos=(7.1, 8.2) Hdg=315° | Gate 4/10 hdg 327.7° err +12.7° v=0.42m/s target=(6.0,10.0) ultrasonic=4.89m cv=+43PWM | S=1825 T=1545 | det=green_buoy,red_buoy,green_marker
+[COURSE_TURN] Pos=(7.1, 8.2) Hdg=315° | Gate 4/10 hdg 327.7° err +12.7° v=0.42m/s target=(6.0,10.0) ultrasonic=4.76m cv=+41PWM | S=1824 T=1545 | det=green_buoy,red_buoy,green_marker
+[COURSE_TURN] Pos=(7.1, 8.2) Hdg=316° | Gate 4/10 hdg 328.5° err +12.5° v=0.42m/s target=(6.0,10.0) ultrasonic=4.79m cv=+38PWM | S=1815 T=1546 | det=red_buoy,green_buoy,green_marker
+[COURSE_TURN] Pos=(7.0, 8.2) Hdg=316° | Gate 4/10 hdg 328.7° err +12.7° v=0.42m/s target=(6.0,10.0) ultrasonic=4.78m cv=+36PWM | S=1819 T=1546 | det=green_buoy,red_buoy,green_marker
+[COURSE_TURN] Pos=(7.0, 8.3) Hdg=317° | Gate 4/10 hdg 328.9° err +11.9° v=0.42m/s target=(6.0,10.0) ultrasonic=4.84m cv=+33PWM | S=1812 T=1545 | det=green_buoy,red_buoy,green_marker
+[COURSE_TURN] Pos=(7.0, 8.3) Hdg=317° | Gate 4/10 hdg 328.7° err +11.7° v=0.42m/s target=(6.0,10.0) ultrasonic=4.99m | S=1752 T=1545 | det=green_buoy,red_buoy,green_marker
+[COURSE_TURN] Pos=(7.0, 8.3) Hdg=318° | Gate 4/10 hdg 328.6° err +10.6° v=0.42m/s target=(6.0,10.0) ultrasonic=4.89m | S=1737 T=1545 | det=red_buoy,green_buoy,green_marker
+[COURSE_TURN] Pos=(6.9, 8.3) Hdg=318° | Gate 4/10 hdg 328.5° err +10.5° v=0.42m/s target=(6.0,10.0) ultrasonic=4.98m cv=+29PWM | S=1762 T=1545 | det=red_buoy,green_buoy
+[COURSE_TURN] Pos=(6.9, 8.4) Hdg=319° | Gate 4/10 hdg 328.0° err +9.0° v=0.42m/s target=(6.0,10.0) ultrasonic=3.50m cv=+25PWM | S=1710 T=1544 | det=red_buoy,green_buoy
+[COURSE_TURN] Pos=(6.9, 8.4) Hdg=319° | Gate 4/10 hdg 327.5° err +8.5° v=0.42m/s target=(6.0,10.0) ultrasonic=3.51m cv=+24PWM | S=1712 T=1544 | det=red_buoy,green_buoy
+[COURSE_TURN] Pos=(6.8, 8.4) Hdg=320° | Gate 4/10 hdg 326.6° err +6.6° v=0.42m/s target=(6.0,10.0) ultrasonic=3.50m cv=+22PWM | S=1669 T=1544 | det=red_buoy,green_buoy
+[COURSE_TURN] Pos=(6.8, 8.4) Hdg=320° | Gate 4/10 hdg 326.4° err +6.4° v=0.42m/s target=(6.0,10.0) ultrasonic=3.51m cv=+21PWM | S=1662 T=1544 | det=red_buoy,green_buoy
+[COURSE_TURN] Pos=(6.8, 8.5) Hdg=321° | Gate 4/10 hdg 324.9° err +3.9° v=0.42m/s target=(6.0,10.0) ultrasonic=1.86m cv=+19PWM | S=1606 T=1544 | det=red_buoy,green_buoy
+[COURSE_TURN] Pos=(6.7, 8.5) Hdg=321° | Gate 4/10 hdg 324.5° err +3.5° v=0.42m/s target=(6.0,10.0) ultrasonic=0.30m | S=1699 T=1544 | det=red_buoy,green_buoy
+[COURSE_TURN] Pos=(6.7, 8.5) Hdg=322° | Gate 4/10 hdg 322.8° err +0.8° v=0.42m/s target=(6.0,10.0) ultrasonic=0.22m | S=1657 T=1543 | det=green_buoy,red_buoy,green_marker
+[COURSE_TURN] Pos=(6.7, 8.6) Hdg=322° | Gate 4/10 hdg 321.4° err -0.6° v=0.42m/s target=(6.0,10.0) ultrasonic=0.17m | S=1585 T=1543 | det=green_buoy,red_buoy,green_marker
+[COURSE_TURN] Pos=(6.6, 8.6) Hdg=323° | Gate 4/10 hdg 320.4° err -2.6° v=0.42m/s target=(6.0,10.0) ultrasonic=0.14m | S=1597 T=1543 | det=red_buoy,green_buoy,green_marker
+[COURSE_TURN] Pos=(6.6, 8.6) Hdg=323° | Gate 4/10 hdg 318.4° err -4.6° v=0.42m/s target=(6.0,10.0) ultrasonic=0.10m | S=1550 T=1542 | det=green_buoy,red_buoy,green_buoy
+[COURSE_TURN] Pos=(6.6, 8.7) Hdg=324° | Gate 4/10 hdg 316.7° err -7.3° v=0.42m/s target=(6.0,10.0) ultrasonic=0.06m | S=1496 T=1565 | det=green_buoy,red_buoy,green_buoy
+[COURSE_TURN] Pos=(6.6, 8.7) Hdg=324° | Gate 4/10 hdg 316.7° err -7.3° v=0.42m/s target=(6.0,10.0) ultrasonic=0.07m | S=1507 T=1566 | det=green_buoy,red_buoy,green_buoy
+[COURSE_TURN] Pos=(6.6, 8.7) Hdg=324° | Gate 4/10 hdg 316.3° err -7.7° v=0.42m/s target=(6.0,10.0) ultrasonic=0.07m | S=1449 T=1565 | det=green_buoy,red_buoy,green_buoy
+[COURSE_TURN] Pos=(6.6, 8.7) Hdg=324° | Gate 4/10 hdg 316.3° err -7.7° v=0.42m/s target=(6.0,10.0) ultrasonic=0.07m | S=1496 T=1565 | det=green_buoy,red_buoy,green_buoy
+[COURSE_TURN] Pos=(6.6, 8.7) Hdg=324° | Gate 4/10 hdg 316.3° err -7.7° v=0.42m/s target=(6.0,10.0) ultrasonic=0.07m | S=1495 T=1564 | det=green_buoy,green_buoy,red_buoy
+[COURSE_TURN] Pos=(6.6, 8.7) Hdg=324° | Gate 4/10 hdg 315.8° err -8.2° v=0.42m/s target=(6.0,10.0) ultrasonic=0.08m | S=1484 T=1564 | det=green_buoy,red_buoy,green_buoy
+[COURSE_TURN] Pos=(6.6, 8.7) Hdg=324° | Gate 4/10 hdg 315.4° err -8.6° v=0.42m/s target=(6.0,10.0) ultrasonic=0.09m | S=1474 T=1563 | det=green_buoy,green_buoy,red_buoy
+[COURSE_TURN] Pos=(6.6, 8.7) Hdg=325° | Gate 4/10 hdg 314.9° err -10.1° v=0.42m/s target=(6.0,10.0) ultrasonic=0.09m | S=1439 T=1562 | det=green_buoy,green_buoy
+[COURSE_TURN] Pos=(6.6, 8.7) Hdg=325° | Gate 4/10 hdg 314.5° err -10.5° v=0.42m/s target=(6.0,10.0) ultrasonic=1.73m | S=1218 T=1560 | det=green_buoy,green_buoy
+[COURSE_TURN] Pos=(6.6, 8.7) Hdg=325° | Gate 4/10 hdg 314.0° err -11.0° v=0.42m/s target=(6.0,10.0) ultrasonic=3.19m | S=1256 T=1558 | det=green_buoy,green_buoy
+[COURSE_TURN] Pos=(6.5, 8.8) Hdg=326° | Gate 4/10 hdg 312.9° err -13.1° v=0.42m/s target=(6.0,10.0) ultrasonic=4.72m | S=1100 T=1556 | det=green_buoy,green_buoy
+[COURSE_TURN] Pos=(6.5, 8.8) Hdg=326° | Gate 4/10 hdg 312.0° err -14.0° v=0.42m/s target=(6.0,10.0) ultrasonic=4.81m | S=1188 T=1555 | det=green_buoy,green_buoy
+[COURSE_TURN] Pos=(6.5, 8.8) Hdg=326° | Gate 4/10 hdg 311.0° err -15.0° v=0.42m/s target=(6.0,10.0) ultrasonic=4.93m | S=1119 T=1553 | det=green_buoy
+[COURSE_TURN] Pos=(6.5, 8.8) Hdg=326° | Gate 4/10 hdg 309.2° err -16.8° v=0.42m/s target=(6.0,10.0) ultrasonic=4.93m | S=1100 T=1552 | det=green_buoy
+[COURSE_TURN] Pos=(6.5, 8.9) Hdg=327° | Gate 4/10 hdg 308.6° err -18.4° v=0.42m/s target=(6.0,10.0) ultrasonic=4.96m | S=1100 T=1552 | det=green_buoy
+[COURSE_TURN] Pos=(6.5, 8.9) Hdg=327° | Gate 4/10 hdg 307.1° err -19.9° v=0.42m/s target=(6.0,10.0) ultrasonic=4.94m | S=1100 T=1551 | det=green_buoy
+[COURSE_TURN] Pos=(6.5, 8.9) Hdg=327° | Gate 4/10 hdg 305.7° err -21.3° v=0.42m/s target=(6.0,10.0) ultrasonic=5.00m | S=1100 T=1550 | det=green_buoy
+[COURSE_TURN] Pos=(6.5, 9.0) Hdg=327° | Gate 4/10 hdg 304.1° err -22.9° v=0.42m/s target=(6.0,10.0) ultrasonic=4.92m | S=1100 T=1550 | det=green_buoy
+[COURSE_TURN] Pos=(6.5, 9.0) Hdg=327° | Gate 4/10 hdg 302.6° err -24.4° v=0.42m/s target=(6.0,10.0) ultrasonic=4.92m | S=1100 T=1550 | det=green_buoy
+[COURSE_TURN] Pos=(6.5, 9.0) Hdg=327° | Gate 4/10 hdg 301.7° err -25.3° v=0.42m/s target=(6.0,10.0) ultrasonic=4.93m | S=1100 T=1550 | det=green_buoy
+[COURSE_TURN] Pos=(6.5, 9.1) Hdg=327° | Gate 4/10 hdg 299.7° err -27.3° v=0.42m/s target=(6.0,10.0) ultrasonic=4.94m | S=1100 T=1549 | det=none
+[COURSE_TURN] Pos=(6.5, 9.1) Hdg=327° | Gate 4/10 hdg 298.2° err -28.8° v=0.42m/s target=(6.0,10.0) ultrasonic=3.40m | S=1100 T=1549 | det=green_buoy
+[COURSE_TURN] Pos=(6.5, 9.1) Hdg=327° | Gate 4/10 hdg 296.7° err -30.3° v=0.42m/s target=(6.0,10.0) ultrasonic=3.40m | S=1100 T=1549 | det=green_buoy
+[COURSE_TURN] Pos=(6.5, 9.2) Hdg=327° | Gate 4/10 hdg 295.2° err -31.8° v=0.42m/s target=(6.0,10.0) ultrasonic=1.82m | S=1100 T=1548 | det=green_buoy
+[COURSE_TURN] Pos=(6.4, 9.2) Hdg=327° | Gate 4/10 hdg 293.2° err -33.8° v=0.42m/s target=(6.0,10.0) ultrasonic=0.21m | S=1160 T=1548 | det=green_buoy
+[COURSE_TURN] Pos=(6.4, 9.2) Hdg=327° | Gate 4/10 hdg 291.8° err -35.2° v=0.42m/s target=(6.0,10.0) ultrasonic=0.20m | S=1160 T=1548 | det=green_buoy
+[COURSE_TURN] Pos=(6.4, 9.3) Hdg=327° | Gate 4/10 hdg 290.2° err -36.8° v=0.42m/s target=(6.0,10.0) ultrasonic=0.21m | S=1160 T=1548 | det=green_buoy
+[COURSE_TURN] Pos=(6.4, 9.3) Hdg=327° | Gate 4/10 hdg 288.9° err -38.1° v=0.42m/s target=(6.0,10.0) ultrasonic=0.22m | S=1159 T=1548 | det=green_buoy
+[COURSE_TURN] Pos=(6.4, 9.4) Hdg=327° | Gate 4/10 hdg 287.1° err -39.9° v=0.42m/s target=(6.0,10.0) ultrasonic=0.26m | S=1155 T=1547 | det=green_buoy
+[COURSE_TURN] Pos=(6.4, 9.4) Hdg=326° | Gate 4/10 hdg 285.8° err -40.2° v=0.42m/s target=(6.0,10.0) ultrasonic=1.84m | S=1100 T=1547 | det=green_buoy
+[COURSE_TURN] Pos=(6.4, 9.4) Hdg=326° | Gate 4/10 hdg 283.9° err -42.1° v=0.42m/s target=(6.0,10.0) ultrasonic=3.42m | S=1100 T=1547 | det=green_buoy
+[COURSE_TURN] Pos=(6.4, 9.5) Hdg=326° | Gate 4/10 hdg 282.8° err -43.2° v=0.42m/s target=(6.0,10.0) ultrasonic=3.43m | S=1100 T=1547 | det=green_buoy
+[COURSE_TURN] Pos=(6.4, 9.5) Hdg=326° | Gate 4/10 hdg 281.9° err -44.1° v=0.42m/s target=(6.0,10.0) ultrasonic=3.64m | S=1100 T=1547 | det=green_buoy
+[COURSE_TURN] Pos=(6.3, 9.5) Hdg=326° | Gate 4/10 hdg 280.3° err -45.7° v=0.42m/s target=(6.0,10.0) ultrasonic=3.63m | S=1100 T=1547 | det=green_buoy
+[COURSE_TURN] Pos=(6.3, 9.6) Hdg=325° | Gate 4/10 hdg 278.8° err -46.2° v=0.42m/s target=(6.0,10.0) ultrasonic=3.62m | S=1100 T=1547 | det=green_buoy
+[COURSE_TURN] Pos=(6.3, 9.6) Hdg=325° | Gate 4/10 hdg 278.0° err -47.0° v=0.42m/s target=(6.0,10.0) ultrasonic=3.51m | S=1100 T=1547 | det=green_buoy
+[COURSE_TURN] Pos=(6.3, 9.6) Hdg=325° | Gate 4/10 hdg 276.7° err -48.3° v=0.42m/s target=(6.0,10.0) ultrasonic=3.50m | S=1100 T=1547 | det=green_buoy
+[COURSE_TURN] Pos=(6.3, 9.7) Hdg=324° | Gate 4/10 hdg 275.1° err -48.9° v=0.42m/s target=(6.0,10.0) ultrasonic=2.14m | S=1100 T=1547 | det=green_buoy
+[COURSE_TURN] Pos=(6.3, 9.7) Hdg=324° | Gate 4/10 hdg 274.2° err -49.8° v=0.42m/s target=(6.0,10.0) ultrasonic=2.05m | S=1100 T=1547 | det=green_buoy
+[COURSE_TURN] Pos=(6.2, 9.8) Hdg=323° | Gate 4/10 hdg 273.4° err -49.6° v=0.42m/s target=(6.0,10.0) ultrasonic=2.02m | S=1100 T=1547 | det=green_buoy,green_buoy
+[COURSE_TURN] Pos=(6.2, 9.8) Hdg=323° | Gate 4/10 hdg 272.6° err -50.4° v=0.42m/s target=(6.0,10.0) ultrasonic=2.00m | S=1100 T=1547 | det=green_buoy
+[COURSE_TURN] Pos=(6.2, 9.8) Hdg=323° | Gate 4/10 hdg 271.8° err -51.2° v=0.42m/s target=(6.0,10.0) ultrasonic=1.95m | S=1100 T=1547 | det=green_buoy
+[COURSE_TURN] Pos=(6.2, 9.9) Hdg=322° | Gate 4/10 hdg 271.2° err -50.8° v=0.42m/s target=(6.0,10.0) ultrasonic=1.90m | S=1100 T=1547 | det=green_buoy
+[COURSE_TURN] Pos=(6.2, 9.9) Hdg=322° | Gate 4/10 hdg 270.8° err -51.2° v=0.42m/s target=(6.0,10.0) ultrasonic=1.90m | S=1100 T=1547 | det=green_buoy
+[COURSE_TURN] Pos=(6.2, 9.9) Hdg=321° | Gate 4/10 hdg 270.4° err -50.6° v=0.42m/s target=(6.0,10.0) ultrasonic=1.86m | S=1100 T=1547 | det=green_buoy
+[COURSE_TURN] Pos=(6.1, 10.0) Hdg=321° | Gate 4/10 hdg 270.1° err -50.9° v=0.42m/s target=(6.0,10.0) ultrasonic=1.84m | S=1100 T=1547 | det=green_buoy
+[COURSE_TURN] Pos=(6.1, 10.0) Hdg=320° | Gate 4/10 hdg 270.0° err -50.0° v=0.42m/s target=(6.0,10.0) ultrasonic=1.82m | S=1100 T=1547 | det=green_buoy
+[COURSE_TURN] Pos=(6.1, 10.1) Hdg=320° | Gate 4/10 hdg 269.9° err -50.1° v=0.42m/s target=(6.0,10.0) ultrasonic=3.16m | S=1100 T=1547 | det=none
+[COURSE_TURN] Pos=(6.1, 10.1) Hdg=319° | Gate 4/10 hdg 270.0° err -49.0° v=0.42m/s target=(6.0,10.0) ultrasonic=3.16m | S=1100 T=1547 | det=none
+[COURSE_TURN] Pos=(6.1, 10.1) Hdg=319° | Gate 4/10 hdg 270.0° err -49.0° v=0.42m/s target=(6.0,10.0) ultrasonic=3.12m | S=1100 T=1547 | det=none
+[COURSE_TURN] Pos=(6.1, 10.2) Hdg=318° | Gate 4/10 hdg 270.0° err -48.0° v=0.42m/s target=(6.0,10.0) ultrasonic=4.46m | S=1100 T=1547 | det=none
+[COURSE_TURN] Pos=(6.1, 10.2) Hdg=318° | Gate 4/10 hdg 270.0° err -48.0° v=0.42m/s target=(6.0,10.0) ultrasonic=4.46m | S=1100 T=1547 | det=none
+[COURSE_TURN] Pos=(6.0, 10.2) Hdg=317° | Gate 4/10 hdg 270.0° err -47.0° v=0.42m/s target=(6.0,10.0) ultrasonic=4.38m | S=1100 T=1547 | det=none
+[COURSE_TURN] Pos=(6.0, 10.2) Hdg=317° | Gate 4/10 hdg 270.0° err -47.0° v=0.42m/s target=(6.0,10.0) ultrasonic=4.39m | S=1100 T=1547 | det=none
+[COURSE_TURN] Pos=(6.0, 10.3) Hdg=316° | Gate 4/10 hdg 270.0° err -46.0° v=0.42m/s target=(6.0,10.0) ultrasonic=4.37m | S=1100 T=1547 | det=none
+[COURSE_CORRIDOR] Pos=(6.0, 10.3) Hdg=316° | Gate 5/10 hdg 268.7° err -47.3° v=0.42m/s target=(2.0,10.0) ultrasonic=4.34m | S=1100 T=1545 | det=none
+[COURSE_CORRIDOR] Pos=(6.0, 10.4) Hdg=315° | Gate 5/10 hdg 268.5° err -46.5° v=0.42m/s target=(2.0,10.0) ultrasonic=4.25m | S=1100 T=1545 | det=none
+[COURSE_CORRIDOR] Pos=(6.0, 10.4) Hdg=315° | Gate 5/10 hdg 268.5° err -46.5° v=0.42m/s target=(2.0,10.0) ultrasonic=4.28m | S=1100 T=1545 | det=none
+[COURSE_CORRIDOR] Pos=(5.9, 10.4) Hdg=314° | Gate 5/10 hdg 268.3° err -45.7° v=0.42m/s target=(2.0,10.0) ultrasonic=4.24m | S=1100 T=1545 | det=none
+[COURSE_CORRIDOR] Pos=(5.9, 10.5) Hdg=314° | Gate 5/10 hdg 268.1° err -45.9° v=0.42m/s target=(2.0,10.0) ultrasonic=4.25m | S=1100 T=1545 | det=none
+[COURSE_CORRIDOR] Pos=(5.9, 10.5) Hdg=313° | Gate 5/10 hdg 268.0° err -45.0° v=0.42m/s target=(2.0,10.0) ultrasonic=4.23m | S=1100 T=1546 | det=none
+[COURSE_CORRIDOR] Pos=(5.9, 10.5) Hdg=313° | Gate 5/10 hdg 267.9° err -45.1° v=0.42m/s target=(2.0,10.0) ultrasonic=4.13m | S=1100 T=1546 | det=none
+[COURSE_CORRIDOR] Pos=(5.8, 10.6) Hdg=312° | Gate 5/10 hdg 267.7° err -44.3° v=0.42m/s target=(2.0,10.0) ultrasonic=4.20m | S=1100 T=1545 | det=none
+[COURSE_CORRIDOR] Pos=(5.8, 10.6) Hdg=312° | Gate 5/10 hdg 267.7° err -44.3° v=0.42m/s target=(2.0,10.0) ultrasonic=3.42m | S=1100 T=1545 | det=none
+[COURSE_CORRIDOR] Pos=(5.8, 10.6) Hdg=311° | Gate 5/10 hdg 267.5° err -43.5° v=0.42m/s target=(2.0,10.0) ultrasonic=1.77m | S=1100 T=1546 | det=none
+[COURSE_CORRIDOR] Pos=(5.8, 10.7) Hdg=310° | Gate 5/10 hdg 267.4° err -42.6° v=0.42m/s target=(2.0,10.0) ultrasonic=0.13m | S=1100 T=1546 | det=none
+[COURSE_CORRIDOR] Pos=(5.8, 10.7) Hdg=310° | Gate 5/10 hdg 267.3° err -42.7° v=0.42m/s target=(2.0,10.0) ultrasonic=0.10m | S=1100 T=1546 | det=none
+[COURSE_CORRIDOR] Pos=(5.7, 10.7) Hdg=309° | Gate 5/10 hdg 267.1° err -41.9° v=0.42m/s target=(2.0,10.0) ultrasonic=0.08m | S=1100 T=1546 | det=none
+[COURSE_CORRIDOR] Pos=(5.7, 10.8) Hdg=309° | Gate 5/10 hdg 267.0° err -42.0° v=0.42m/s target=(2.0,10.0) ultrasonic=0.08m | S=1100 T=1546 | det=none
+[COURSE_CORRIDOR] Pos=(5.7, 10.8) Hdg=309° | Gate 5/10 hdg 266.9° err -42.1° v=0.42m/s target=(2.0,10.0) ultrasonic=0.10m | S=1100 T=1552 | det=none
+[COURSE_CORRIDOR] Pos=(5.7, 10.8) Hdg=309° | Gate 5/10 hdg 266.9° err -42.1° v=0.42m/s target=(2.0,10.0) ultrasonic=0.12m | S=1100 T=1553 | det=none
+[COURSE_CORRIDOR] Pos=(5.7, 10.8) Hdg=310° | Gate 5/10 hdg 266.8° err -43.2° v=0.42m/s target=(2.0,10.0) ultrasonic=1.75m | S=1100 T=1553 | det=none
+[COURSE_CORRIDOR] Pos=(5.6, 10.8) Hdg=311° | Gate 5/10 hdg 266.7° err -44.3° v=0.42m/s target=(2.0,10.0) ultrasonic=1.76m | S=1100 T=1553 | det=none
+[COURSE_CORRIDOR] Pos=(5.6, 10.8) Hdg=313° | Gate 5/10 hdg 266.6° err -46.4° v=0.42m/s target=(2.0,10.0) ultrasonic=3.42m | S=1100 T=1553 | det=none
+[COURSE_CORRIDOR] Pos=(5.6, 10.9) Hdg=314° | Gate 5/10 hdg 266.5° err -47.5° v=0.42m/s target=(2.0,10.0) ultrasonic=3.39m | S=1100 T=1554 | det=none
+[COURSE_CORRIDOR] Pos=(5.6, 10.9) Hdg=315° | Gate 5/10 hdg 266.5° err -48.5° v=0.42m/s target=(2.0,10.0) ultrasonic=3.42m | S=1100 T=1554 | det=none
+[COURSE_CORRIDOR] Pos=(5.6, 10.9) Hdg=317° | Gate 5/10 hdg 266.4° err -50.6° v=0.42m/s target=(2.0,10.0) ultrasonic=3.68m | S=1100 T=1554 | det=none
+[COURSE_CORRIDOR] Pos=(5.6, 10.9) Hdg=319° | Gate 5/10 hdg 266.3° err -52.7° v=0.42m/s target=(2.0,10.0) ultrasonic=3.69m | S=1100 T=1554 | det=none
+[COURSE_CORRIDOR] Pos=(5.6, 10.9) Hdg=321° | Gate 5/10 hdg 266.3° err -54.7° v=0.42m/s target=(2.0,10.0) ultrasonic=3.70m | S=1100 T=1555 | det=none
+[COURSE_CORRIDOR] Pos=(5.6, 11.0) Hdg=323° | Gate 5/10 hdg 266.1° err -56.9° v=0.42m/s target=(2.0,10.0) ultrasonic=3.61m | S=1100 T=1554 | det=none
+[COURSE_CORRIDOR] Pos=(5.6, 11.0) Hdg=325° | Gate 5/10 hdg 266.0° err -59.0° v=0.42m/s target=(2.0,10.0) ultrasonic=3.56m | S=1100 T=1554 | det=none
+[COURSE_CORRIDOR] Pos=(5.6, 11.0) Hdg=327° | Gate 5/10 hdg 266.0° err -61.0° v=0.42m/s target=(2.0,10.0) ultrasonic=3.58m | S=1100 T=1554 | det=none
+[COURSE_CORRIDOR] Pos=(5.6, 11.0) Hdg=329° | Gate 5/10 hdg 265.9° err -63.1° v=0.42m/s target=(2.0,10.0) ultrasonic=3.56m | S=1100 T=1554 | det=none
+[COURSE_CORRIDOR] Pos=(5.5, 11.1) Hdg=331° | Gate 5/10 hdg 265.8° err -65.2° v=0.42m/s target=(2.0,10.0) ultrasonic=3.54m | S=1100 T=1554 | det=none
+[COURSE_CORRIDOR] Pos=(5.5, 11.1) Hdg=333° | Gate 5/10 hdg 265.7° err -67.3° v=0.42m/s target=(2.0,10.0) ultrasonic=3.52m | S=1100 T=1554 | det=none
+[COURSE_CORRIDOR] Pos=(5.5, 11.1) Hdg=334° | Gate 5/10 hdg 265.7° err -68.3° v=0.42m/s target=(2.0,10.0) ultrasonic=3.51m | S=1100 T=1554 | det=none
+[COURSE_CORRIDOR] Pos=(5.5, 11.1) Hdg=336° | Gate 5/10 hdg 265.5° err -70.5° v=0.42m/s target=(2.0,10.0) ultrasonic=3.47m | S=1100 T=1553 | det=none
+[COURSE_CORRIDOR] Pos=(5.5, 11.1) Hdg=339° | Gate 5/10 hdg 265.4° err -73.6° v=0.42m/s target=(2.0,10.0) ultrasonic=3.45m | S=1100 T=1553 | det=none
+[COURSE_CORRIDOR] Pos=(5.5, 11.2) Hdg=340° | Gate 5/10 hdg 265.3° err -74.7° v=0.42m/s target=(2.0,10.0) ultrasonic=3.46m | S=1100 T=1552 | det=none
+[COURSE_CORRIDOR] Pos=(5.5, 11.2) Hdg=342° | Gate 5/10 hdg 265.2° err -76.8° v=0.42m/s target=(2.0,10.0) ultrasonic=3.46m | S=1100 T=1552 | det=none
+[COURSE_CORRIDOR] Pos=(5.5, 11.2) Hdg=344° | Gate 5/10 hdg 265.1° err -78.9° v=0.42m/s target=(2.0,10.0) ultrasonic=3.39m | S=1100 T=1552 | det=none
+[COURSE_CORRIDOR] Pos=(5.6, 11.2) Hdg=345° | Gate 5/10 hdg 265.0° err -80.0° v=0.42m/s target=(2.0,10.0) ultrasonic=3.34m | S=1100 T=1551 | det=none
+[COURSE_CORRIDOR] Pos=(5.6, 11.3) Hdg=347° | Gate 5/10 hdg 264.9° err -82.1° v=0.42m/s target=(2.0,10.0) ultrasonic=3.30m | S=1100 T=1551 | det=none
+[COURSE_CORRIDOR] Pos=(5.6, 11.3) Hdg=349° | Gate 5/10 hdg 264.8° err -84.2° v=0.42m/s target=(2.0,10.0) ultrasonic=3.25m | S=1100 T=1551 | det=none
+[COURSE_CORRIDOR] Pos=(5.6, 11.3) Hdg=350° | Gate 5/10 hdg 264.6° err -85.4° v=0.42m/s target=(2.0,10.0) ultrasonic=3.19m | S=1100 T=1550 | det=none
+[COURSE_CORRIDOR] Pos=(5.6, 11.4) Hdg=352° | Gate 5/10 hdg 264.4° err -87.6° v=0.42m/s target=(2.0,10.0) ultrasonic=3.13m | S=1100 T=1550 | det=none
+[COURSE_CORRIDOR] Pos=(5.6, 11.4) Hdg=353° | Gate 5/10 hdg 264.3° err -88.7° v=0.42m/s target=(2.0,10.0) ultrasonic=3.09m | S=1100 T=1550 | det=none
+[COURSE_CORRIDOR] Pos=(5.6, 11.4) Hdg=354° | Gate 5/10 hdg 264.3° err -89.7° v=0.42m/s target=(2.0,10.0) ultrasonic=3.10m | S=1100 T=1549 | det=none
+[COURSE_CORRIDOR] Pos=(5.6, 11.5) Hdg=356° | Gate 5/10 hdg 264.1° err -91.9° v=0.42m/s target=(2.0,10.0) ultrasonic=3.03m | S=1100 T=1549 | det=none
+[COURSE_CORRIDOR] Pos=(5.6, 11.5) Hdg=357° | Gate 5/10 hdg 264.0° err -93.0° v=0.42m/s target=(2.0,10.0) ultrasonic=2.99m | S=1100 T=1548 | det=none
+[COURSE_CORRIDOR] Pos=(5.6, 11.5) Hdg=358° | Gate 5/10 hdg 263.9° err -94.1° v=0.42m/s target=(2.0,10.0) ultrasonic=2.95m | S=1100 T=1548 | det=none
+[COURSE_CORRIDOR] Pos=(5.6, 11.6) Hdg=359° | Gate 5/10 hdg 263.8° err -95.2° v=0.42m/s target=(2.0,10.0) ultrasonic=2.93m | S=1100 T=1548 | det=none
+[COURSE_CORRIDOR] Pos=(5.6, 11.6) Hdg=0° | Gate 5/10 hdg 263.6° err -96.4° v=0.42m/s target=(2.0,10.0) ultrasonic=2.90m | S=1100 T=1548 | det=none
+[COURSE_CORRIDOR] Pos=(5.6, 11.6) Hdg=1° | Gate 5/10 hdg 263.5° err -97.5° v=0.42m/s target=(2.0,10.0) ultrasonic=2.84m | S=1100 T=1547 | det=none
+[COURSE_CORRIDOR] Pos=(5.7, 11.7) Hdg=1° | Gate 5/10 hdg 263.3° err -97.7° v=0.42m/s target=(2.0,10.0) ultrasonic=2.80m | S=1100 T=1547 | det=none
+[COURSE_CORRIDOR] Pos=(5.7, 11.7) Hdg=2° | Gate 5/10 hdg 263.2° err -98.8° v=0.42m/s target=(2.0,10.0) ultrasonic=2.75m | S=1100 T=1546 | det=none
+[COURSE_CORRIDOR] Pos=(5.7, 11.7) Hdg=3° | Gate 5/10 hdg 263.0° err -100.0° v=0.42m/s target=(2.0,10.0) ultrasonic=2.73m | S=1100 T=1546 | det=none
+[COURSE_CORRIDOR] Pos=(5.7, 11.8) Hdg=3° | Gate 5/10 hdg 262.9° err -100.1° v=0.42m/s target=(2.0,10.0) ultrasonic=2.72m | S=1100 T=1546 | det=none
+[COURSE_CORRIDOR] Pos=(5.7, 11.8) Hdg=4° | Gate 5/10 hdg 262.8° err -101.2° v=0.42m/s target=(2.0,10.0) ultrasonic=2.67m | S=1100 T=1546 | det=none
+[COURSE_CORRIDOR] Pos=(5.7, 11.8) Hdg=4° | Gate 5/10 hdg 262.6° err -101.4° v=0.42m/s target=(2.0,10.0) ultrasonic=2.66m | S=1100 T=1546 | det=none
+[COURSE_CORRIDOR] Pos=(5.7, 11.9) Hdg=5° | Gate 5/10 hdg 262.4° err -102.6° v=0.42m/s target=(2.0,10.0) ultrasonic=2.58m | S=1100 T=1546 | det=none
+[COURSE_CORRIDOR] Pos=(5.7, 11.9) Hdg=5° | Gate 5/10 hdg 262.4° err -102.6° v=0.42m/s target=(2.0,10.0) ultrasonic=2.57m | S=1100 T=1546 | det=none
+[COURSE_CORRIDOR] Pos=(5.8, 12.0) Hdg=5° | Gate 5/10 hdg 262.2° err -102.8° v=0.42m/s target=(2.0,10.0) ultrasonic=2.56m | S=1100 T=1546 | det=none
+[COURSE_CORRIDOR] Pos=(5.8, 12.0) Hdg=6° | Gate 5/10 hdg 262.1° err -103.9° v=0.42m/s target=(2.0,10.0) ultrasonic=2.50m | S=1100 T=1545 | det=none
+[COURSE_CORRIDOR] Pos=(5.8, 12.0) Hdg=6° | Gate 5/10 hdg 262.0° err -104.0° v=0.42m/s target=(2.0,10.0) ultrasonic=2.47m | S=1100 T=1545 | det=none
+[COURSE_CORRIDOR] Pos=(5.8, 12.1) Hdg=6° | Gate 5/10 hdg 262.0° err -104.0° v=0.42m/s target=(2.0,10.0) ultrasonic=2.45m | S=1100 T=1545 | det=none
+[COURSE_CORRIDOR] Pos=(5.8, 12.1) Hdg=6° | Gate 5/10 hdg 262.0° err -104.0° v=0.42m/s target=(2.0,10.0) ultrasonic=2.42m | S=1100 T=1545 | det=none
+[COURSE_CORRIDOR] Pos=(5.8, 12.1) Hdg=6° | Gate 5/10 hdg 262.0° err -104.0° v=0.42m/s target=(2.0,10.0) ultrasonic=2.36m | S=1100 T=1545 | det=none
+[COURSE_CORRIDOR] Pos=(5.8, 12.2) Hdg=6° | Gate 5/10 hdg 262.0° err -104.0° v=0.42m/s target=(2.0,10.0) ultrasonic=2.35m | S=1100 T=1545 | det=none
+[COURSE_CORRIDOR] Pos=(5.9, 12.2) Hdg=7° | Gate 5/10 hdg 262.0° err -105.0° v=0.42m/s target=(2.0,10.0) ultrasonic=2.30m | S=1100 T=1545 | det=none
+[COURSE_CORRIDOR] Pos=(5.9, 12.2) Hdg=7° | Gate 5/10 hdg 262.0° err -105.0° v=0.42m/s target=(2.0,10.0) ultrasonic=2.27m | S=1100 T=1545 | det=none
+[COURSE_CORRIDOR] Pos=(5.9, 12.3) Hdg=7° | Gate 5/10 hdg 262.0° err -105.0° v=0.42m/s target=(2.0,10.0) ultrasonic=2.21m | S=1100 T=1545 | det=none
+[COURSE_CORRIDOR] Pos=(5.9, 12.3) Hdg=7° | Gate 5/10 hdg 262.0° err -105.0° v=0.42m/s target=(2.0,10.0) ultrasonic=2.20m | S=1100 T=1545 | det=none
+[COURSE_CORRIDOR] Pos=(5.9, 12.3) Hdg=7° | Gate 5/10 hdg 262.0° err -105.0° v=0.42m/s target=(2.0,10.0) ultrasonic=2.15m | S=1100 T=1545 | det=none
+[COURSE_CORRIDOR] Pos=(5.9, 12.4) Hdg=7° | Gate 5/10 hdg 262.0° err -105.0° v=0.42m/s target=(2.0,10.0) ultrasonic=2.14m | S=1100 T=1545 | det=none
+[COURSE_CORRIDOR] Pos=(5.9, 12.4) Hdg=6° | Gate 5/10 hdg 262.0° err -104.0° v=0.42m/s target=(2.0,10.0) ultrasonic=2.08m | S=1100 T=1545 | det=none
+[COURSE_CORRIDOR] Pos=(6.0, 12.4) Hdg=6° | Gate 5/10 hdg 262.0° err -104.0° v=0.42m/s target=(2.0,10.0) ultrasonic=2.04m | S=1100 T=1545 | det=none
+[COURSE_CORRIDOR] Pos=(6.0, 12.5) Hdg=6° | Gate 5/10 hdg 262.0° err -104.0° v=0.42m/s target=(2.0,10.0) ultrasonic=2.00m | S=1100 T=1545 | det=none
+[COURSE_CORRIDOR] Pos=(6.0, 12.5) Hdg=6° | Gate 5/10 hdg 262.0° err -104.0° v=0.42m/s target=(2.0,10.0) ultrasonic=1.98m | S=1100 T=1545 | det=none
+[COURSE_CORRIDOR] Pos=(6.0, 12.5) Hdg=6° | Gate 5/10 hdg 262.0° err -104.0° v=0.42m/s target=(2.0,10.0) ultrasonic=1.96m | S=1100 T=1545 | det=none
+[COURSE_CORRIDOR] Pos=(6.0, 12.6) Hdg=6° | Gate 5/10 hdg 262.0° err -104.0° v=0.42m/s target=(2.0,10.0) ultrasonic=1.89m | S=1100 T=1545 | det=none
+[COURSE_CORRIDOR] Pos=(6.0, 12.6) Hdg=5° | Gate 5/10 hdg 262.0° err -103.0° v=0.42m/s target=(2.0,10.0) ultrasonic=1.88m | S=1100 T=1545 | det=none
+[COURSE_CORRIDOR] Pos=(6.0, 12.7) Hdg=5° | Gate 5/10 hdg 262.0° err -103.0° v=0.42m/s target=(2.0,10.0) ultrasonic=1.81m | S=1100 T=1545 | det=none
+[COURSE_CORRIDOR] Pos=(6.1, 12.7) Hdg=5° | Gate 5/10 hdg 262.0° err -103.0° v=0.42m/s target=(2.0,10.0) ultrasonic=1.79m | S=1100 T=1545 | det=none
+[COURSE_CORRIDOR] Pos=(6.1, 12.7) Hdg=5° | Gate 5/10 hdg 262.0° err -103.0° v=0.42m/s target=(2.0,10.0) ultrasonic=1.75m | S=1100 T=1545 | det=none
+[COURSE_CORRIDOR] Pos=(6.1, 12.8) Hdg=4° | Gate 5/10 hdg 262.0° err -102.0° v=0.42m/s target=(2.0,10.0) ultrasonic=1.69m | S=1100 T=1545 | det=none
+[COURSE_CORRIDOR] Pos=(6.1, 12.8) Hdg=4° | Gate 5/10 hdg 262.0° err -102.0° v=0.42m/s target=(2.0,10.0) ultrasonic=1.67m | S=1100 T=1545 | det=none
+[COURSE_CORRIDOR] Pos=(6.1, 12.8) Hdg=4° | Gate 5/10 hdg 262.0° err -102.0° v=0.42m/s target=(2.0,10.0) ultrasonic=1.63m | S=1100 T=1545 | det=none
+[COURSE_CORRIDOR] Pos=(6.1, 12.9) Hdg=3° | Gate 5/10 hdg 262.0° err -101.0° v=0.42m/s target=(2.0,10.0) ultrasonic=1.59m | S=1100 T=1545 | det=none
+[COURSE_CORRIDOR] Pos=(6.1, 12.9) Hdg=3° | Gate 5/10 hdg 262.0° err -101.0° v=0.42m/s target=(2.0,10.0) ultrasonic=1.55m | S=1100 T=1545 | det=none
+[COURSE_CORRIDOR] Pos=(6.1, 13.0) Hdg=2° | Gate 5/10 hdg 262.0° err -100.0° v=0.42m/s target=(2.0,10.0) ultrasonic=1.49m | S=1100 T=1545 | det=none
+[COURSE_CORRIDOR] Pos=(6.1, 13.0) Hdg=2° | Gate 5/10 hdg 262.0° err -100.0° v=0.42m/s target=(2.0,10.0) ultrasonic=1.48m | S=1100 T=1545 | det=none
+[COURSE_CORRIDOR] Pos=(6.2, 13.0) Hdg=2° | Gate 5/10 hdg 262.0° err -100.0° v=0.42m/s target=(2.0,10.0) ultrasonic=1.42m | S=1100 T=1545 | det=none
+[COURSE_CORRIDOR] Pos=(6.2, 13.1) Hdg=1° | Gate 5/10 hdg 262.0° err -99.0° v=0.42m/s target=(2.0,10.0) ultrasonic=1.38m | S=1100 T=1545 | det=none
+[COURSE_CORRIDOR] Pos=(6.2, 13.1) Hdg=1° | Gate 5/10 hdg 262.0° err -99.0° v=0.42m/s target=(2.0,10.0) ultrasonic=1.36m | S=1100 T=1545 | det=none
+[COURSE_CORRIDOR] Pos=(6.2, 13.1) Hdg=0° | Gate 5/10 hdg 262.0° err -98.0° v=0.42m/s target=(2.0,10.0) ultrasonic=1.32m | S=1100 T=1545 | det=none
+[COURSE_CORRIDOR] Pos=(6.2, 13.2) Hdg=0° | Gate 5/10 hdg 262.0° err -98.0° v=0.42m/s target=(2.0,10.0) ultrasonic=1.27m | S=1100 T=1545 | det=none
+[COURSE_CORRIDOR] Pos=(6.2, 13.2) Hdg=359° | Gate 5/10 hdg 262.0° err -97.0° v=0.42m/s target=(2.0,10.0) ultrasonic=1.24m | S=1100 T=1545 | det=none
+[COURSE_CORRIDOR] Pos=(6.2, 13.3) Hdg=359° | Gate 5/10 hdg 262.0° err -97.0° v=0.42m/s target=(2.0,10.0) ultrasonic=1.21m | S=1100 T=1545 | det=none
+[COURSE_CORRIDOR] Pos=(6.2, 13.3) Hdg=358° | Gate 5/10 hdg 262.0° err -96.0° v=0.42m/s target=(2.0,10.0) ultrasonic=1.17m | S=1100 T=1519 | det=none
+[COURSE_CORRIDOR] Pos=(6.2, 13.3) Hdg=358° | Gate 5/10 hdg 262.0° err -96.0° v=0.42m/s target=(2.0,10.0) ultrasonic=1.13m | S=1100 T=1518 | det=none
+[COURSE_CORRIDOR] Pos=(6.3, 13.4) Hdg=357° | Gate 5/10 hdg 262.0° err -95.0° v=0.42m/s target=(2.0,10.0) ultrasonic=1.10m | S=1100 T=1517 | det=none
+[COURSE_CORRIDOR] Pos=(6.3, 13.4) Hdg=357° | Gate 5/10 hdg 262.0° err -95.0° v=0.42m/s target=(2.0,10.0) ultrasonic=1.06m | S=1100 T=1516 | det=none
+[COURSE_CORRIDOR] Pos=(6.3, 13.4) Hdg=356° | Gate 5/10 hdg 262.0° err -94.0° v=0.42m/s target=(2.0,10.0) ultrasonic=1.03m | S=1100 T=1515 | det=none
+[COURSE_CORRIDOR] Pos=(6.3, 13.5) Hdg=356° | Gate 5/10 hdg 262.0° err -94.0° v=0.42m/s target=(2.0,10.0) ultrasonic=0.99m | S=1100 T=1514 | det=none
+[COURSE_CORRIDOR] Pos=(6.3, 13.5) Hdg=355° | Gate 5/10 hdg 262.0° err -93.0° v=0.42m/s target=(2.0,10.0) ultrasonic=0.96m | S=1100 T=1513 | det=none
+[COURSE_CORRIDOR] Pos=(6.3, 13.5) Hdg=355° | Gate 5/10 hdg 262.0° err -93.0° v=0.42m/s target=(2.0,10.0) ultrasonic=0.93m | S=1100 T=1512 | det=none
+[COURSE_CORRIDOR] Pos=(6.3, 13.6) Hdg=354° | Gate 5/10 hdg 262.0° err -92.0° v=0.42m/s target=(2.0,10.0) ultrasonic=0.89m | S=1100 T=1511 | det=none
+[COURSE_CORRIDOR] Pos=(6.3, 13.6) Hdg=354° | Gate 5/10 hdg 262.0° err -92.0° v=0.42m/s target=(2.0,10.0) ultrasonic=0.87m | S=1100 T=1510 | det=none
+[COURSE_CORRIDOR] Pos=(6.3, 13.6) Hdg=354° | Gate 5/10 hdg 262.0° err -92.0° v=0.42m/s target=(2.0,10.0) ultrasonic=0.84m | S=1100 T=1509 | det=none
+[COURSE_CORRIDOR] Pos=(6.3, 13.7) Hdg=353° | Gate 5/10 hdg 262.0° err -91.0° v=0.42m/s target=(2.0,10.0) ultrasonic=0.81m | S=1100 T=1508 | det=none
+[COURSE_CORRIDOR] Pos=(6.3, 13.7) Hdg=353° | Gate 5/10 hdg 262.0° err -91.0° v=0.42m/s target=(2.0,10.0) ultrasonic=0.79m | S=1100 T=1507 | det=none
+[COURSE_CORRIDOR] Pos=(6.3, 13.7) Hdg=352° | Gate 5/10 hdg 262.0° err -90.0° v=0.42m/s target=(2.0,10.0) ultrasonic=0.76m | S=1100 T=1507 | det=none
+[COURSE_CORRIDOR] Pos=(6.3, 13.7) Hdg=352° | Gate 5/10 hdg 262.0° err -90.0° v=0.42m/s target=(2.0,10.0) ultrasonic=0.74m | S=1100 T=1506 | det=none
+[COURSE_CORRIDOR] Pos=(6.3, 13.8) Hdg=352° | Gate 5/10 hdg 262.0° err -90.0° v=0.42m/s target=(2.0,10.0) ultrasonic=0.72m | S=1100 T=1505 | det=none
+[COURSE_CORRIDOR] Pos=(6.3, 13.8) Hdg=351° | Gate 5/10 hdg 262.0° err -89.0° v=0.42m/s target=(2.0,10.0) ultrasonic=0.69m | S=1100 T=1504 | det=none
+[COURSE_CORRIDOR] Pos=(6.3, 13.8) Hdg=351° | Gate 5/10 hdg 262.0° err -89.0° v=0.42m/s target=(2.0,10.0) ultrasonic=0.66m | S=1100 T=1503 | det=none
+[COURSE_CORRIDOR] Pos=(6.3, 13.8) Hdg=350° | Gate 5/10 hdg 262.0° err -88.0° v=0.42m/s target=(2.0,10.0) ultrasonic=0.63m | S=1100 T=1503 | det=none
+[COURSE_CORRIDOR] Pos=(6.3, 13.9) Hdg=350° | Gate 5/10 hdg 262.0° err -88.0° v=0.42m/s target=(2.0,10.0) ultrasonic=0.62m | S=1100 T=1502 | det=none
+[COURSE_CORRIDOR] Pos=(6.3, 13.9) Hdg=350° | Gate 5/10 hdg 262.0° err -88.0° v=0.42m/s target=(2.0,10.0) ultrasonic=0.59m | S=1100 T=1501 | det=none
+[COURSE_CORRIDOR] Pos=(6.3, 13.9) Hdg=349° | Gate 5/10 hdg 262.0° err -87.0° v=0.42m/s target=(2.0,10.0) ultrasonic=0.57m | S=1100 T=1501 | det=none
+[COURSE_CORRIDOR] Pos=(6.3, 13.9) Hdg=349° | Gate 5/10 hdg 262.0° err -87.0° v=0.00m/s target=(2.0,10.0) ultrasonic=0.55m | S=1100 T=1500 | det=none
+[COURSE_CORRIDOR] Pos=(6.3, 14.0) Hdg=349° | Gate 5/10 hdg 262.0° err -87.0° v=0.42m/s target=(2.0,10.0) ultrasonic=0.53m | S=1100 T=1518 | det=none
+[COURSE_CORRIDOR] Pos=(6.3, 14.0) Hdg=348° | Gate 5/10 hdg 262.0° err -86.0° v=0.42m/s target=(2.0,10.0) ultrasonic=0.51m | S=1100 T=1518 | det=none
+[COURSE_CORRIDOR] Pos=(6.3, 14.0) Hdg=348° | Gate 5/10 hdg 262.0° err -86.0° v=0.42m/s target=(2.0,10.0) ultrasonic=0.50m | S=1100 T=1518 | det=none
+[COURSE_CORRIDOR] Pos=(6.3, 14.0) Hdg=348° | Gate 5/10 hdg 262.0° err -86.0° v=0.42m/s target=(2.0,10.0) ultrasonic=0.48m | S=1100 T=1518 | det=none
+[COURSE_CORRIDOR] Pos=(6.3, 14.0) Hdg=348° | Gate 5/10 hdg 262.0° err -86.0° v=0.42m/s target=(2.0,10.0) ultrasonic=0.45m | S=1100 T=1518 | det=none
+[COURSE_CORRIDOR] Pos=(6.3, 14.1) Hdg=347° | Gate 5/10 hdg 262.0° err -85.0° v=0.42m/s target=(2.0,10.0) ultrasonic=0.44m | S=1100 T=1518 | det=none
+[COURSE_CORRIDOR] Pos=(6.3, 14.1) Hdg=347° | Gate 5/10 hdg 262.0° err -85.0° v=0.42m/s target=(2.0,10.0) ultrasonic=0.42m | S=1100 T=1518 | det=none
+[COURSE_CORRIDOR] Pos=(6.3, 14.1) Hdg=347° | Gate 5/10 hdg 262.0° err -85.0° v=0.42m/s target=(2.0,10.0) ultrasonic=0.39m | S=1100 T=1518 | det=none
+[COURSE_CORRIDOR] Pos=(6.3, 14.1) Hdg=346° | Gate 5/10 hdg 262.0° err -84.0° v=0.42m/s target=(2.0,10.0) ultrasonic=0.36m | S=1100 T=1518 | det=none
+[COURSE_CORRIDOR] Pos=(6.3, 14.2) Hdg=346° | Gate 5/10 hdg 262.0° err -84.0° v=0.42m/s target=(2.0,10.0) ultrasonic=0.34m | S=1100 T=1518 | det=none
+[COURSE_CORRIDOR] Pos=(6.3, 14.2) Hdg=346° | Gate 5/10 hdg 262.0° err -84.0° v=0.42m/s target=(2.0,10.0) ultrasonic=0.32m | S=1100 T=1518 | det=none
+[COURSE_CORRIDOR] Pos=(6.3, 14.2) Hdg=346° | Gate 5/10 hdg 262.0° err -84.0° v=0.42m/s target=(2.0,10.0) ultrasonic=0.30m | S=1100 T=1518 | det=none
+[COURSE_CORRIDOR] Pos=(6.3, 14.2) Hdg=345° | Gate 5/10 hdg 262.0° err -83.0° v=0.42m/s target=(2.0,10.0) ultrasonic=0.28m | S=1100 T=1518 | det=none
+[COURSE_CORRIDOR] Pos=(6.3, 14.2) Hdg=345° | Gate 5/10 hdg 262.0° err -83.0° v=0.42m/s target=(2.0,10.0) ultrasonic=0.26m | S=1100 T=1518 | det=none
+[COURSE_CORRIDOR] Pos=(6.3, 14.3) Hdg=345° | Gate 5/10 hdg 262.0° err -83.0° v=0.42m/s target=(2.0,10.0) ultrasonic=0.24m | S=1100 T=1518 | det=none
+[COURSE_CORRIDOR] Pos=(6.3, 14.3) Hdg=344° | Gate 5/10 hdg 262.0° err -82.0° v=0.42m/s target=(2.0,10.0) ultrasonic=0.21m | S=1100 T=1518 | det=none
+
+[E-STOP] Sensor pembatas kolam aktif: menutup script vision_test.py untuk hemat waktu.
+Override dilepas; script berhenti dengan throttle netral.
+Press any key to continue . . . 

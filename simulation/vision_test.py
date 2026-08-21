@@ -1,15 +1,13 @@
-"""Laptop webcam -> YOLO buoy detector -> ArduRover RC override.
+"""YOLO gate perception plus MAVLink control for hardware and Webots.
 
-The script keeps ArduRover in MANUAL mode and sends steering/throttle as
-MAVLink RC_CHANNELS_OVERRIDE messages. It never arms the vehicle.
+In simulator mode, ``CourseAutopilot`` runs heading/speed control at 20 Hz,
+uses fresh red-green pairs for bounded local gate centering, and gives obstacle
+priority to the five ultrasonic channels.  The inference/UI loop may run more
+slowly without starving RC overrides.  The script never arms the vehicle.
 
-Default safety behavior:
-- steering follows the detected buoy target;
-- throttle is set to --throttle-pwm when a buoy target is detected;
-- throttle returns to neutral (1500) when no target is visible.
-
-With Mission Planner connected on COM5, enable MAVLink forwarding to TCP
-127.0.0.1:5762 and run this script using the default endpoint.
+When simulator ``gate_count`` telemetry is unavailable, ``--sensor-only`` uses
+local GPS gate-plane crossing and the same camera/ultrasonic layers as a real
+hardware run.
 """
 
 from __future__ import annotations
@@ -20,12 +18,14 @@ import json
 import threading
 import time
 from collections import deque
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Sequence
 from vision_route import (
+    CourseDecision,
     CoursePhase,
+    CourseRouteConfig,
     CourseRouteController,
     Detection,
     GateFeature,
@@ -37,6 +37,9 @@ from vision_route import (
     VisualTargetTracker,
     VisualThrottleController,
     VisualSearchController,
+    VisualGateCentering,
+    VisualGateCorrection,
+    VisualGateCorrectionConfig,
     SearchConfig,
     ccw,
     clamp,
@@ -52,6 +55,136 @@ from vision_route import (
     compute_steering_pwm,
 )
 from asv_dashboard_backend.vision_publisher import BridgeFramePublisher
+
+
+# The trained YOLO model intentionally remains a buoy detector.  The floating
+# marker boxes are large, mostly planar colour patches and are better handled
+# by a lightweight geometric detector than by silently treating them as buoys.
+MARKER_DETECTION_LABELS = frozenset({"blue_marker", "green_marker"})
+_MARKER_HSV_RANGES: tuple[tuple[str, tuple[int, int, int], tuple[int, int, int]], ...] = (
+    # OpenCV HSV hue is 0..179.  The high saturation threshold keeps the blue
+    # box separate from the Webots water/background, which is a paler blue.
+    ("blue_marker", (98, 145, 35), (132, 255, 255)),
+    ("green_marker", (38, 105, 35), (88, 255, 255)),
+)
+
+
+def detect_marker_boxes(
+    frame: Any,
+    *,
+    min_area_ratio: float = 0.0012,
+    max_area_ratio: float = 0.22,
+) -> list[Detection]:
+    """Detect blue/green floating boxes from one BGR camera frame.
+
+    ``best.pt`` has no marker classes, so this deliberately does not call the
+    neural model.  It segments the distinctive marker colour and then keeps
+    contours that look like a rectangle rather than a buoy (minimum aspect
+    ratio, rectangularity and solidity).  The result uses the existing
+    :class:`Detection` shape so it can be logged, drawn and consumed by the
+    course controller without changing the buoy matcher.
+
+    The detector is conservative: no candidate is returned when the frame is
+    too small or a colour region touches the image border (usually the water or
+    wall background).  ``confidence`` is a geometric quality score, not a
+    probability from YOLO.
+    """
+
+    if frame is None or getattr(frame, "ndim", 0) < 2:
+        return []
+    height, width = frame.shape[:2]
+    if width <= 0 or height <= 0:
+        return []
+    if not 0.0 < min_area_ratio < max_area_ratio <= 1.0:
+        raise ValueError("marker area ratios must satisfy 0 < min < max <= 1")
+
+    import cv2
+    import numpy as np
+
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    frame_area = float(width * height)
+    min_area = max(40.0, frame_area * float(min_area_ratio))
+    max_area = frame_area * float(max_area_ratio)
+    # A small opening removes single-pixel model/camera noise; closing joins
+    # anti-aliased edges of a marker into one connected rectangle.
+    kernel = np.ones((3, 3), dtype=np.uint8)
+    detections: list[Detection] = []
+
+    for label, lower, upper in _MARKER_HSV_RANGES:
+        mask = cv2.inRange(
+            hsv,
+            np.asarray(lower, dtype=np.uint8),
+            np.asarray(upper, dtype=np.uint8),
+        )
+        mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel, iterations=1)
+        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel, iterations=2)
+        contours, _ = cv2.findContours(
+            mask,
+            cv2.RETR_EXTERNAL,
+            cv2.CHAIN_APPROX_SIMPLE,
+        )
+        candidates: list[tuple[float, Detection]] = []
+        for contour in contours:
+            contour_area = float(cv2.contourArea(contour))
+            if contour_area < min_area or contour_area > max_area:
+                continue
+            x, y, box_width, box_height = cv2.boundingRect(contour)
+            # Border-connected regions are commonly the pool/wall background,
+            # not a floating marker.  Keeping a one-pixel margin also avoids
+            # an unstable bounding box while the target enters the image.
+            if x <= 0 or y <= 0 or x + box_width >= width - 1 or y + box_height >= height - 1:
+                continue
+            rotated = cv2.minAreaRect(contour)
+            rotated_width, rotated_height = rotated[1]
+            short_side = min(rotated_width, rotated_height)
+            long_side = max(rotated_width, rotated_height)
+            if short_side < max(5.0, min(width, height) * 0.012):
+                continue
+            aspect_ratio = long_side / max(short_side, 1e-6)
+            # A buoy/ellipse tends to have an aspect ratio close to 1.0;
+            # perspective-distorted marker rectangles in this arena remain
+            # wider than 1.35 even at the far end of the course.
+            if not 1.35 <= aspect_ratio <= 8.0:
+                continue
+            rotated_area = max(rotated_width * rotated_height, 1.0)
+            rectangularity = contour_area / rotated_area
+            hull_area = max(float(cv2.contourArea(cv2.convexHull(contour))), 1.0)
+            solidity = contour_area / hull_area
+            bbox_fill = contour_area / max(float(box_width * box_height), 1.0)
+            # Perspective, the box shadow and water gaps can reduce solidity
+            # below a perfect rectangle; buoy blobs still fail the aspect and
+            # bounding-box tests above.
+            if rectangularity < 0.52 or solidity < 0.65 or bbox_fill < 0.40:
+                continue
+
+            area_ratio = contour_area / frame_area
+            # This score is only used for ranking and telemetry.  It combines
+            # shape quality with visible size and is intentionally capped.
+            quality = clamp(
+                0.45
+                + 0.25 * clamp(rectangularity, 0.0, 1.0)
+                + 0.20 * clamp(solidity, 0.0, 1.0)
+                + 0.10 * clamp(area_ratio / 0.02, 0.0, 1.0),
+                0.0,
+                0.99,
+            )
+            detection = Detection(
+                label=label,
+                confidence=float(quality),
+                x_center=float(x + box_width / 2.0),
+                y_center=float(y + box_height / 2.0),
+                width=float(box_width),
+                height=float(box_height),
+            )
+            candidates.append((contour_area, detection))
+
+        # Only the largest plausible region of each marker colour is used for
+        # steering.  Other coloured regions (for example a distant buoy) stay
+        # out of the obstacle channel and cannot make the boat oscillate.
+        if candidates:
+            detections.append(max(candidates, key=lambda item: item[0])[1])
+
+    return detections
 
 
 def vfr_hud_heading(message: Any) -> float | None:
@@ -240,8 +373,20 @@ def resolve_pixhawk_endpoint(endpoint: str) -> str:
             return candidate
     return endpoint
 class PixhawkLink:
-    """Minimal MAVLink connection for ArduRover RC overrides."""
-    def __init__(self, endpoint: str, heartbeat_timeout: float = 5.0) -> None:
+    """Minimal MAVLink connection for ArduRover RC overrides.
+
+    ``origin_lat``/``origin_lon`` define the local ENU frame consumed by the
+    course controller. The simulator uses its fixed origin by default; a
+    real deployment should set these to the surveyed course reference point.
+    """
+    def __init__(
+        self,
+        endpoint: str,
+        heartbeat_timeout: float = 5.0,
+        *,
+        origin_lat: float = -6.200000,
+        origin_lon: float = 106.816666,
+    ) -> None:
         try:
             from pymavlink import mavutil
             import serial
@@ -253,6 +398,8 @@ class PixhawkLink:
         self._mavutil = mavutil
         self._endpoint = endpoint
         self._heartbeat_timeout = heartbeat_timeout
+        self._origin_lat = float(origin_lat)
+        self._origin_lon = float(origin_lon)
         self.connection = None
         self._lock = threading.Lock()
         self._mav_lock = threading.RLock()
@@ -264,7 +411,20 @@ class PixhawkLink:
         self._last_rc_channels = None
         self._last_vfr_hud = None
         self._last_global_pos = None
+        self._last_heading_update_s = 0.0
+        self._last_position_update_s = 0.0
         self._last_gate_count: int | None = None
+        self._last_marker_count: int | None = None
+        self._last_arena_id: int | None = None
+        self._last_ultrasonic: dict[str, float] = {
+            "front_left": 5.0,
+            "front": 5.0,
+            "front_right": 5.0,
+            "left": 5.0,
+            "right": 5.0,
+        }
+        self._last_yaw_rate_dps: float | None = None
+        self._last_azimuth_angle_deg: float | None = None
 
         with self._mav_lock:
             connected = self._try_connect(endpoint)
@@ -364,6 +524,15 @@ class PixhawkLink:
                 "rc3": None,
                 "servo1": None,
                 "servo3": None,
+                "arena": None,
+                "marker_count": None,
+                "ultrasonic": dict(self._last_ultrasonic),
+                "sonar": dict(self._last_ultrasonic),
+                "yaw_rate_dps": self._last_yaw_rate_dps,
+                "azimuth_angle_deg": self._last_azimuth_angle_deg,
+                "telemetry_age_s": float("inf"),
+                "position_age_s": float("inf"),
+                "heading_age_s": float("inf"),
             }
         with self._mav_lock:
             try:
@@ -376,6 +545,7 @@ class PixhawkLink:
                             "VFR_HUD",
                             "GLOBAL_POSITION_INT",
                             "NAMED_VALUE_INT",
+                            "NAMED_VALUE_FLOAT",
                         ],
                         blocking=False,
                     )
@@ -391,8 +561,10 @@ class PixhawkLink:
                         self._last_servo_output = message
                     elif message_type == "VFR_HUD":
                         self._last_vfr_hud = message
+                        self._last_heading_update_s = time.monotonic()
                     elif message_type == "GLOBAL_POSITION_INT":
                         self._last_global_pos = message
+                        self._last_position_update_s = time.monotonic()
                     elif message_type == "NAMED_VALUE_INT":
                         raw_name = getattr(message, "name", b"")
                         if isinstance(raw_name, bytes):
@@ -403,13 +575,56 @@ class PixhawkLink:
                             self._last_gate_count = max(
                                 0, min(10, int(getattr(message, "value", 0)))
                             )
+                        elif name == "mark_count":
+                            self._last_marker_count = max(
+                                0, min(2, int(getattr(message, "value", 0)))
+                            )
+                        elif name == "arena_id":
+                            self._last_arena_id = 1 if int(getattr(message, "value", 0)) else 0
+                    elif message_type == "NAMED_VALUE_FLOAT":
+                        raw_name = getattr(message, "name", b"")
+                        if isinstance(raw_name, bytes):
+                            name = raw_name.split(b"\0", 1)[0].decode("ascii", errors="ignore")
+                        else:
+                            name = str(raw_name).split("\0", 1)[0]
+                        ultrasonic_names = {
+                            "ultra_fl": "front_left",
+                            "ultra_f": "front",
+                            "ultra_fr": "front_right",
+                            "ultra_l": "left",
+                            "ultra_r": "right",
+                            # Compatibility with older simulator packets.
+                            "son_fl": "front_left",
+                            "son_f": "front",
+                            "son_fr": "front_right",
+                            "son_l": "left",
+                            "son_r": "right",
+                        }
+                        ultrasonic_key = ultrasonic_names.get(name)
+                        if ultrasonic_key is not None:
+                            self._last_ultrasonic[ultrasonic_key] = max(
+                                0.05,
+                                min(5.0, float(getattr(message, "value", 5.0))),
+                            )
+                        elif name == "yaw_rate":
+                            self._last_yaw_rate_dps = float(
+                                getattr(message, "value", 0.0)
+                            )
+                        elif name == "azimuth":
+                            self._last_azimuth_angle_deg = float(
+                                getattr(message, "value", 0.0)
+                            )
             except Exception:
                 self._last_heartbeat = None
                 self._last_rc_channels = None
                 self._last_servo_output = None
                 self._last_vfr_hud = None
                 self._last_global_pos = None
+                self._last_heading_update_s = 0.0
+                self._last_position_update_s = 0.0
                 self._last_gate_count = None
+                self._last_marker_count = None
+                self._last_arena_id = None
         heartbeat = self._last_heartbeat
         armed = False
         base_mode = None
@@ -429,14 +644,26 @@ class PixhawkLink:
         if self._last_global_pos is not None:
             lat = self._last_global_pos.lat / 1e7
             lon = self._last_global_pos.lon / 1e7
-            base_lat = -6.200000
-            base_lon = 106.816666
+            base_lat = self._origin_lat
+            base_lon = self._origin_lon
             meters_per_deg = 111319.5
             pos_y = (lat - base_lat) * meters_per_deg
             pos_x = (lon - base_lon) * (meters_per_deg * math.cos(math.radians(base_lat)))
             vx = getattr(self._last_global_pos, "vx", 0) / 100.0
             vy = getattr(self._last_global_pos, "vy", 0) / 100.0
             spd = math.sqrt(vx * vx + vy * vy)
+        now = time.monotonic()
+        position_age_s = (
+            now - self._last_position_update_s
+            if self._last_position_update_s > 0.0
+            else float("inf")
+        )
+        heading_age_s = (
+            now - self._last_heading_update_s
+            if self._last_heading_update_s > 0.0
+            else float("inf")
+        )
+        telemetry_age_s = max(position_age_s, heading_age_s)
         return {
             "mode": self.mode(),
             "armed": armed,
@@ -447,6 +674,21 @@ class PixhawkLink:
             "y": pos_y,
             "speed_mps": spd,
             "gate_count": self._last_gate_count,
+            "marker_count": self._last_marker_count,
+            "arena": (
+                None
+                if self._last_arena_id is None
+                else "B"
+                if self._last_arena_id == 1
+                else "A"
+            ),
+                "ultrasonic": dict(self._last_ultrasonic),
+                "sonar": dict(self._last_ultrasonic),
+                "yaw_rate_dps": self._last_yaw_rate_dps,
+                "azimuth_angle_deg": self._last_azimuth_angle_deg,
+                "telemetry_age_s": telemetry_age_s,
+            "position_age_s": position_age_s,
+            "heading_age_s": heading_age_s,
             "rc1": getattr(rc, "chan1_raw", None),
             "rc3": getattr(rc, "chan3_raw", None),
             "servo1": getattr(servo, "servo1_raw", None),
@@ -508,19 +750,485 @@ class PixhawkLink:
                 except Exception:
                     pass
 
+
+class CourseAutopilot:
+    """Run simulator course control at 20 Hz, independent of YOLO latency."""
+
+    def __init__(
+        self,
+        link: PixhawkLink,
+        arena: str = "A",
+        control_hz: float = 20.0,
+        *,
+        sensor_only: bool = False,
+        telemetry_timeout_s: float = 0.75,
+    ) -> None:
+        self.link = link
+        self.control_hz = max(5.0, float(control_hz))
+        self.sensor_only = bool(sensor_only)
+        self.telemetry_timeout_s = max(0.2, float(telemetry_timeout_s))
+        self.controller = CourseRouteController(CourseRouteConfig(arena=arena))
+        self._visual_arena = str(arena).upper()
+        self.visual_centering = VisualGateCentering(
+            VisualGateCorrectionConfig(red_on_left=self._visual_arena == "A")
+        )
+        self._lock = threading.Lock()
+        self._running = False
+        self._active = False
+        self._telemetry: dict[str, Any] = {}
+        self._decision: CourseDecision | None = None
+        self._visual_correction: VisualGateCorrection | None = None
+        self._buoy_detections: tuple[Detection, ...] = ()
+        self._buoy_frame_width = 0
+        self._buoy_frame_height = 0
+        self._buoy_observed_at_s: float | None = None
+        self._marker_detections: tuple[Detection, ...] = ()
+        self._marker_frame_width = 0
+        self._marker_frame_height = 0
+        self._marker_observed_at_s: float | None = None
+        self._error: str | None = None
+        self._thread: threading.Thread | None = None
+
+    def start(self) -> None:
+        if self._running:
+            return
+        self._running = True
+        self._thread = threading.Thread(
+            target=self._loop,
+            daemon=True,
+            name="asv-course-control-20hz",
+        )
+        self._thread.start()
+
+    def stop(self) -> None:
+        self._running = False
+        if self._thread is not None:
+            self._thread.join(timeout=1.0)
+        if self._active:
+            self.link.send_override(NEUTRAL_PWM, NEUTRAL_PWM)
+
+    def snapshot(self) -> tuple[bool, dict[str, Any], CourseDecision | None, str | None]:
+        with self._lock:
+            return self._active, dict(self._telemetry), self._decision, self._error
+
+    def update_visual(
+        self,
+        detections: Sequence[Detection],
+        *,
+        frame_width: int,
+        frame_height: int,
+        now_s: float | None = None,
+    ) -> VisualGateCorrection | None:
+        """Publish buoy and marker observations to the 20 Hz control loop.
+
+        Marker detections are kept separately from the buoy pair matcher.  A
+        marker box is an obstacle to avoid, not a gate buoy to centre on.
+        """
+
+        now = time.monotonic() if now_s is None else float(now_s)
+        with self._lock:
+            self._buoy_detections = tuple(
+                detection
+                for detection in detections
+                if detection.label in {"red_buoy", "green_buoy"}
+            )
+            self._buoy_frame_width = int(frame_width)
+            self._buoy_frame_height = int(frame_height)
+            self._buoy_observed_at_s = now
+            self._marker_detections = tuple(
+                detection
+                for detection in detections
+                if detection.label in MARKER_DETECTION_LABELS
+            )
+            self._marker_frame_width = int(frame_width)
+            self._marker_frame_height = int(frame_height)
+            self._marker_observed_at_s = now
+            self._visual_correction = self.visual_centering.update(
+                detections,
+                frame_width=frame_width,
+                frame_height=frame_height,
+                now_s=now,
+            )
+            return self._visual_correction
+
+    def _apply_single_buoy_obstacle_correction(
+        self,
+        decision: CourseDecision,
+        *,
+        now_s: float,
+    ) -> CourseDecision:
+        """Use a close, single YOLO buoy as a last-metre avoidance guard.
+
+        The pair-centering layer intentionally needs red *and* green from one
+        gate.  In the real camera view the nearer buoy is often visible alone
+        (the second buoy is hidden by the bow, glare, or the gate geometry).
+        Previously that frame produced no visual command at all, so the boat
+        continued into the detected buoy.  A lone, sufficiently large/low
+        detection is therefore treated as an obstacle: turn away from its
+        image side and reduce thrust.  It never replaces the route waypoint.
+        """
+
+        if decision.finished or decision.phase not in {
+            CoursePhase.APPROACH,
+            CoursePhase.TURN,
+            CoursePhase.CORRIDOR,
+        }:
+            return decision
+        with self._lock:
+            observed_at = self._buoy_observed_at_s
+            frame_width = self._buoy_frame_width
+            frame_height = self._buoy_frame_height
+            detections = tuple(self._buoy_detections)
+            pair_correction = self.visual_centering.current(now_s=now_s)
+        if (
+            pair_correction is not None
+            or observed_at is None
+            or now_s - observed_at > 0.35
+            or frame_width <= 0
+            or frame_height <= 0
+            or not detections
+        ):
+            return decision
+
+        # If both colours are present but the pair matcher rejected them, the
+        # geometry is ambiguous; do not steer at an arbitrary buoy from the
+        # next gate.  A lone colour is the safe, actionable case.
+        if len({detection.label for detection in detections}) != 1:
+            return decision
+        obstacle = max(detections, key=lambda item: (item.area, item.y_center))
+        if obstacle.confidence < 0.45:
+            return decision
+        image_center = frame_width / 2.0
+        normalized_error = clamp(
+            (obstacle.x_center - image_center) / max(image_center, 1.0),
+            -1.0,
+            1.0,
+        )
+        depth_ratio = clamp(obstacle.y_center / float(frame_height), 0.0, 1.0)
+        area_ratio = obstacle.area / float(frame_width * frame_height)
+        # Small/high detections are usually a distant gate and should not
+        # perturb the local route.  The thresholds accept the gate-6 failure
+        # case (green buoy at y~=0.55, area~=1.4% of the frame).
+        if depth_ratio < 0.42 or area_ratio < 0.006:
+            return decision
+        proximity = clamp((depth_ratio - 0.42) / 0.40, 0.0, 1.0)
+        steer_limit = 45.0 + 75.0 * proximity
+        steer_delta = int(
+            round(
+                clamp(
+                    -normalized_error * steer_limit,
+                    -90.0,
+                    90.0,
+                )
+            )
+        )
+        throttle_cap = int(round(1550.0 - 18.0 * proximity))
+        return replace(
+            decision,
+            steering_pwm=int(
+                round(
+                    clamp(
+                        decision.steering_pwm + steer_delta,
+                        NEUTRAL_PWM - self.controller.config.max_steering_delta,
+                        NEUTRAL_PWM + self.controller.config.max_steering_delta,
+                    )
+                )
+            ),
+            throttle_pwm=min(decision.throttle_pwm, throttle_cap),
+            obstacle_avoidance=True,
+            avoidance_reason="VISION_SINGLE_BUOY",
+            visual_correction_active=True,
+            visual_correction_pwm=steer_delta,
+            visual_target_error=normalized_error,
+        )
+
+    def _set_visual_arena(self, arena: object) -> None:
+        selected = str(arena or self._visual_arena).upper()
+        if selected not in {"A", "B"}:
+            return
+        with self._lock:
+            if selected == self._visual_arena:
+                return
+            self._visual_arena = selected
+            self.visual_centering = VisualGateCentering(
+                VisualGateCorrectionConfig(red_on_left=selected == "A")
+            )
+            self._visual_correction = None
+
+    def _apply_marker_obstacle_correction(
+        self,
+        decision: CourseDecision,
+        *,
+        now_s: float,
+    ) -> CourseDecision:
+        """Use the colour detector as a bounded last-metre obstacle layer.
+
+        The route waypoint remains the primary guidance.  When the active blue
+        or green box is visible, this layer only steers away from its image
+        centre and caps thrust while the box occupies a meaningful part of the
+        frame.  It expires quickly so stale camera frames cannot keep turning
+        the vessel after the box has passed.
+        """
+
+        if decision.finished or decision.phase not in {
+            CoursePhase.MARKER_BLUE,
+            CoursePhase.MARKER_GREEN,
+        }:
+            return decision
+        active_label = (
+            "blue_marker"
+            if decision.marker_count <= 0
+            else "green_marker"
+        )
+        with self._lock:
+            observed_at = self._marker_observed_at_s
+            frame_width = self._marker_frame_width
+            frame_height = self._marker_frame_height
+            detections = tuple(
+                detection
+                for detection in self._marker_detections
+                if detection.label == active_label
+            )
+        if (
+            observed_at is None
+            or now_s - observed_at > 0.65
+            or frame_width <= 0
+            or frame_height <= 0
+            or not detections
+        ):
+            return decision
+
+        # The largest candidate is the closest/most relevant one.  Its
+        # normalized horizontal error has the opposite sign for avoidance:
+        # obstacle right -> turn left, obstacle left -> turn right.
+        obstacle = max(detections, key=lambda item: (item.area, item.y_center))
+        image_center = frame_width / 2.0
+        normalized_error = clamp(
+            (obstacle.x_center - image_center) / max(image_center, 1.0),
+            -1.0,
+            1.0,
+        )
+        area_ratio = obstacle.area / float(frame_width * frame_height)
+        # A centred box is handled by the safe-side GPS waypoint.  The visual
+        # layer supplies a modest counter-steer only when lateral separation is
+        # observable, avoiding left/right oscillation at the marker plane.
+        steer_delta = int(
+            round(
+                clamp(
+                    -normalized_error * 150.0,
+                    -150.0,
+                    150.0,
+                )
+            )
+        )
+        # The GPS route already supplies the safe-side pass point.  Use the
+        # colour detector as a last-metre guard, not as a full stop: the old
+        # 1510 PWM cap made a visible box slow the hull several metres before
+        # the pass plane.  Reserve the stronger cap for a genuinely close
+        # rectangle and let normal marker speed continue at a distance.
+        if area_ratio >= 0.040:
+            throttle_cap = 1524
+        elif area_ratio >= 0.018:
+            throttle_cap = 1534
+        else:
+            throttle_cap = 1542
+        return replace(
+            decision,
+            steering_pwm=int(
+                round(
+                    clamp(
+                        decision.steering_pwm + steer_delta,
+                        NEUTRAL_PWM - self.controller.config.max_steering_delta,
+                        NEUTRAL_PWM + self.controller.config.max_steering_delta,
+                    )
+                )
+            ),
+            throttle_pwm=min(decision.throttle_pwm, throttle_cap),
+            obstacle_avoidance=True,
+            avoidance_reason="VISION_MARKER_BOX",
+        )
+
+    def _apply_visual_correction(
+        self,
+        decision: CourseDecision,
+        *,
+        now_s: float,
+    ) -> CourseDecision:
+        decision = self._apply_marker_obstacle_correction(decision, now_s=now_s)
+        if decision.avoidance_reason == "VISION_MARKER_BOX":
+            return decision
+        decision = self._apply_single_buoy_obstacle_correction(decision, now_s=now_s)
+        if decision.avoidance_reason == "VISION_SINGLE_BUOY":
+            return decision
+        # The blind corner is a deterministic three-state manoeuvre.  Camera
+        # trim is intentionally disabled during the brake and hard-left pulse;
+        # a stale pair from the previous/next gate must not dilute the pivot.
+        if decision.avoidance_reason in {
+            "BLIND_LEFT_BRAKE",
+            "BLIND_LEFT_PIVOT",
+            "CORRIDOR_CENTER_BRAKE",
+            "CORRIDOR_CENTER_KICK",
+            "CORRIDOR_NORTH_RECAPTURE",
+        }:
+            return decision
+        blind_visual_phase = (
+            decision.phase is CoursePhase.TURN
+            and decision.gate_count in {3, 7}
+        )
+        with self._lock:
+            correction = self.visual_centering.current(now_s=now_s)
+        if (
+            correction is None
+            or decision.finished
+            or decision.phase in {CoursePhase.DOCK, CoursePhase.FINISH}
+            or decision.obstacle_avoidance
+            or not 0 <= decision.gate_count < len(self.controller.waypoints)
+        ):
+            return decision
+
+        # The simulator exposes a scored GPS/gate route, so the waypoint
+        # controller is the primary authority.  YOLO can occasionally pair a
+        # buoy from the next gate with one from the current gate while two
+        # gates are visible; allowing that raw image error to command a full
+        # 160-PWM turn is what previously sent the hull outside Gate 3.  Keep
+        # camera input as a small, bounded cross-track trim so modest arena
+        # offsets are corrected without overriding the deterministic route.
+        lookahead_m = self.controller.gate_lookahead_distance(decision.gate_count)
+        authority = clamp(
+            decision.waypoint_distance_m / max(lookahead_m, 0.1),
+            0.0,
+            # The blind maneuver is only a short peek. Once a valid pair is
+            # reacquired, the camera gets a smaller trim authority; it must
+            # never reinstate a fixed hard-left turn.
+            0.10 if blind_visual_phase else 0.18,
+        )
+        visual_delta = int(
+            round(
+                clamp(
+                    correction.steering_delta_pwm * authority,
+                    -30.0,
+                    30.0,
+                )
+            )
+        )
+        steering_pwm = int(
+            round(
+                clamp(
+                    decision.steering_pwm + visual_delta,
+                    NEUTRAL_PWM - self.controller.config.max_steering_delta,
+                    NEUTRAL_PWM + self.controller.config.max_steering_delta,
+                )
+            )
+        )
+        return replace(
+            decision,
+            steering_pwm=steering_pwm,
+            visual_correction_active=True,
+            visual_correction_pwm=visual_delta,
+            visual_target_error=correction.normalized_error,
+        )
+
+    def _loop(self) -> None:
+        period_s = 1.0 / self.control_hz
+        next_tick = time.monotonic()
+        while self._running:
+            now = time.monotonic()
+            if now < next_tick:
+                time.sleep(min(0.01, next_tick - now))
+                continue
+            next_tick = now + period_s
+            try:
+                telemetry = self.link.telemetry()
+                required = (
+                    telemetry.get("x"),
+                    telemetry.get("y"),
+                    telemetry.get("heading_deg"),
+                )
+                if any(value is None for value in required):
+                    try:
+                        self.link.send_override(NEUTRAL_PWM, NEUTRAL_PWM)
+                    except Exception:
+                        pass
+                    with self._lock:
+                        self._active = False
+                        self._telemetry = telemetry
+                        self._error = "Telemetri posisi/heading belum tersedia; PWM dinetralkan."
+                    continue
+                telemetry_age = telemetry.get("telemetry_age_s")
+                if telemetry_age is not None:
+                    try:
+                        telemetry_age = float(telemetry_age)
+                    except (TypeError, ValueError):
+                        telemetry_age = float("inf")
+                    if not math.isfinite(telemetry_age) or telemetry_age > self.telemetry_timeout_s:
+                        try:
+                            self.link.send_override(NEUTRAL_PWM, NEUTRAL_PWM)
+                        except Exception:
+                            pass
+                        with self._lock:
+                            self._active = False
+                            self._telemetry = telemetry
+                            self._error = (
+                                f"Telemetri stale ({telemetry_age:.2f}s); PWM dinetralkan."
+                            )
+                        continue
+                arena = telemetry.get("arena") or self.controller.arena
+                self._set_visual_arena(arena)
+                decision = self.controller.step(
+                    gate_count=(
+                        None
+                        if self.sensor_only or telemetry.get("gate_count") is None
+                        else int(telemetry["gate_count"])
+                    ),
+                    marker_count=(
+                        None
+                        if self.sensor_only
+                        else telemetry.get("marker_count")
+                    ),
+                    x=float(telemetry["x"]),
+                    y=float(telemetry["y"]),
+                    heading_deg=float(telemetry["heading_deg"]),
+                    speed_mps=float(telemetry.get("speed_mps") or 0.0),
+                    yaw_rate_dps=telemetry.get("yaw_rate_dps"),
+                    ultrasonic=(
+                        telemetry.get("ultrasonic") or telemetry.get("sonar")
+                    ),
+                    now_s=now,
+                    arena=str(arena),
+                )
+                decision = self._apply_visual_correction(decision, now_s=now)
+                self.link.send_override(decision.steering_pwm, decision.throttle_pwm)
+                with self._lock:
+                    self._active = True
+                    self._telemetry = telemetry
+                    self._decision = decision
+                    self._error = None
+            except Exception as exc:
+                try:
+                    self.link.send_override(NEUTRAL_PWM, NEUTRAL_PWM)
+                except Exception:
+                    pass
+                with self._lock:
+                    self._active = False
+                    self._error = str(exc)
+
+
 def create_pixhawk_link(
     *,
     manual_rc: bool,
     endpoint: str,
+    origin_lat: float = -6.200000,
+    origin_lon: float = 106.816666,
 ) -> PixhawkLink | None:
     """Create the control link only for the legacy control path."""
     if manual_rc:
         return None
-    return PixhawkLink(endpoint)
+    return PixhawkLink(endpoint, origin_lat=origin_lat, origin_lon=origin_lon)
 
 def parse_args() -> argparse.Namespace:
+    repo_root = Path(__file__).resolve().parents[1]
     parser = argparse.ArgumentParser(
-        description="Deteksi buoy webcam dengan opsi model monitoring manual RC."
+        description="Navigasi ASV dengan YOLO, MAVLink, dan opsi monitoring manual RC."
     )
     parser.add_argument(
         "--manual-rc",
@@ -529,7 +1237,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--model",
-        default=r"D:\KKI2\model\best.pt",
+        default=str(repo_root / "model" / "best.pt"),
         help="Path model Ultralytics .pt",
     )
     parser.add_argument(
@@ -538,8 +1246,32 @@ def parse_args() -> argparse.Namespace:
         help="Endpoint MAVLink; default TCP forwarding Mission Planner",
     )
     parser.add_argument(
+        "--arena",
+        choices=("A", "B", "a", "b"),
+        default="A",
+        help="Arena aktif A atau lintasan cermin B (default A)",
+    )
+    parser.add_argument(
+        "--origin-lat",
+        type=float,
+        default=-6.200000,
+        help="Latitude origin ENU lokal (default origin simulator)",
+    )
+    parser.add_argument(
+        "--origin-lon",
+        type=float,
+        default=106.816666,
+        help="Longitude origin ENU lokal (default origin simulator)",
+    )
+    parser.add_argument(
+        "--telemetry-timeout-s",
+        type=float,
+        default=0.75,
+        help="Netralisasi PWM jika posisi/heading stale lebih lama dari ini",
+    )
+    parser.add_argument(
         "--log",
-        default=r"D:\KKI2\vision_test_log.jsonl",
+        default=str(repo_root / "simulation" / "logs" / "vision_test_log.jsonl"),
         help="File JSON Lines untuk log vision, RC, dan output PWM",
     )
     parser.add_argument(
@@ -641,6 +1373,14 @@ def parse_args() -> argparse.Namespace:
         "--headless",
         action="store_true",
         help="Jalankan tanpa jendela GUI OpenCV (cocok untuk server/background)",
+    )
+    parser.add_argument(
+        "--sensor-only",
+        action="store_true",
+        help=(
+            "Abaikan gate_count/marker_count scorer Webots; infer progress "
+            "dari GPS, heading, kamera, dan ultrasonik seperti mode kapal nyata"
+        ),
     )
     return parser.parse_args()
 
@@ -747,7 +1487,14 @@ def draw_detections(frame: Any, detections: Sequence[Detection], target_x: float
         y1 = int(detection.y_center - detection.height / 2.0)
         x2 = int(detection.x_center + detection.width / 2.0)
         y2 = int(detection.y_center + detection.height / 2.0)
-        color = (0, 0, 255) if detection.label == "red_buoy" else (0, 255, 0)
+        if detection.label == "red_buoy":
+            color = (0, 0, 255)
+        elif detection.label == "green_buoy":
+            color = (0, 255, 0)
+        elif detection.label == "blue_marker":
+            color = (255, 120, 0)
+        else:  # green_marker
+            color = (80, 255, 80)
         cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
         cv2.putText(
             frame,
@@ -766,6 +1513,7 @@ def draw_detections(frame: Any, detections: Sequence[Detection], target_x: float
 
 def main() -> None:
     args = parse_args()
+    args.arena = str(args.arena).upper()
     if not 0.0 < args.conf <= 1.0:
         raise ValueError("--conf harus berada di antara 0 dan 1")
     if not 0.0 < args.vision_fps:
@@ -787,9 +1535,10 @@ def main() -> None:
     target_tracker = VisualTargetTracker(
         hold_s=args.target_hold_s,
         smoothing_alpha=args.target_smoothing,
+        red_on_left=str(args.arena).upper() == "A",
     )
     gate_tracker = GateTracker(crossing_y=0.65, cooldown_s=1.5)
-    course_controller = CourseRouteController()
+    course_controller = CourseRouteController(CourseRouteConfig(arena=args.arena))
     last_hdg_err: float = 0.0
     last_hdg_now: float = 0.0
     unstuck_until: float = 0.0
@@ -814,7 +1563,10 @@ def main() -> None:
     link = create_pixhawk_link(
         manual_rc=args.manual_rc,
         endpoint=args.endpoint,
+        origin_lat=args.origin_lat,
+        origin_lon=args.origin_lon,
     )
+    course_autopilot: CourseAutopilot | None = None
     logger = JsonlLogger(args.log)
     run_id = datetime.now(timezone.utc).strftime("vision-%Y%m%dT%H%M%SZ")
     logger.write(
@@ -826,6 +1578,11 @@ def main() -> None:
             "camera": args.camera,
             "run_id": run_id,
             "vision_fps": args.vision_fps,
+            "arena": args.arena,
+            "sensor_only": args.sensor_only,
+            "origin_lat": args.origin_lat,
+            "origin_lon": args.origin_lon,
+            "telemetry_timeout_s": args.telemetry_timeout_s,
         }
     )
     camera_source = int(args.camera) if str(args.camera).isdigit() else args.camera
@@ -836,12 +1593,28 @@ def main() -> None:
             link.close()
         raise RuntimeError(f"Webcam {args.camera} tidak dapat dibuka")
 
+    if link is not None:
+        course_autopilot = CourseAutopilot(
+            link,
+            arena=args.arena,
+            control_hz=20.0,
+            sensor_only=args.sensor_only,
+            telemetry_timeout_s=args.telemetry_timeout_s,
+        )
+        course_autopilot.start()
+
     print("Tekan Q atau ESC untuk berhenti.")
     print(
         f"Throttle dinamis: near={throttle_config.near_pwm} "
         f"cruise={throttle_config.cruise_pwm} far={throttle_config.far_pwm} "
         f"hold={throttle_config.hold_s:.2f}s "
         f"ramp={throttle_config.ramp_pwm_per_s:.0f} PWM/s"
+    )
+    print(
+        "Mode progres: FIXED-COURSE + CAMERA/YOLO + ULTRASONIC "
+        "(tanpa scorer Webots)"
+        if args.sensor_only
+        else "Mode progres: SIM-SCORER + sensor"
     )
     bridge = (
         BridgeFramePublisher(
@@ -870,7 +1643,14 @@ def main() -> None:
         fail_count = 0
         try:
             while not capture_stop.is_set():
-                ok, frame = camera.read()
+                # MJPEG connections can raise a decoder/transport exception
+                # when Webots refreshes the stream.  Treat that exactly like a
+                # failed frame and reconnect below; allowing it to escape would
+                # close the queue and silently stop the 20 Hz autopilot.
+                try:
+                    ok, frame = camera.read()
+                except Exception:
+                    ok, frame = False, None
                 if not ok:
                     fail_count += 1
                     if fail_count >= 20:
@@ -920,6 +1700,8 @@ def main() -> None:
     px: float | None = None
     py: float | None = None
     current_hdg: float | None = None
+    course_active = False
+    latest_course_decision: CourseDecision | None = None
     try:
         while True:
             now = time.monotonic()
@@ -941,7 +1723,19 @@ def main() -> None:
             if now >= next_inference_at:
                 result = model.predict(frame, conf=args.conf, verbose=False)[0]
                 last_detections = detections_from_result(result)
+                # YOLO is trained only on the red/green buoy classes.  Add the
+                # independent geometric marker detector to the same frame
+                # record so the route can avoid the blue/green floating boxes
+                # and the dashboard can show why a correction was applied.
+                last_detections.extend(detect_marker_boxes(frame))
                 target_x = target_tracker.update(last_detections, now=now, frame_width=frame.shape[1], frame_height=frame.shape[0])
+                if course_autopilot is not None:
+                    course_autopilot.update_visual(
+                        last_detections,
+                        frame_width=frame.shape[1],
+                        frame_height=frame.shape[0],
+                        now_s=now,
+                    )
                 if args.manual_rc:
                     steering_pwm = NEUTRAL_PWM
                     throttle_pwm = NEUTRAL_PWM
@@ -955,8 +1749,20 @@ def main() -> None:
                         "servo3": None,
                     }
                 else:
-                    # Update telemetri instrumen sebelum kalkulasi navigasi
-                    if link is not None:
+                    # Simulator control runs at 20 Hz in CourseAutopilot, while
+                    # this inference/UI loop remains limited by --vision-fps.
+                    if course_autopilot is not None:
+                        (
+                            course_active,
+                            course_telemetry,
+                            latest_course_decision,
+                            course_error,
+                        ) = course_autopilot.snapshot()
+                        if course_telemetry:
+                            telemetry = course_telemetry
+                        if course_error:
+                            mode = "COURSE_RETRY"
+                    if link is not None and not course_active:
                         try:
                             telemetry = link.telemetry()
                             px = telemetry.get("x")
@@ -1000,25 +1806,55 @@ def main() -> None:
                     sim_gate_count = telemetry.get("gate_count") if telemetry else None
 
                     if sim_gate_count is not None and px is not None and py is not None and current_hdg is not None:
-                        course_decision = course_controller.step(
-                            gate_count=int(sim_gate_count),
-                            x=float(px),
-                            y=float(py),
-                            heading_deg=float(current_hdg),
-                        )
+                        course_decision = latest_course_decision
+                        if course_decision is None:
+                            course_decision = course_controller.step(
+                                gate_count=int(sim_gate_count),
+                                marker_count=telemetry.get("marker_count"),
+                                x=float(px),
+                                y=float(py),
+                                heading_deg=float(current_hdg),
+                                speed_mps=float(telemetry.get("speed_mps") or 0.0),
+                                yaw_rate_dps=telemetry.get("yaw_rate_dps"),
+                                ultrasonic=(
+                                    telemetry.get("ultrasonic")
+                                    or telemetry.get("sonar")
+                                ),
+                                now_s=now,
+                                arena=str(telemetry.get("arena") or args.arena),
+                            )
                         steering_pwm = course_decision.steering_pwm
                         throttle_pwm = course_decision.throttle_pwm
                         nav_state = f"COURSE_{course_decision.phase.value}"
                         target = course_decision.target_waypoint
                         if target:
+                            if course_decision.gate_count < 10:
+                                target_label = f"Gate {course_decision.gate_count + 1}/10"
+                            elif course_decision.marker_count == 0:
+                                target_label = "Marker Biru"
+                            elif course_decision.marker_count == 1:
+                                target_label = "Marker Hijau"
+                            elif course_decision.phase is CoursePhase.DOCK_APPROACH:
+                                target_label = "Masuk Dock"
+                            else:
+                                target_label = "Dock"
                             nav_target_info = (
-                                f"Gate {course_decision.gate_count}/10 "
+                                f"{target_label} "
                                 f"hdg {course_decision.target_heading_deg:.1f}° "
                                 f"err {course_decision.heading_error_deg:+.1f}° "
-                                f"target=({target[0]:.1f},{target[1]:.1f})"
+                                f"v={course_decision.target_speed_mps:.2f}m/s "
+                                f"target=({target[0]:.1f},{target[1]:.1f}) "
+                                "ultrasonic="
+                                f"{course_decision.ultrasonic_min_m:.2f}m"
+                                + (
+                                    " cv="
+                                    f"{course_decision.visual_correction_pwm:+d}PWM"
+                                    if course_decision.visual_correction_active
+                                    else ""
+                                )
                             )
                         else:
-                            nav_target_info = "Gate 10 selesai"
+                            nav_target_info = "Docking selesai"
                     elif is_turn_sector_3_to_4:
                         dt_hdg = now - last_hdg_now
                         steering_pwm, last_hdg_err = compute_pd_heading_pwm(270.0, current_hdg, last_hdg_err, dt_hdg, max_pwm_delta=250.0)
@@ -1126,7 +1962,12 @@ def main() -> None:
                             nav_target_info = "Pencarian Visual: Memindai permukaan air"
                     # Anti-stuck: Hanya aktif setelah 5 detik berjalan dan kapal benar-benar macet > 4.0s
                     boat_speed = abs(float(telemetry.get("speed_mps", 1.0))) if telemetry and telemetry.get("speed_mps") is not None else 1.0
-                    if now - started_at > 5.0 and boat_speed < 0.10 and throttle_pwm > 1520:
+                    if (
+                        not course_active
+                        and now - started_at > 5.0
+                        and boat_speed < 0.10
+                        and throttle_pwm > 1520
+                    ):
                         if stuck_timer is None:
                             stuck_timer = now
                         elif now - stuck_timer > 4.0:
@@ -1135,7 +1976,7 @@ def main() -> None:
                     else:
                         stuck_timer = None
 
-                    if now < unstuck_until:
+                    if not course_active and now < unstuck_until:
                         # Manuver mundur darurat untuk lepas dari rintangan/dinding
                         steering_pwm = 1200
                         throttle_pwm = 1420
@@ -1145,18 +1986,30 @@ def main() -> None:
                     px = telemetry.get("x") if telemetry else None
                     py = telemetry.get("y") if telemetry else None
                     if px is not None and py is not None:
-                        if abs(px) >= 13.80 or abs(py) >= 13.80:
+                        arena_center_x = 30.0 if str(telemetry.get("arena") or args.arena).upper() == "B" else 0.0
+                        if abs(px - arena_center_x) >= 14.30 or abs(py) >= 14.30:
                             print("\n[E-STOP] Sensor pembatas kolam aktif: menutup script vision_test.py untuk hemat waktu.")
                             break
-                        if px > 11.5 or py > 11.5 or px < -11.5 or py < -11.5:
+                        if (
+                            not course_active
+                            and (
+                                px - arena_center_x > 11.5
+                                or py > 11.5
+                                or px - arena_center_x < -11.5
+                                or py < -11.5
+                            )
+                        ):
                             steering_pwm = min(steering_pwm, 1280)
                             throttle_pwm = min(throttle_pwm, 1540)
 
                     try:
                         assert link is not None
-                        link.send_override(steering_pwm, throttle_pwm)
-                        mode = link.mode()
-                        telemetry = link.telemetry()
+                        if not course_active:
+                            link.send_override(steering_pwm, throttle_pwm)
+                            mode = link.mode()
+                            telemetry = link.telemetry()
+                        else:
+                            mode = str(telemetry.get("mode") or "COURSE_AUTO")
                         px = telemetry.get("x")
                         py = telemetry.get("y")
                         current_hdg = telemetry.get("heading_deg")
@@ -1258,6 +2111,8 @@ def main() -> None:
             cv2.destroyAllWindows()
         except Exception:
             pass
+        if course_autopilot is not None:
+            course_autopilot.stop()
         if link is not None:
             try:
                 link.send_override(NEUTRAL_PWM, NEUTRAL_PWM)

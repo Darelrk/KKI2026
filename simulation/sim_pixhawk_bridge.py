@@ -29,6 +29,22 @@ except ImportError:
 BASE_LAT = -6.200000
 BASE_LON = 106.816666
 METERS_PER_DEG_LAT = 111320.0
+ULTRASONIC_MAVLINK_NAMES = {
+    "front_left": "ultra_fl",
+    "front": "ultra_f",
+    "front_right": "ultra_fr",
+    "left": "ultra_l",
+    "right": "ultra_r",
+}
+ULTRASONIC_NAME_TO_DIRECTION = {
+    **{name: direction for direction, name in ULTRASONIC_MAVLINK_NAMES.items()},
+    # Receive packets from simulator versions that still used the old label.
+    "son_fl": "front_left",
+    "son_f": "front",
+    "son_fr": "front_right",
+    "son_l": "left",
+    "son_r": "right",
+}
 
 
 class BridgeState:
@@ -38,6 +54,8 @@ class BridgeState:
         self.y: float = 0.0
         self.heading_deg: float = 0.0
         self.speed_mps: float = 0.0
+        self.yaw_rate_dps: float = 0.0
+        self.azimuth_angle_deg: float = 0.0
         self.steering_pwm: int = 1500
         self.throttle_pwm: int = 1500
         self.last_webots_msg_at: float = 0.0
@@ -45,6 +63,11 @@ class BridgeState:
         self.clients_lock = threading.Lock()
 
         self.gate_count: int = 0
+        self.marker_count: int = 0
+        self.arena_id: int = 0
+        self.ultrasonic: dict[str, float] = {
+            direction: 5.0 for direction in ULTRASONIC_MAVLINK_NAMES
+        }
 
 
 state = BridgeState()
@@ -146,9 +169,14 @@ def start_telemetry_broadcast_loop() -> None:
                     y = state.y
                     hdg = state.heading_deg
                     spd = state.speed_mps
+                    yaw_rate_dps = state.yaw_rate_dps
+                    azimuth_angle_deg = state.azimuth_angle_deg
                     steer = state.steering_pwm
                     thr = state.throttle_pwm
                     gate_count = state.gate_count
+                    marker_count = state.marker_count
+                    arena_id = state.arena_id
+                    ultrasonic = dict(state.ultrasonic)
 
                 lat = BASE_LAT + (y / METERS_PER_DEG_LAT)
                 lon = BASE_LON + (
@@ -163,8 +191,8 @@ def start_telemetry_broadcast_loop() -> None:
                     int(lon * 1e7),
                     10000,
                     0,
-                    int(spd * 100 * math.cos(math.radians(hdg))),
                     int(spd * 100 * math.sin(math.radians(hdg))),
+                    int(spd * 100 * math.cos(math.radians(hdg))),
                     0,
                     int(hdg * 100),
                 )
@@ -185,6 +213,38 @@ def start_telemetry_broadcast_loop() -> None:
                     gate_count,
                 )
                 gate_buf = gate_msg.pack(mav_out)
+                arena_msg = mav_out.named_value_int_encode(
+                    int(now * 1000) & 0xFFFFFFFF,
+                    b"arena_id",
+                    arena_id,
+                )
+                marker_msg = mav_out.named_value_int_encode(
+                    int(now * 1000) & 0xFFFFFFFF,
+                    b"mark_count",
+                    marker_count,
+                )
+                marker_buf = marker_msg.pack(mav_out)
+                arena_buf = arena_msg.pack(mav_out)
+                ultrasonic_buf = b"".join(
+                    mav_out.named_value_float_encode(
+                        int(now * 1000) & 0xFFFFFFFF,
+                        ULTRASONIC_MAVLINK_NAMES[direction].encode("ascii"),
+                        float(value),
+                    ).pack(mav_out)
+                    for direction, value in ultrasonic.items()
+                )
+                dynamics_buf = (
+                    mav_out.named_value_float_encode(
+                        int(now * 1000) & 0xFFFFFFFF,
+                        b"yaw_rate",
+                        float(yaw_rate_dps),
+                    ).pack(mav_out)
+                    + mav_out.named_value_float_encode(
+                        int(now * 1000) & 0xFFFFFFFF,
+                        b"azimuth",
+                        float(azimuth_angle_deg),
+                    ).pack(mav_out)
+                )
                 hud_buf = hud_msg.pack(mav_out)
 
                 # RC_CHANNELS_RAW
@@ -203,7 +263,16 @@ def start_telemetry_broadcast_loop() -> None:
                 )
                 rc_buf = rc_msg.pack(mav_out)
 
-                total_buf = pos_buf + hud_buf + gate_buf + rc_buf
+                total_buf = (
+                    pos_buf
+                    + hud_buf
+                    + gate_buf
+                    + marker_buf
+                    + arena_buf
+                    + ultrasonic_buf
+                    + dynamics_buf
+                    + rc_buf
+                )
                 for sock in active_clients:
                     try:
                         sock.sendall(total_buf)
@@ -259,6 +328,33 @@ def start_webots_udp_listener(port: int = 14550) -> None:
                                 state.gate_count = max(
                                     0,
                                     min(10, int(getattr(msg, "value", 0))),
+                                )
+                            elif name == "mark_count":
+                                state.marker_count = max(
+                                    0,
+                                    min(2, int(getattr(msg, "value", 0))),
+                                )
+                            elif name == "arena_id":
+                                state.arena_id = 1 if int(getattr(msg, "value", 0)) else 0
+                        elif msg_type == "NAMED_VALUE_FLOAT":
+                            raw_name = getattr(msg, "name", b"")
+                            if isinstance(raw_name, bytes):
+                                name = raw_name.split(b"\0", 1)[0].decode("ascii", errors="ignore")
+                            else:
+                                name = str(raw_name).split("\0", 1)[0]
+                            direction = ULTRASONIC_NAME_TO_DIRECTION.get(name)
+                            if direction is not None:
+                                state.ultrasonic[direction] = max(
+                                    0.05,
+                                    min(5.0, float(getattr(msg, "value", 5.0))),
+                                )
+                            elif name == "yaw_rate":
+                                state.yaw_rate_dps = float(
+                                    getattr(msg, "value", 0.0)
+                                )
+                            elif name == "azimuth":
+                                state.azimuth_angle_deg = float(
+                                    getattr(msg, "value", 0.0)
                                 )
             except Exception:
                 time.sleep(0.01)

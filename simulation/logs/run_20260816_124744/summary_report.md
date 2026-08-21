@@ -1,0 +1,108 @@
+# Laporan Hasil Uji Simulasi ASV KKI 2026 - run_20260816_124744
+
+- **No. Uji**: 141
+- **Jam Mulai (lokal)**: 2026-08-16 19:47:44 SE Asia Standard Time
+- **Waktu Mulai (UTC)**: 2026-08-16T12:47:44.551029+00:00
+- **Waktu Update (UTC)**: 2026-08-16T12:54:21.064344+00:00
+- **Durasi Sesi**: 396.5 detik
+- **Posisi Akhir Kapal**: X = -6.41 m, Y = -14.66 m
+- **Status Docking**: **BELUM**
+- **Posisi Docking**: -
+- **Skor Validasi Gate**: **10 / 10 Gate (100.0%)**
+- **Gate Terlewati (Valid)**: 10
+- **Gate Missed (Luar)**: 0
+- **Marker Bawah Valid**: **2 / 2**
+- **Marker Bawah Missed**: 0
+- **Sensor Sentuh Buoy (Buoy Collisions)**: **0 Kali**
+- **Sensor Tabrak Pembatas (Wall Collisions)**: **60 Kali**
+
+## 1. Detail Pelanggaran Tabrakan / Sentuh Buoy
+
+*Bersih: Tidak ada buoy yang tersentuh/ditabrak kapal (Zero Buoy Touch).*
+
+## 2. Detail Tabrakan Dinding / Pembatas Kolam
+
+| No | Nama Dinding Pembatas | Waktu Tabrak (UTC) | Posisi Kapal [X, Y] | Kecepatan Benturan (m/s) |
+|---|---|---|---|---|
+| 1 | DINDING_SELATAN_SOUTH | 2026-08-16T12:52:23.878080+00:00 | [-6.67, -14.3] | 0.23 |
+| 2 | DINDING_SELATAN_SOUTH | 2026-08-16T12:52:25.049824+00:00 | [-6.59, -14.48] | 0.17 |
+| 3 | DINDING_SELATAN_SOUTH | 2026-08-16T12:52:27.050696+00:00 | [-6.52, -14.56] | 0.01 |
+| 4 | DINDING_SELATAN_SOUTH | 2026-08-16T12:52:29.058619+00:00 | [-6.5, -14.57] | 0.01 |
+| 5 | DINDING_SELATAN_SOUTH | 2026-08-16T12:52:31.055692+00:00 | [-6.49, -14.59] | 0.01 |
+| 6 | DINDING_SELATAN_SOUTH | 2026-08-16T12:52:33.047177+00:00 | [-6.47, -14.6] | 0.01 |
+| 7 | DINDING_SELATAN_SOUTH | 2026-08-16T12:52:35.046313+00:00 | [-6.45, -14.62] | 0.01 |
+| 8 | DINDING_SELATAN_SOUTH | 2026-08-16T12:52:37.049739+00:00 | [-6.44, -14.63] | 0.01 |
+| 9 | DINDING_SELATAN_SOUTH | 2026-08-16T12:52:39.063685+00:00 | [-6.42, -14.65] | 0.01 |
+| 10 | DINDING_SELATAN_SOUTH | 2026-08-16T12:52:41.054105+00:00 | [-6.41, -14.65] | 0.01 |
+| 11 | DINDING_SELATAN_SOUTH | 2026-08-16T12:52:43.048722+00:00 | [-6.41, -14.66] | 0.0 |
+| 12 | DINDING_SELATAN_SOUTH | 2026-08-16T12:52:45.052263+00:00 | [-6.41, -14.66] | 0.0 |
+| 13 | DINDING_SELATAN_SOUTH | 2026-08-16T12:52:47.051514+00:00 | [-6.41, -14.66] | 0.0 |
+| 14 | DINDING_SELATAN_SOUTH | 2026-08-16T12:52:49.055286+00:00 | [-6.41, -14.66] | 0.0 |
+| 15 | DINDING_SELATAN_SOUTH | 2026-08-16T12:52:51.056805+00:00 | [-6.41, -14.66] | 0.0 |
+| 16 | DINDING_SELATAN_SOUTH | 2026-08-16T12:52:53.051743+00:00 | [-6.41, -14.66] | 0.0 |
+| 17 | DINDING_SELATAN_SOUTH | 2026-08-16T12:52:55.049260+00:00 | [-6.41, -14.66] | 0.0 |
+| 18 | DINDING_SELATAN_SOUTH | 2026-08-16T12:52:57.049156+00:00 | [-6.41, -14.66] | 0.0 |
+| 19 | DINDING_SELATAN_SOUTH | 2026-08-16T12:52:59.048435+00:00 | [-6.41, -14.66] | 0.0 |
+| 20 | DINDING_SELATAN_SOUTH | 2026-08-16T12:53:01.047300+00:00 | [-6.41, -14.66] | 0.0 |
+| 21 | DINDING_SELATAN_SOUTH | 2026-08-16T12:53:03.046689+00:00 | [-6.41, -14.66] | 0.0 |
+| 22 | DINDING_SELATAN_SOUTH | 2026-08-16T12:53:05.049373+00:00 | [-6.41, -14.66] | 0.0 |
+| 23 | DINDING_SELATAN_SOUTH | 2026-08-16T12:53:07.049723+00:00 | [-6.41, -14.66] | 0.0 |
+| 24 | DINDING_SELATAN_SOUTH | 2026-08-16T12:53:09.047256+00:00 | [-6.41, -14.66] | 0.0 |
+| 25 | DINDING_SELATAN_SOUTH | 2026-08-16T12:53:11.049239+00:00 | [-6.41, -14.66] | 0.0 |
+| 26 | DINDING_SELATAN_SOUTH | 2026-08-16T12:53:13.047862+00:00 | [-6.41, -14.66] | 0.0 |
+| 27 | DINDING_SELATAN_SOUTH | 2026-08-16T12:53:15.057445+00:00 | [-6.41, -14.66] | 0.0 |
+| 28 | DINDING_SELATAN_SOUTH | 2026-08-16T12:53:17.047226+00:00 | [-6.41, -14.66] | 0.0 |
+| 29 | DINDING_SELATAN_SOUTH | 2026-08-16T12:53:19.051416+00:00 | [-6.41, -14.66] | 0.0 |
+| 30 | DINDING_SELATAN_SOUTH | 2026-08-16T12:53:21.055008+00:00 | [-6.41, -14.66] | 0.0 |
+| 31 | DINDING_SELATAN_SOUTH | 2026-08-16T12:53:23.052908+00:00 | [-6.41, -14.66] | 0.0 |
+| 32 | DINDING_SELATAN_SOUTH | 2026-08-16T12:53:25.051260+00:00 | [-6.41, -14.66] | 0.0 |
+| 33 | DINDING_SELATAN_SOUTH | 2026-08-16T12:53:27.054289+00:00 | [-6.41, -14.66] | 0.0 |
+| 34 | DINDING_SELATAN_SOUTH | 2026-08-16T12:53:29.061869+00:00 | [-6.41, -14.66] | 0.0 |
+| 35 | DINDING_SELATAN_SOUTH | 2026-08-16T12:53:31.048889+00:00 | [-6.41, -14.66] | 0.0 |
+| 36 | DINDING_SELATAN_SOUTH | 2026-08-16T12:53:33.050951+00:00 | [-6.41, -14.66] | 0.0 |
+| 37 | DINDING_SELATAN_SOUTH | 2026-08-16T12:53:35.062606+00:00 | [-6.41, -14.66] | 0.0 |
+| 38 | DINDING_SELATAN_SOUTH | 2026-08-16T12:53:37.053655+00:00 | [-6.41, -14.66] | 0.0 |
+| 39 | DINDING_SELATAN_SOUTH | 2026-08-16T12:53:39.055518+00:00 | [-6.41, -14.66] | 0.0 |
+| 40 | DINDING_SELATAN_SOUTH | 2026-08-16T12:53:41.047793+00:00 | [-6.41, -14.66] | 0.0 |
+| 41 | DINDING_SELATAN_SOUTH | 2026-08-16T12:53:43.056483+00:00 | [-6.41, -14.66] | 0.0 |
+| 42 | DINDING_SELATAN_SOUTH | 2026-08-16T12:53:45.060832+00:00 | [-6.41, -14.66] | 0.0 |
+| 43 | DINDING_SELATAN_SOUTH | 2026-08-16T12:53:47.050407+00:00 | [-6.41, -14.66] | 0.0 |
+| 44 | DINDING_SELATAN_SOUTH | 2026-08-16T12:53:49.062562+00:00 | [-6.41, -14.66] | 0.0 |
+| 45 | DINDING_SELATAN_SOUTH | 2026-08-16T12:53:51.052584+00:00 | [-6.41, -14.66] | 0.0 |
+| 46 | DINDING_SELATAN_SOUTH | 2026-08-16T12:53:53.063883+00:00 | [-6.41, -14.66] | 0.0 |
+| 47 | DINDING_SELATAN_SOUTH | 2026-08-16T12:53:55.059712+00:00 | [-6.41, -14.66] | 0.0 |
+| 48 | DINDING_SELATAN_SOUTH | 2026-08-16T12:53:57.047278+00:00 | [-6.41, -14.66] | 0.0 |
+| 49 | DINDING_SELATAN_SOUTH | 2026-08-16T12:53:59.046108+00:00 | [-6.41, -14.66] | 0.0 |
+| 50 | DINDING_SELATAN_SOUTH | 2026-08-16T12:54:01.051668+00:00 | [-6.41, -14.66] | 0.0 |
+| 51 | DINDING_SELATAN_SOUTH | 2026-08-16T12:54:03.047984+00:00 | [-6.41, -14.66] | 0.0 |
+| 52 | DINDING_SELATAN_SOUTH | 2026-08-16T12:54:05.065695+00:00 | [-6.41, -14.66] | 0.0 |
+| 53 | DINDING_SELATAN_SOUTH | 2026-08-16T12:54:07.046602+00:00 | [-6.41, -14.66] | 0.0 |
+| 54 | DINDING_SELATAN_SOUTH | 2026-08-16T12:54:09.049578+00:00 | [-6.41, -14.66] | 0.0 |
+| 55 | DINDING_SELATAN_SOUTH | 2026-08-16T12:54:11.063663+00:00 | [-6.41, -14.66] | 0.0 |
+| 56 | DINDING_SELATAN_SOUTH | 2026-08-16T12:54:13.053229+00:00 | [-6.41, -14.66] | 0.0 |
+| 57 | DINDING_SELATAN_SOUTH | 2026-08-16T12:54:15.046599+00:00 | [-6.41, -14.66] | 0.0 |
+| 58 | DINDING_SELATAN_SOUTH | 2026-08-16T12:54:17.054846+00:00 | [-6.41, -14.66] | 0.0 |
+| 59 | DINDING_SELATAN_SOUTH | 2026-08-16T12:54:19.047564+00:00 | [-6.41, -14.66] | 0.0 |
+| 60 | DINDING_SELATAN_SOUTH | 2026-08-16T12:54:21.062336+00:00 | [-6.41, -14.66] | 0.0 |
+
+## Detail Setiap Gerbang Buoy (Jarak 2.0m)
+
+| ID Gerbang | Nama Gate | Status | Koordinat Crossing | Waktu (s) |
+|---|---|---|---|---|
+| gate_1 | Arena A - Gate 1 (Slalom Kanan 1) | **PASSED (VALID)** | [11.06, -6.0] | 78062.8 |
+| gate_2 | Arena A - Gate 2 (Slalom Kanan 2) | **PASSED (VALID)** | [9.41, 0.0] | 78093.6 |
+| gate_3 | Arena A - Gate 3 (Slalom Kanan 3) | **PASSED (VALID)** | [11.02, 6.0] | 78124.2 |
+| gate_4 | Arena A - Gate 4 (Koridor Atas 1) | **PASSED (VALID)** | [6.0, 9.52] | 78148.6 |
+| gate_5 | Arena A - Gate 5 (Koridor Atas 2) | **PASSED (VALID)** | [2.0, 10.59] | 78162.9 |
+| gate_6 | Arena A - Gate 6 (Koridor Atas 3) | **PASSED (VALID)** | [-2.0, 9.75] | 78173.7 |
+| gate_7 | Arena A - Gate 7 (Koridor Atas 4) | **PASSED (VALID)** | [-6.0, 10.38] | 78187.9 |
+| gate_8 | Arena A - Gate 8 (Slalom Kiri 1) | **PASSED (VALID)** | [-10.75, 6.0] | 78209.6 |
+| gate_9 | Arena A - Gate 9 (Slalom Kiri 2) | **PASSED (VALID)** | [-9.17, 0.0] | 78234.3 |
+| gate_10 | Arena A - Gate 10 (Slalom Kiri 3) | **PASSED (VALID)** | [-11.4, -6.0] | 78256.2 |
+
+## Detail Checkpoint Marker Bawah
+
+| ID Marker | Nama Marker | Status | Koordinat Crossing | Waktu (s) |
+|---|---|---|---|---|
+| marker_biru | Arena A - Marker Biru (Bottom Checkpoint 1) | **PASSED (VALID)** | [-9.94, -8.82] | 78274.8 |
+| marker_hijau | Arena A - Marker Hijau (Bottom Checkpoint 2) | **PASSED (VALID)** | [-6.87, -11.88] | 78300.2 |

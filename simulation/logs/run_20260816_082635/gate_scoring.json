@@ -1,0 +1,172 @@
+{
+  "run_id": "run_20260816_082635",
+  "log_dir": "E:\\KKI2026\\simulation\\logs\\run_20260816_082635",
+  "arena": "A",
+  "total_gates": 10,
+  "passed_valid": 3,
+  "missed": 4,
+  "progress_count": 7,
+  "buoy_touches": 0,
+  "wall_touches": 9,
+  "score_percent": 30.0,
+  "docked": false,
+  "docked_at": null,
+  "dock_target": [
+    -9.7,
+    -8.7
+  ],
+  "dock_heading_deg": 149.35,
+  "dock_stable_s": 0.0,
+  "dock_position": null,
+  "gates": {
+    "gate_1": {
+      "name": "Arena A - Gate 1 (Slalom Kanan 1)",
+      "status": "PASSED_VALID",
+      "crossed_at": 62398.7605897,
+      "crossing_coord": [
+        11.21,
+        -6.0
+      ]
+    },
+    "gate_2": {
+      "name": "Arena A - Gate 2 (Slalom Kanan 2)",
+      "status": "PASSED_VALID",
+      "crossed_at": 62419.0707401,
+      "crossing_coord": [
+        8.88,
+        0.0
+      ]
+    },
+    "gate_3": {
+      "name": "Arena A - Gate 3 (Slalom Kanan 3)",
+      "status": "PASSED_VALID",
+      "crossed_at": 62439.2403298,
+      "crossing_coord": [
+        11.09,
+        6.0
+      ]
+    },
+    "gate_4": {
+      "name": "Arena A - Gate 4 (Koridor Atas 1)",
+      "status": "MISSED_OUTSIDE",
+      "crossed_at": 62472.7537563,
+      "crossing_coord": [
+        6.0,
+        13.85
+      ]
+    },
+    "gate_5": {
+      "name": "Arena A - Gate 5 (Koridor Atas 2)",
+      "status": "MISSED_OUTSIDE",
+      "crossed_at": 62483.4914748,
+      "crossing_coord": [
+        2.0,
+        13.65
+      ]
+    },
+    "gate_6": {
+      "name": "Arena A - Gate 6 (Koridor Atas 3)",
+      "status": "MISSED_OUTSIDE",
+      "crossed_at": 62493.1728202,
+      "crossing_coord": [
+        -2.0,
+        11.88
+      ]
+    },
+    "gate_7": {
+      "name": "Arena A - Gate 7 (Koridor Atas 4)",
+      "status": "MISSED_OUTSIDE",
+      "crossed_at": 62504.4834507,
+      "crossing_coord": [
+        -6.0,
+        11.47
+      ]
+    },
+    "gate_8": {
+      "name": "Arena A - Gate 8 (Slalom Kiri 1)",
+      "status": "PENDING",
+      "crossed_at": null,
+      "crossing_coord": null
+    },
+    "gate_9": {
+      "name": "Arena A - Gate 9 (Slalom Kiri 2)",
+      "status": "PENDING",
+      "crossed_at": null,
+      "crossing_coord": null
+    },
+    "gate_10": {
+      "name": "Arena A - Gate 10 (Slalom Kiri 3)",
+      "status": "PENDING",
+      "crossed_at": null,
+      "crossing_coord": null
+    }
+  },
+  "buoy_collisions": [],
+  "wall_collisions": [
+    {
+      "timestamp": "2026-08-16T08:29:35.360781+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.3,
+      "boat_y": 8.08,
+      "speed_mps": 0.06
+    },
+    {
+      "timestamp": "2026-08-16T08:29:37.062372+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.33,
+      "boat_y": 7.99,
+      "speed_mps": 0.05
+    },
+    {
+      "timestamp": "2026-08-16T08:29:39.053046+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.36,
+      "boat_y": 7.9,
+      "speed_mps": 0.05
+    },
+    {
+      "timestamp": "2026-08-16T08:29:41.055326+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.38,
+      "boat_y": 7.81,
+      "speed_mps": 0.04
+    },
+    {
+      "timestamp": "2026-08-16T08:29:43.055399+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.4,
+      "boat_y": 7.74,
+      "speed_mps": 0.03
+    },
+    {
+      "timestamp": "2026-08-16T08:29:45.054055+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.42,
+      "boat_y": 7.68,
+      "speed_mps": 0.03
+    },
+    {
+      "timestamp": "2026-08-16T08:29:47.047066+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.43,
+      "boat_y": 7.63,
+      "speed_mps": 0.03
+    },
+    {
+      "timestamp": "2026-08-16T08:29:49.056402+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.44,
+      "boat_y": 7.58,
+      "speed_mps": 0.03
+    },
+    {
+      "timestamp": "2026-08-16T08:29:51.063364+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.46,
+      "boat_y": 7.53,
+      "speed_mps": 0.02
+    }
+  ],
+  "test_number": 120,
+  "test_started_at": "2026-08-16T15:26:35.205534+07:00"
+}

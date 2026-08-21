@@ -1,0 +1,199 @@
+{
+  "run_id": "run_20260817_023836",
+  "log_dir": "E:\\KKI2026\\simulation\\logs\\run_20260817_023836",
+  "arena": "A",
+  "total_gates": 10,
+  "passed_valid": 10,
+  "missed": 0,
+  "progress_count": 10,
+  "total_markers": 2,
+  "markers_passed_valid": 1,
+  "markers_missed": 0,
+  "marker_progress_count": 1,
+  "buoy_touches": 0,
+  "wall_touches": 8,
+  "score_percent": 100.0,
+  "docked": false,
+  "docked_at": null,
+  "dock_target": [
+    11.5,
+    -13.0
+  ],
+  "dock_entry": [
+    11.5,
+    -10.45
+  ],
+  "dock_heading_deg": 180.0,
+  "dock_stable_s": 0.0,
+  "dock_position": null,
+  "gates": {
+    "gate_1": {
+      "name": "Arena A - Gate 1 (Slalom Kanan 1)",
+      "status": "PASSED_VALID",
+      "crossed_at": 127913.4669753,
+      "crossing_coord": [
+        10.44,
+        -6.0
+      ]
+    },
+    "gate_2": {
+      "name": "Arena A - Gate 2 (Slalom Kanan 2)",
+      "status": "PASSED_VALID",
+      "crossed_at": 127948.2302113,
+      "crossing_coord": [
+        8.48,
+        0.0
+      ]
+    },
+    "gate_3": {
+      "name": "Arena A - Gate 3 (Slalom Kanan 3)",
+      "status": "PASSED_VALID",
+      "crossed_at": 127983.108256,
+      "crossing_coord": [
+        10.83,
+        6.0
+      ]
+    },
+    "gate_4": {
+      "name": "Arena A - Gate 4 (Koridor Atas 1)",
+      "status": "PASSED_VALID",
+      "crossed_at": 128010.6357834,
+      "crossing_coord": [
+        6.0,
+        9.45
+      ]
+    },
+    "gate_5": {
+      "name": "Arena A - Gate 5 (Koridor Atas 2)",
+      "status": "PASSED_VALID",
+      "crossed_at": 128024.5116652,
+      "crossing_coord": [
+        2.0,
+        10.15
+      ]
+    },
+    "gate_6": {
+      "name": "Arena A - Gate 6 (Koridor Atas 3)",
+      "status": "PASSED_VALID",
+      "crossed_at": 128037.6000384,
+      "crossing_coord": [
+        -2.0,
+        9.57
+      ]
+    },
+    "gate_7": {
+      "name": "Arena A - Gate 7 (Koridor Atas 4)",
+      "status": "PASSED_VALID",
+      "crossed_at": 128053.9584556,
+      "crossing_coord": [
+        -6.0,
+        10.33
+      ]
+    },
+    "gate_8": {
+      "name": "Arena A - Gate 8 (Slalom Kiri 1)",
+      "status": "PASSED_VALID",
+      "crossed_at": 128080.1350977,
+      "crossing_coord": [
+        -10.78,
+        6.0
+      ]
+    },
+    "gate_9": {
+      "name": "Arena A - Gate 9 (Slalom Kiri 2)",
+      "status": "PASSED_VALID",
+      "crossed_at": 128107.3781359,
+      "crossing_coord": [
+        -9.2,
+        0.0
+      ]
+    },
+    "gate_10": {
+      "name": "Arena A - Gate 10 (Slalom Kiri 3)",
+      "status": "PASSED_VALID",
+      "crossed_at": 128132.4569669,
+      "crossing_coord": [
+        -11.53,
+        -6.0
+      ]
+    }
+  },
+  "markers": {
+    "marker_biru": {
+      "name": "Arena A - Marker Biru (Bottom Checkpoint 1)",
+      "status": "PASSED_VALID",
+      "crossed_at": 128160.2739613,
+      "crossing_coord": [
+        -10.72,
+        -9.23
+      ]
+    },
+    "marker_hijau": {
+      "name": "Arena A - Marker Hijau (Bottom Checkpoint 2)",
+      "status": "PENDING",
+      "crossed_at": null,
+      "crossing_coord": null
+    }
+  },
+  "buoy_collisions": [],
+  "wall_collisions": [
+    {
+      "timestamp": "2026-08-17T02:43:34.660043+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.3,
+      "boat_y": -5.37,
+      "speed_mps": 0.45
+    },
+    {
+      "timestamp": "2026-08-17T02:43:36.082475+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.45,
+      "boat_y": -5.22,
+      "speed_mps": 0.03
+    },
+    {
+      "timestamp": "2026-08-17T02:43:38.080221+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.42,
+      "boat_y": -5.21,
+      "speed_mps": 0.02
+    },
+    {
+      "timestamp": "2026-08-17T02:43:40.080071+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.39,
+      "boat_y": -5.2,
+      "speed_mps": 0.02
+    },
+    {
+      "timestamp": "2026-08-17T02:43:42.069934+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.37,
+      "boat_y": -5.2,
+      "speed_mps": 0.01
+    },
+    {
+      "timestamp": "2026-08-17T02:43:44.081267+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.34,
+      "boat_y": -5.2,
+      "speed_mps": 0.01
+    },
+    {
+      "timestamp": "2026-08-17T02:43:46.081948+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.32,
+      "boat_y": -5.2,
+      "speed_mps": 0.01
+    },
+    {
+      "timestamp": "2026-08-17T02:43:48.076693+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.3,
+      "boat_y": -5.2,
+      "speed_mps": 0.01
+    }
+  ],
+  "test_number": 161,
+  "test_started_at": "2026-08-17T09:38:36.953773+07:00"
+}

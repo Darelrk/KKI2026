@@ -1,342 +1,128 @@
-# Handover Simulasi & Navigasi Otonom ASV KKI 2026
+# Handover Simulator ASV KKI 2026
 
-Dokumen ini ditujukan untuk developer / AI Agent yang melanjutkan pengembangan modul simulasi dan logika navigasi otonom kapal ASV di Webots.
+## Ruang lingkup
 
----
+Simulator memodelkan ASV monohull 9,5 kg dengan satu azimuth thruster,
+computer vision YOLO, lima sensor ultrasonik, Arena A/B, skoring sepuluh
+gerbang, dua marker bawah, dan docking stabil. Spesifikasi badan kapal: LOA 1,065 m, beam
+0,300 m, tinggi 0,755 m.
 
-## 1. Objektif dan status terakhir
-
-Menguji navigasi otonom 10 gate di Webots dengan waypoint berurutan,
-heading kompas, throttle aman saat belok, dan reset evaluasi yang
-deterministik.
-
-### Status verifikasi terakhir
-- Run: `logs/run_20260816_021150/`
-- Gate valid: **10/10**
-- Buoy touch: **1** (`gate_3_red`, jarak 0.3976 m)
-- Wall collision: **0**
-- Durasi: **86.1 detik**
-- Kesimpulan: rute selesai penuh, tetapi belum clean run; jangan klaim
-  `buoy_touches=0`.
-
-Run logger sekarang membuat folder baru saat `POST /reset`; jangan memakai
-summary log lama untuk menyimpulkan hasil run baru.
-
-## 2. Struktur File
+## Arsitektur runtime
 
 ```text
-simulation/
-├── model/
-│   ├── best.pt                  # Bobot YOLO deteksi buoy (kelas: red_buoy, green_buoy)
-│   └── data.yaml                # Metadata kelas deteksi
-├── webots/
-│   ├── worlds/
-│   │   ├── kki_pool_arena.wbt   # Arena kolam 30m x 30m (10 Gate, 20 Buoy, 4 Dinding)
-│   │   └── .kki_pool_arena.wbproj
-│   ├── protos/
-│   │   ├── KKIBoat.proto        # Model fisika kapal (kamera, GPS, kompas, rudder, thruster)
-│   │   ├── BuoyRed.proto        # Model buoy merah
-│   │   ├── BuoyGreen.proto      # Model buoy hijau
-│   │   ├── BuoyBlue.proto       # Model buoy biru (penanda dok)
-│   │   └── TargetDock.proto     # Model dermaga start/finish
-│   └── controllers/
-│       └── asv_sim_agent/
-│           └── asv_sim_agent.py # Controller Webots: fisika kapal + MJPEG stream + gate scoring
-├── vision_test.py               # >>> FILE UTAMA: Loop navigasi Vision YOLO + State Machine <<<
-├── vision_route.py              # Modul pembantu: steering PWM, heading calc, target tracker
-├── sim_pixhawk_bridge.py        # MAVLink bridge: Webots telemetry → format Pixhawk standar
-├── evaluate_batch.py            # Evaluator otomatis: polling /status, skor 10 gate
-├── start_webots.bat             # Launcher: buka arena di Webots
-├── run_simulation.bat           # Launcher: jalankan bridge + navigasi
-├── run_evaluation.bat           # Launcher: jalankan evaluasi skoring
-└── logs/                        # Output evaluasi per run (auto-generated)
+Webots rigid body + camera + ultrasonic + gate tracker
+  | MJPEG :8889
+  | MAVLink telemetry UDP :14550
+  | RC actuator UDP :9090
+  v
+sim_pixhawk_bridge.py -- MAVLink TCP :5762 -- vision_test.py
+                                                | YOLO buoy pair matcher
+                                                | HSV marker-box detector
+                                                | CourseAutopilot 20 Hz
+                                                v
+                                           RC1 + RC3 override
 ```
 
----
+`vision_test.py` menjalankan kontrol course pada thread 20 Hz agar inferensi
+YOLO 4 FPS dan detektor marker tidak menahan aktuator. Model YOLO saat ini
+hanya memiliki kelas `red_buoy` dan `green_buoy`; `blue_marker`/`green_marker`
+dibuat dari segmentasi HSV dan uji bentuk persegi panjang. Progress simulator berasal dari
+`gate_count`; pada perangkat keras tanpa field tersebut, jalur visual/kompas
+lama tetap menjadi fallback dan perlu diuji tersendiri.
 
-## 3. Arsitektur & Aliran Data
+## Keputusan implementasi penting
+
+- Webots menggunakan gaya pada offset buritan, bukan mengubah translation atau
+  rotation kapal secara langsung.
+- RC1 mengatur pod sampai +/-80 derajat pada model terkalibrasi; RC3 1500 adalah netral/coast.
+- Speed governor mengirim pulsa dorong saat perlu dan kembali netral ketika
+  overspeed. Timeout satu detik juga menetralkan RC3. Dalam simulator, pulsa
+  reverse pendek dipakai pada recovery/docking jika ESC reversible; nonaktifkan
+  dengan `ASV_REVERSE_THRUST_ENABLED=0` untuk menguji ESC forward-only.
+- Sensor resmi disebut `ultrasonic`, bukan sonar. Lima kanal: `front_left`,
+  `front`, `front_right`, `left`, `right`. Alias JSON `sonar` dipertahankan
+  sementara untuk kompatibilitas.
+- Computer vision memasangkan merah-kiri/hijau-kanan dengan pemeriksaan
+  alignment, ukuran, dan kedalaman. Koreksi kamera dibatasi 160 PWM,
+  dihaluskan, serta kedaluwarsa setelah 0,55 detik.
+- Kotak marker tidak berasal dari kelas YOLO. `detect_marker_boxes()` memakai
+  HSV, rectangularity, solidity, dan aspect ratio untuk menghasilkan deteksi
+  `blue_marker`/`green_marker`; saat marker aktif terlihat, controller menjauh
+   dari pusat kotak dengan koreksi terbatas; throttle hanya dibatasi kuat saat
+   kotak benar-benar memenuhi frame agar rute tidak merayap terlalu dini.
+- Vision memakai `/stream_raw.mjpg`; `/stream.mjpg` tetap tersedia untuk
+  dashboard tetapi berisi HUD/koridor grafis yang tidak boleh masuk ke model.
+- Ultrasonic avoidance memiliki slow 1,20 m, stop/escape 0,55 m, dan release
+  hysteresis 0,85 m. Pulsa escape diperlukan karena single thruster tidak bisa
+  mengubah heading saat thrust nol; bila benar-benar tersangkut, satu reverse
+  pulse setelah 0,80 detik membantu melepaskan halangan. Geofence basin mulai
+  recovery 2,4 m dari dinding bawah/lateral.
+- Setelah Gate 10, marker biru dan hijau harus dilintasi berurutan dalam
+  koridor pusatnya. Kotak marker bersifat fisik: guidance melewati sisi aman
+  kiri-bawah biru lalu kanan/timur hijau dengan lead utara; reverse-turn hanya
+  dipakai bila benar-benar dekat dan overspeed, kemudian staging keluar hijau,
+  tiga waypoint return progresif, serta alignment heading di entry sebelum
+  menuju dock.
+- Dock akhir adalah kotak biru vertikal dengan tiga buoy biru, bukan marker
+  biru di kiri lintasan. Sukses memerlukan 10 gate + 2 marker valid, posisi
+  <=0,75 m, heading error <=15 derajat, speed <=0,15 m/s, stabil 3 detik.
+- Arena B dibuat dengan pencerminan `x_B = 30 - x_A` terhadap garis `x=15`.
+
+## File utama
+
+- `webots/protos/KKIBoat.proto`: geometri, massa, collision body, thruster, dan
+  lima DistanceSensor ultrasonik.
+- `webots/worlds/kki_pool_arena.wbt`: dua arena dan posisi objek.
+- `webots/controllers/asv_sim_agent/asv_sim_agent.py`: fisika, HTTP, MAVLink,
+  reset, sensor, collision, gate tracker, dan logger.
+- `vision_route.py`: route control, speed governor, CV correction, ultrasonic
+  avoidance, dan docking.
+- `vision_test.py`: YOLO, MAVLink, autopilot 20 Hz, UI, dan JSONL.
+- `sim_pixhawk_bridge.py`: multiplex MAVLink dan penerjemah sensor.
+- `evaluate_batch.py`: reset serta polling hasil end-to-end.
+
+## Kontrak arena
+
+Start A `(11.1,-11.5)`, dock A `(11.5,-13.0)`. Start B `(18.9,-11.5)`,
+dock B `(18.5,-13.0)`. Pusat gerbang A:
 
 ```text
-┌──────────────────────────────────────────────────────────────────┐
-│                         WEBOTS SIMULATOR                        │
-│                                                                  │
-│  kki_pool_arena.wbt                                              │
-│  ┌────────────────┐    ┌────────────────────────────────────┐   │
-│  │   KKIBoat      │    │  asv_sim_agent.py (Controller)     │   │
-│  │ - surface_cam  │───>│  - Fisika gerak (rudder + thrust)  │   │
-│  │ - GPS          │    │  - MJPEG stream :8889              │   │
-│  │ - Compass      │    │  - Gate crossing detection         │   │
-│  │ - Rudder motor │    │  - Buoy/Wall collision sensor      │   │
-│  │ - Thruster     │    │  - Telemetry UDP :14550            │   │
-│  └────────────────┘    │  - Actuator UDP :9090 (listen)     │   │
-│                         └──────┬───────────────┬─────────────┘   │
-└────────────────────────────────┼───────────────┼─────────────────┘
-                                  │               │
-                    MJPEG :8889   │   UDP :14550  │  UDP :9090
-                                  │               │
-                    ┌─────────────┴───────────────┴──────────────┐
-                    │      sim_pixhawk_bridge.py                  │
-                    │  - Terima telemetry UDP dari Webots          │
-                    │  - Broadcast MAVLink TCP :5762               │
-                    │  - Forward RC_OVERRIDE → Webots UDP :9090   │
-                    └─────────────────┬──────────────────────────-─┘
-                                      │
-                         MAVLink TCP :5762
-                                      │
-                    ┌──────────────────────────────────────────────-─┐
-                    │          vision_test.py                        │
-                    │  - Baca MJPEG stream dari :8889                │
-                    │  - Inferensi YOLO (model/best.pt)               │
-                    │  - CourseRouteController untuk mode simulasi    │
-                    │  - Kirim RC_OVERRIDE via bridge                 │
-                    │  - Baca telemetry + gate_count                  │
-                    └──────────────────────────────────────────────-─┘
-
-                    ┌──────────────────────────────────────────────-┐
-                    │          evaluate_batch.py                    │
-                    │  - Poll HTTP :8889/status setiap 0.5 detik    │
-                    │  - Baca gate_tracking dari asv_sim_agent      │
-                    │  - Cetak skor dan hentikan saat wall hit      │
-                    └──────────────────────────────────────────────-┘
+(11,-6), (9,0), (11,6), (6,10), (2,10), (-2,10), (-6,10),
+(-11,6), (-9,0), (-11.3,-6)
 ```
 
-### Port & Protokol
-| Port  | Protokol | Arah                   | Fungsi                                  |
-|-------|----------|------------------------|-----------------------------------------|
-| 8889  | HTTP     | Webots → vision_test   | MJPEG stream kamera + REST API /status  |
-| 9090  | UDP      | bridge → Webots        | Perintah aktuator (steering, throttle)  |
-| 14550 | UDP      | Webots → bridge        | Telemetry mentah (pos, heading, speed)  |
-| 5762  | TCP      | bridge → vision_test   | MAVLink standar (multi-client)          |
+Marker biru A `(-9.7,-8.7)` harus dilintasi sebelum marker hijau
+`(-6.9,-11.9)`; pass point controller adalah `(-11.2,-9.2)` lalu
+`(-5.55,-11.25)`. Setelah itu kapal mengikuti staging `(-4.8,-10.8)`, return
+`(1,-8.5) -> (7,-8.3)`, dan entry dock `(11.5,-10.45)`. Arena B memakai
+titik cermin.
 
----
+## Verifikasi sebelum handoff
 
-## 4. Peta Arena & Koordinat 10 Gate
+Run end-to-end sebelum koreksi marker/dock berakhir pada target lama dan tidak
+boleh dipakai untuk penerimaan versi ini. Buat run baru Arena A dan B setelah
+restart Webots; bukti harus memperlihatkan 10/10 gate dan 2/2 marker valid.
 
-Arena kolam: 30m × 30m. Koordinat pusat = (0, 0). Dinding di ±15.0m. Sensor dinding aktif di ±13.8m.
+1. Restart Webots setelah mengubah PROTO/controller.
+2. Jalankan `start_webots.bat A`, lalu `run_simulation.bat A`.
+3. Jalankan `python simulation\evaluate_batch.py --arena A --duration 300`.
+4. Ulangi untuk B.
+5. Terima run hanya jika 10/10 gate valid, 2/2 marker valid, missed 0, buoy
+   touch 0, wall touch 0, dan `docked=true`.
+6. Jalankan tes dengan plugin eksternal dinonaktifkan bila environment pytest
+   hang saat autoload:
 
-```text
-              DINDING UTARA (Y = +15.0m)
-    ┌─────────────────────────────────────────────┐
-    │                                              │
-    │    G7         G6         G5         G4       │  Y=10.0m (koridor)
-    │   [-6,10]   [-2,10]   [+2,10]   [+6,10]     │  (gate vertikal, lebar 2m)
-    │                                              │
-    │                                              │
-    │  G8                                   G3     │  Y=+6.0m
-    │ [-11,6]                             [11,6]   │
-    │                                              │
-    │  G9                                   G2     │  Y=0.0m
-    │ [-9,0]                              [9,0]    │
-    │                                              │
-    │  G10                                  G1     │  Y=-6.0m
-    │ [-11,-6]                            [11,-6]  │
-    │                                              │
-    │                              START [10,-11.5]│
-    │                              (heading North) │
-    └─────────────────────────────────────────────┘
-              DINDING SELATAN (Y = -15.0m)
+```powershell
+$env:PYTEST_DISABLE_PLUGIN_AUTOLOAD='1'
+python -m pytest -q
 ```
 
-### Tabel Gate Lengkap
+Catat `run_id` dan koordinat crossing dari endpoint `/gates`; jangan memakai
+folder log lama karena setiap `POST /reset` membuat sesi baru.
 
-| Gate | Nama              | Tipe       | Koordinat Buoy Merah | Koordinat Buoy Hijau | Validasi Crossing             |
-|------|--------------------|------------|----------------------|----------------------|-------------------------------|
-| 1    | Slalom Kanan 1     | horizontal | [10.0, -6.0]         | [12.0, -6.0]         | Y cross -6.0, X ∈ [9.75, 12.25] |
-| 2    | Slalom Kanan 2     | horizontal | [8.0, 0.0]           | [10.0, 0.0]          | Y cross 0.0, X ∈ [7.75, 10.25]  |
-| 3    | Slalom Kanan 3     | horizontal | [10.0, 6.0]          | [12.0, 6.0]          | Y cross 6.0, X ∈ [9.75, 12.25]  |
-| 4    | Koridor Atas 1     | vertical   | [6.0, 9.0]           | [6.0, 11.0]          | X cross 6.0, Y ∈ [8.75, 11.25]  |
-| 5    | Koridor Atas 2     | vertical   | [2.0, 9.0]           | [2.0, 11.0]          | X cross 2.0, Y ∈ [8.75, 11.25]  |
-| 6    | Koridor Atas 3     | vertical   | [-2.0, 9.0]          | [-2.0, 11.0]         | X cross -2.0, Y ∈ [8.75, 11.25] |
-| 7    | Koridor Atas 4     | vertical   | [-6.0, 9.0]          | [-6.0, 11.0]         | X cross -6.0, Y ∈ [8.75, 11.25] |
-| 8    | Slalom Kiri 1      | horizontal | [-10.0, 6.0]         | [-12.0, 6.0]         | Y cross 6.0, X ∈ [-12.25, -9.75]|
-| 9    | Slalom Kiri 2      | horizontal | [-8.0, 0.0]          | [-10.0, 0.0]         | Y cross 0.0, X ∈ [-10.25, -7.75]|
-| 10   | Slalom Kiri 3      | horizontal | [-10.0, -6.0]        | [-12.0, -6.0]        | Y cross -6.0, X ∈ [-12.25, -9.75]|
+## Batas generalisasi
 
-> Toleransi validasi: ±0.25m dari tepi tiang buoy (lihat `asv_sim_agent.py` baris 428/449).
-
----
-
-## 5. Navigasi (`vision_test.py`)
-
-### 5.1 Jalur simulasi utama
-
-Jika telemetry Webots membawa `NAMED_VALUE_INT("gate_count")`, loop navigasi
-memakai `CourseRouteController` dari `vision_route.py`. Controller ini policy
-pure dengan waypoint berurutan:
-
-```text
-(11,-6) → (9,0) → (11,6) → (6,10) → (2,10) → (-2,10)
-→ (-6,10) → (-11,6) → (-9,0) → (-11,-6) → FINISH
-```
-
-Phase controller:
-
-- `APPROACH`: menuju waypoint berikutnya;
-- `TURN`: throttle `1525` saat belokan besar;
-- `CORRIDOR`: throttle `1540` pada koridor atas;
-- `FINISH`: steering dan throttle netral setelah gate 10.
-
-Heading dihitung dengan kompas dari posisi kapal ke waypoint. Steering
-dibatasi agar tidak overshoot. Gate 10 juga memakai throttle turn saat
-berada dalam 3 m dari garis gate.
-
-### 5.2 Sumber progress dan fallback
-
-`asv_sim_agent.py` menerbitkan `gate_count` melalui `NAMED_VALUE_INT`.
-`sim_pixhawk_bridge.py` meneruskan MAVLink tanpa mengubah RC override.
-`PixhawkLink.telemetry()` membaca nilai tersebut hanya jika nama field tepat.
-
-Jika `gate_count` tidak tersedia—misalnya perangkat keras nyata—kode lama
-berbasis visual/kompas tetap menjadi fallback. Hardware nyata tidak boleh
-menganggap telemetry simulator sebagai progress valid.
-
-Fallback umum tetap tersedia:
-
-| Kondisi | Aksi |
-|---|---|
-| Buoy hilang sementara | tahan target terakhir lalu scan |
-| Tidak ada target | sweep visual dengan throttle rendah |
-| Kapal stuck | jalankan recovery yang sudah ada |
-| Keluar batas arena | E-stop / hentikan loop |
-
-### 5.3 Kontrak reset evaluasi
-
-`POST http://127.0.0.1:8889/reset` hanya mengatur flag reset pada HTTP handler.
-Loop Supervisor kemudian mengembalikan posisi ke `(10.0, -11.5, 0.04)`,
-heading utara, PWM netral, gate tracker kosong, dan membuat folder log baru.
-Evaluator menunggu status awal bersih sebelum memulai timer.
-
----
-
-## 6. Tuning dan risiko yang masih terbuka
-
-### 6.1 Kontrol waypoint
-
-`CourseRouteController` adalah jalur utama ketika `gate_count` simulator
-valid. Konfigurasi default:
-
-| Parameter | Nilai | Fungsi |
-|---|---:|---|
-| `cruise_pwm` | 1555 | Kecepatan lintasan normal |
-| `approach_pwm` | 1545 | Mendekati waypoint |
-| `turn_pwm` | 1525 | Belokan besar dan gate 10 |
-| `corridor_pwm` | 1540 | Koridor atas |
-| `finish_pwm` | 1500 | Netral setelah gate 10 |
-| `turn_error_deg` | 35° | Ambang throttle turn |
-| `max_steering_delta` | 180 PWM | Batas koreksi heading |
-
-### 6.2 Risiko terakhir
-
-Run terakhir menyelesaikan semua gate, tetapi menyentuh `gate_3_red` pada
-jarak 0.3976 m. Penyebab belum dipastikan; jangan mengubah beberapa
-parameter sekaligus. Ulangi satu hipotesis per run setelah observasi
-berikutnya.
-
-Sensor tetap:
-
-| Parameter | Nilai |
-|---|---:|
-| `BUOY_TOUCH_RADIUS` | 0.40 m |
-| `WALL_LIMIT_X/Y` | 13.80 m |
-| `basicTimeStep` | 16 ms |
-| Gate crossing tolerance | ±0.25 m |
-
----
-
-## 7. Cara Menjalankan
-
-### Prasyarat
-
-```bash
-pip install ultralytics opencv-python pymavlink numpy
-```
-
-Webots R2025a atau lebih baru harus terinstall.
-
-### Langkah Eksekusi
-
-```bash
-# Terminal 1: Buka arena Webots
-cd simulation
-start_webots.bat
-# Tekan Play (Real-Time mode)
-
-# Terminal 2: Jalankan MAVLink bridge
-cd simulation
-python sim_pixhawk_bridge.py
-
-# Terminal 3: Jalankan navigasi vision
-cd simulation
-python vision_test.py --camera http://127.0.0.1:8889/stream.mjpg \
-  --model ..\model\best.pt --endpoint tcp:127.0.0.1:5762
-
-# Terminal 4: Reset + evaluasi deterministik
-cd simulation
-python evaluate_batch.py
-```
-
-Evaluator mengirim `POST /reset`, menunggu status awal bersih, lalu
-menghentikan polling saat wall hit atau Gate 10 valid.
-
-### Argumen penting
-
-| Flag | Default | Fungsi |
-|---|---|---|
-| `--camera` | `0` | Webcam index atau URL MJPEG |
-| `--model` | `D:\KKI2\model\best.pt` | Model YOLO |
-| `--endpoint` | `tcp:127.0.0.1:5762` | Endpoint MAVLink |
-| `--conf` | `0.35` | Confidence minimum |
-| `--vision-fps` | `4.0` | Batas inferensi per detik |
-| `--manual-rc` | off | Monitoring saja tanpa MAVLink |
-| `--invert-steering` | off | Balik arah steering |
-
----
-
-## 9. Debugging & Monitoring
-
-### Log Realtime dari `vision_test.py`
-Setiap 0.25 detik, output ke terminal:
-```
-[COURSE_TURN] Pos=(8.44, 1.06) Hdg=345° | Gate 2/10
-hdg 350° err +5° target=(11.0,6.0) | S=1510 T=1525 | det=green_buoy
-```
-Format: `[COURSE_*] Pos=(x, y) Hdg=heading° | Gate n/10 ... | S=steering T=throttle`.
-
-### Endpoint HTTP (dari asv_sim_agent di Webots)
-| URL | Response |
-|-----|----------|
-| `http://127.0.0.1:8889/stream.mjpg` | MJPEG video stream |
-| `http://127.0.0.1:8889/status` | JSON: pos, heading, speed, gate_tracking |
-| `http://127.0.0.1:8889/gates` | JSON: detail skor per gate |
-
-### Log File
-- `simulation/logs/run_<timestamp>/summary_report.md` — Ringkasan skor.
-- `simulation/logs/run_<timestamp>/gate_scoring.json` — Detail koordinat crossing per gate.
-- `vision_test_log.jsonl` (di root KKI2026) — Log telemetri per-frame dari vision_test.py.
-
----
-
-## 10. Strategi Pengembangan Berikutnya
-
-Run terakhir masih memiliki satu sentuhan di `gate_3_red`. Lanjutkan
-dengan satu hipotesis per iterasi:
-
-1. bandingkan telemetry dan `vision_test` log di sekitar Gate 3;
-2. ubah hanya satu parameter heading/throttle;
-3. reset Webots sebelum setiap evaluasi;
-4. baca `summary_report.md` dan `buoy_collisions.jsonl`;
-5. pertahankan perubahan hanya jika gate tetap 10/10 dan touch berkurang.
-
-Evaluator bukan read-only: evaluator mengirim `POST /reset`, tetapi tidak
-mengendalikan aktuator.
-
-### Catatan teknis penting
-
-1. Webots sebaiknya mode Real-Time; mode Fast mengubah timing fisika.
-2. Sensor dinding aktif pada ±13.8 m, sedangkan dinding fisik berada pada
-   ±15.0 m.
-3. Root dan `simulation/` memiliki `vision_route.py` yang sama. `simulation/vision_test.py`
-   menambahkan jalur simulator `gate_count`; jangan menyalin seluruh file ke
-   runtime hardware tanpa meninjau kontrak Pixhawk.
-4. `POST /reset` membuat sesi logger baru; gunakan `run_id` dari endpoint
-   `/gates` untuk menemukan log yang benar.
+Pergeseran buoy dan dock yang moderat ditangani oleh koreksi visual serta
+ultrasonik, tetapi topologi/urutan gerbang tetap dikonfigurasi. Arena yang
+sepenuhnya berbeda membutuhkan pembaruan waypoint atau planner global; jangan
+mengklaim generalisasi tanpa konfigurasi untuk topologi baru.

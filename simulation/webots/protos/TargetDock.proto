@@ -6,6 +6,9 @@ PROTO TargetDock [
   field SFString   name        "target_dock"
   field SFColor    dockColor   0.12 0.35 0.95
   field SFVec3f    dockSize    1.6 0.8 0.15
+  # Optional collision geometry. The final dock remains a visual target,
+  # while the blue/green checkpoint rectangles can be physical obstacles.
+  field SFNode     collisionShape NULL
 ] {
   Solid {
     translation IS translation
@@ -44,13 +47,6 @@ PROTO TargetDock [
         ]
       }
     ]
-    boundingObject Transform {
-      translation 0 0 0.05
-      children [
-        Box {
-          size IS dockSize
-        }
-      ]
-    }
+    boundingObject IS collisionShape
   }
 }

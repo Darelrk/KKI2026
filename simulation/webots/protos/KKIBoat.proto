@@ -1,7 +1,10 @@
 #VRML_SIM R2025a utf8
 
+# Monohull ASV inspired by KN Belut Laut 406.
+# Physical dimensions: LOA 1.065 m, beam 0.300 m, height 0.755 m.
+# The root hull mass plus the two azimuth-drive solids totals 9.5 kg.
 PROTO KKIBoat [
-  field SFVec3f    translation       10.0 -11.5 0.04
+  field SFVec3f    translation       11.1 -11.5 0.025
   field SFRotation rotation          0 0 1 1.5708
   field SFString   name              "kki_boat"
   field SFString   controller        "asv_sim_agent"
@@ -18,113 +21,160 @@ PROTO KKIBoat [
     controller IS controller
     controllerArgs IS controllerArgs
     supervisor IS supervisor
+    recognitionColors [ 0.98 0.35 0.05 ]
     children [
-      # Main Hull Lower (0.70m x 0.30m x 0.10m, dark grey below waterline)
+      # Lower displacement hull. Three sections approximate the tapered bow
+      # while retaining a stable primitive collision volume for fluid physics.
       Transform {
-        translation 0 0 0.01
+        translation -0.1225 0 0.015
         children [
           Shape {
-            appearance PBRAppearance {
-              baseColor 0.18 0.20 0.24
-              roughness 0.3
-              metalness 0.1
+            appearance DEF HULL_DARK PBRAppearance {
+              baseColor 0.12 0.15 0.19
+              roughness 0.32
+              metalness 0.08
             }
             geometry Box {
-              size 0.700 0.300 0.100
+              size 0.820 0.300 0.160
             }
           }
         ]
       }
-      # Main Hull Upper / Deck (White Freeboard above water)
       Transform {
-        translation 0 0 0.075
+        translation 0.3625 0 0.020
         children [
           Shape {
-            appearance PBRAppearance {
-              baseColor 0.98 0.98 0.98
-              roughness 0.3
-              metalness 0.1
-            }
+            appearance USE HULL_DARK
             geometry Box {
-              size 0.700 0.300 0.030
+              size 0.150 0.250 0.150
             }
           }
         ]
       }
-      # Bow Section (0.20m x 0.27m x 0.12m, Coast Guard Orange)
       Transform {
-        translation 0.350 0 0.03
+        translation 0.485 0 0.025
         children [
           Shape {
-            appearance PBRAppearance {
-              baseColor 0.98 0.35 0.05
-              roughness 0.3
-              metalness 0.1
-            }
+            appearance USE HULL_DARK
             geometry Box {
-              size 0.200 0.270 0.120
+              size 0.095 0.120 0.140
             }
           }
         ]
       }
-      # Cabin / Wheelhouse (0.24m x 0.18m x 0.09m)
+
+      # White freeboard and orange Coast Guard-style foredeck.
       Transform {
-        translation 0.050 0 0.130
+        translation -0.105 0 0.112
         children [
           Shape {
-            appearance PBRAppearance {
-              baseColor 0.18 0.20 0.25
-              roughness 0.4
-              metalness 0.4
+            appearance DEF HULL_WHITE PBRAppearance {
+              baseColor 0.96 0.97 0.98
+              roughness 0.34
+              metalness 0.05
             }
             geometry Box {
-              size 0.240 0.180 0.090
+              size 0.840 0.286 0.045
             }
           }
         ]
       }
-      # Cabin Roof (Light Grey)
       Transform {
-        translation 0.050 0 0.180
+        translation 0.390 0 0.112
         children [
           Shape {
             appearance PBRAppearance {
-              baseColor 0.90 0.90 0.92
-              roughness 0.5
+              baseColor 0.98 0.34 0.04
+              roughness 0.30
+              metalness 0.05
             }
             geometry Box {
-              size 0.250 0.190 0.015
+              size 0.285 0.220 0.045
             }
           }
         ]
       }
-      # Radar / Mast
       Transform {
-        translation 0.080 0 0.225
+        translation -0.060 0 0.145
+        children [
+          Shape {
+            appearance USE HULL_WHITE
+            geometry Box {
+              size 0.720 0.285 0.020
+            }
+          }
+        ]
+      }
+
+      # Wheelhouse and mast bring the model to the measured 0.755 m height.
+      Transform {
+        translation 0.010 0 0.270
         children [
           Shape {
             appearance PBRAppearance {
-              baseColor 0.85 0.85 0.88
-              roughness 0.6
+              baseColor 0.18 0.22 0.28
+              roughness 0.40
+              metalness 0.20
+            }
+            geometry Box {
+              size 0.320 0.220 0.230
+            }
+          }
+        ]
+      }
+      Transform {
+        translation 0.010 0 0.397
+        children [
+          Shape {
+            appearance USE HULL_WHITE
+            geometry Box {
+              size 0.345 0.240 0.025
+            }
+          }
+        ]
+      }
+      Transform {
+        translation 0.010 0 0.535
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor 0.82 0.84 0.87
+              roughness 0.55
+              metalness 0.20
             }
             geometry Cylinder {
-              radius 0.008
-              height 0.080
+              radius 0.010
+              height 0.255
             }
           }
         ]
       }
-      # Surface Camera (Logitech Webcam at Bow Deck)
       Transform {
-        translation 0.350 0 0.115
+        translation 0.010 0 0.665
         children [
           Shape {
             appearance PBRAppearance {
-              baseColor 0.12 0.12 0.15
-              roughness 0.6
+              baseColor 0.12 0.12 0.14
+              roughness 0.45
             }
             geometry Box {
-              size 0.040 0.080 0.035
+              size 0.180 0.025 0.018
+            }
+          }
+        ]
+      }
+
+      # Surface camera, mounted above the foredeck and looking along local +X.
+      Transform {
+        translation 0.335 0 0.255
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor 0.10 0.10 0.13
+              roughness 0.60
+            }
+            geometry Box {
+              size 0.045 0.080 0.040
             }
           }
           Camera {
@@ -135,111 +185,221 @@ PROTO KKIBoat [
           }
         ]
       }
-      # Navigation GPS
+
       GPS {
         name "gps"
         accuracy 0.05
       }
-      # Navigation Compass
       Compass {
         name "compass"
       }
-      # Navigation IMU
       InertialUnit {
         name "inertial_unit"
       }
-      # Steering Rudder (HingeJoint on Z Axis)
+
+      # Five ultrasonic-style range sensors. Their lookup tables return metres.
+      DistanceSensor {
+        translation 0.540 0 0.185
+        name "ultrasonic_front"
+        model "HC-SR04 simulated"
+        lookupTable [
+          0.05 0.05 0.002
+          5.00 5.00 0.010
+        ]
+        numberOfRays 5
+        aperture 0.22
+      }
+      DistanceSensor {
+        translation 0.485 0.105 0.185
+        rotation 0 0 1 0.610865
+        name "ultrasonic_front_left"
+        model "HC-SR04 simulated"
+        lookupTable [
+          0.05 0.05 0.002
+          5.00 5.00 0.010
+        ]
+        numberOfRays 3
+        aperture 0.20
+      }
+      DistanceSensor {
+        translation 0.485 -0.105 0.185
+        rotation 0 0 1 -0.610865
+        name "ultrasonic_front_right"
+        model "HC-SR04 simulated"
+        lookupTable [
+          0.05 0.05 0.002
+          5.00 5.00 0.010
+        ]
+        numberOfRays 3
+        aperture 0.20
+      }
+      DistanceSensor {
+        translation 0 0.155 0.185
+        rotation 0 0 1 1.570796
+        name "ultrasonic_left"
+        model "HC-SR04 simulated"
+        lookupTable [
+          0.05 0.05 0.002
+          5.00 5.00 0.010
+        ]
+        numberOfRays 3
+        aperture 0.20
+      }
+      DistanceSensor {
+        translation 0 -0.155 0.185
+        rotation 0 0 1 -1.570796
+        name "ultrasonic_right"
+        model "HC-SR04 simulated"
+        lookupTable [
+          0.05 0.05 0.002
+          5.00 5.00 0.010
+        ]
+        numberOfRays 3
+        aperture 0.20
+      }
+
+      # Single steerable azimuth drive. The controller applies its calculated
+      # thrust to the rigid body at this same stern location; these motors make
+      # the servo angle and propeller rotation observable in Webots.
       HingeJoint {
         jointParameters HingeJointParameters {
           axis 0 0 1
-          anchor -0.460 0 -0.010
+          anchor -0.490 0 -0.035
+          dampingConstant 0.08
+          staticFriction 0.01
         }
         device [
           RotationalMotor {
-            name "rudder_motor"
-            minPosition -0.785
-            maxPosition 0.785
-            maxVelocity 4.0
-            maxTorque 15.0
+            name "azimuth_motor"
+            # Keep the baseline servo dynamics while the hard-turn controller
+            # is calibrated independently.  The controller still exposes
+            # ASV_MAX_AZIMUTH_DEG for hardware-specific identification.
+            minPosition -1.3962634
+            maxPosition 1.3962634
+            maxVelocity 2.5
+            maxTorque 12.0
           }
           PositionSensor {
-            name "rudder_sensor"
+            name "azimuth_sensor"
           }
         ]
         endPoint Solid {
-          name "rudder_blade"
-          translation -0.490 0 -0.010
+          translation -0.490 0 -0.035
+          name "azimuth_pod"
           children [
             Shape {
               appearance PBRAppearance {
-                baseColor 0.15 0.15 0.15
-                roughness 0.5
+                baseColor 0.10 0.10 0.12
+                roughness 0.45
               }
               geometry Box {
-                size 0.060 0.008 0.090
+                size 0.090 0.045 0.095
+              }
+            }
+            HingeJoint {
+              jointParameters HingeJointParameters {
+                axis 1 0 0
+                anchor -0.045 0 -0.020
+              }
+              device [
+                RotationalMotor {
+                  name "thruster_motor"
+                  maxVelocity 180.0
+                  maxTorque 1.0
+                }
+              ]
+              endPoint Solid {
+                translation -0.045 0 -0.020
+                rotation 0 0 1 1.570796
+                name "azimuth_propeller"
+                children [
+                  Shape {
+                    appearance PBRAppearance {
+                      baseColor 0.90 0.68 0.12
+                      metalness 0.75
+                      roughness 0.22
+                    }
+                    geometry Cylinder {
+                      radius 0.040
+                      height 0.012
+                    }
+                  }
+                ]
+                boundingObject Cylinder {
+                  radius 0.040
+                  height 0.012
+                }
+                physics Physics {
+                  density -1
+                  mass 0.05
+                }
               }
             }
           ]
           boundingObject Box {
-            size 0.060 0.008 0.090
+            size 0.090 0.045 0.095
           }
-        }
-      }
-      # Main Thruster (HingeJoint on X Axis)
-      HingeJoint {
-        jointParameters HingeJointParameters {
-          axis 1 0 0
-          anchor -0.440 0 -0.020
-        }
-        device [
-          RotationalMotor {
-            name "thruster_motor"
-            maxVelocity 150.0
-            maxTorque 30.0
-          }
-        ]
-        endPoint Solid {
-          name "propeller"
-          translation -0.440 0 -0.020
-          children [
-            Shape {
-              appearance PBRAppearance {
-                baseColor 0.90 0.70 0.15
-                metalness 0.8
-                roughness 0.2
-              }
-              geometry Cylinder {
-                radius 0.038
-                height 0.020
-              }
-            }
-          ]
-          boundingObject Cylinder {
-            radius 0.038
-            height 0.020
+          physics Physics {
+            density -1
+            mass 0.10
           }
         }
       }
     ]
+
+    # Stable collision approximation: exact LOA and beam, tapered in three steps.
     boundingObject Group {
       children [
         Transform {
-          translation 0 0 0.04
+          translation -0.1225 0 0.015
           children [
             Box {
-              size 0.700 0.300 0.140
+              size 0.820 0.300 0.160
             }
           ]
         }
         Transform {
-          translation 0.350 0 0.04
+          translation 0.3625 0 0.020
           children [
             Box {
-              size 0.200 0.270 0.140
+              size 0.150 0.250 0.150
+            }
+          ]
+        }
+        Transform {
+          translation 0.485 0 0.025
+          children [
+            Box {
+              size 0.095 0.120 0.140
             }
           ]
         }
       ]
     }
+    physics Physics {
+      density -1
+      mass 9.35
+      centerOfMass [
+        -0.060 0 -0.025
+      ]
+      damping Damping {
+        linear 0.02
+        # Baseline yaw damping; the high-thrust pivot is tuned in the
+        # controller so the first three gates keep their existing behavior.
+        angular 0.12
+      }
+    }
+    immersionProperties [
+      ImmersionProperties {
+        fluidName "water"
+        referenceArea "xyz-projection"
+        # A monohull resists sideways slip far more than surge. This ratio is
+        # essential for an azimuth thruster to create yaw instead of crabbing.
+        dragForceCoefficients 0.32 4.50 1.20
+        dragTorqueCoefficients 0.003 0.003 0.040
+        viscousResistanceForceCoefficient 1.2
+        viscousResistanceTorqueCoefficient 0.040
+      }
+    ]
   }
 }

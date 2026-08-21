@@ -1,0 +1,439 @@
+{
+  "run_id": "run_20260817_074151",
+  "log_dir": "E:\\KKI2026\\simulation\\logs\\run_20260817_074151",
+  "arena": "A",
+  "total_gates": 10,
+  "passed_valid": 5,
+  "missed": 2,
+  "progress_count": 7,
+  "total_markers": 2,
+  "markers_passed_valid": 0,
+  "markers_missed": 0,
+  "marker_progress_count": 0,
+  "buoy_touches": 0,
+  "wall_touches": 44,
+  "score_percent": 50.0,
+  "docked": false,
+  "docked_at": null,
+  "dock_target": [
+    11.5,
+    -13.0
+  ],
+  "dock_entry": [
+    11.5,
+    -10.45
+  ],
+  "dock_heading_deg": 180.0,
+  "dock_stable_s": 0.0,
+  "dock_position": null,
+  "gates": {
+    "gate_1": {
+      "name": "Arena A - Gate 1 (Slalom Kanan 1)",
+      "status": "PASSED_VALID",
+      "crossed_at": 146100.6809852,
+      "crossing_coord": [
+        11.24,
+        -6.0
+      ]
+    },
+    "gate_2": {
+      "name": "Arena A - Gate 2 (Slalom Kanan 2)",
+      "status": "PASSED_VALID",
+      "crossed_at": 146113.3563309,
+      "crossing_coord": [
+        8.88,
+        0.0
+      ]
+    },
+    "gate_3": {
+      "name": "Arena A - Gate 3 (Slalom Kanan 3)",
+      "status": "PASSED_VALID",
+      "crossed_at": 146127.3086682,
+      "crossing_coord": [
+        11.41,
+        6.0
+      ]
+    },
+    "gate_4": {
+      "name": "Arena A - Gate 4 (Koridor Atas 1)",
+      "status": "PASSED_VALID",
+      "crossed_at": 146148.3507309,
+      "crossing_coord": [
+        6.0,
+        10.34
+      ]
+    },
+    "gate_5": {
+      "name": "Arena A - Gate 5 (Koridor Atas 2)",
+      "status": "PASSED_VALID",
+      "crossed_at": 146158.1611501,
+      "crossing_coord": [
+        2.0,
+        9.77
+      ]
+    },
+    "gate_6": {
+      "name": "Arena A - Gate 6 (Koridor Atas 3)",
+      "status": "MISSED_OUTSIDE",
+      "crossed_at": 146174.7260368,
+      "crossing_coord": [
+        -2.0,
+        11.51
+      ]
+    },
+    "gate_7": {
+      "name": "Arena A - Gate 7 (Koridor Atas 4)",
+      "status": "MISSED_OUTSIDE",
+      "crossed_at": 146194.4181239,
+      "crossing_coord": [
+        -6.0,
+        13.56
+      ]
+    },
+    "gate_8": {
+      "name": "Arena A - Gate 8 (Slalom Kiri 1)",
+      "status": "PENDING",
+      "crossed_at": null,
+      "crossing_coord": null
+    },
+    "gate_9": {
+      "name": "Arena A - Gate 9 (Slalom Kiri 2)",
+      "status": "PENDING",
+      "crossed_at": null,
+      "crossing_coord": null
+    },
+    "gate_10": {
+      "name": "Arena A - Gate 10 (Slalom Kiri 3)",
+      "status": "PENDING",
+      "crossed_at": null,
+      "crossing_coord": null
+    }
+  },
+  "markers": {
+    "marker_biru": {
+      "name": "Arena A - Marker Biru (Bottom Checkpoint 1)",
+      "status": "PENDING",
+      "crossed_at": null,
+      "crossing_coord": null
+    },
+    "marker_hijau": {
+      "name": "Arena A - Marker Hijau (Bottom Checkpoint 2)",
+      "status": "PENDING",
+      "crossed_at": null,
+      "crossing_coord": null
+    }
+  },
+  "buoy_collisions": [],
+  "wall_collisions": [
+    {
+      "timestamp": "2026-08-17T07:44:38.232640+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.3,
+      "boat_y": 10.49,
+      "speed_mps": 0.19
+    },
+    {
+      "timestamp": "2026-08-17T07:44:39.090406+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.39,
+      "boat_y": 10.38,
+      "speed_mps": 0.15
+    },
+    {
+      "timestamp": "2026-08-17T07:44:41.094738+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.52,
+      "boat_y": 10.17,
+      "speed_mps": 0.11
+    },
+    {
+      "timestamp": "2026-08-17T07:44:43.090551+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.61,
+      "boat_y": 10.02,
+      "speed_mps": 0.08
+    },
+    {
+      "timestamp": "2026-08-17T07:44:45.089973+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.67,
+      "boat_y": 9.89,
+      "speed_mps": 0.07
+    },
+    {
+      "timestamp": "2026-08-17T07:44:47.094014+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.73,
+      "boat_y": 9.78,
+      "speed_mps": 0.06
+    },
+    {
+      "timestamp": "2026-08-17T07:44:49.108606+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.75,
+      "boat_y": 9.71,
+      "speed_mps": 0.04
+    },
+    {
+      "timestamp": "2026-08-17T07:44:51.091992+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.76,
+      "boat_y": 9.64,
+      "speed_mps": 0.03
+    },
+    {
+      "timestamp": "2026-08-17T07:44:53.089865+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.77,
+      "boat_y": 9.58,
+      "speed_mps": 0.03
+    },
+    {
+      "timestamp": "2026-08-17T07:44:55.103336+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.78,
+      "boat_y": 9.53,
+      "speed_mps": 0.02
+    },
+    {
+      "timestamp": "2026-08-17T07:44:57.092515+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.79,
+      "boat_y": 9.49,
+      "speed_mps": 0.02
+    },
+    {
+      "timestamp": "2026-08-17T07:44:59.099552+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.8,
+      "boat_y": 9.45,
+      "speed_mps": 0.02
+    },
+    {
+      "timestamp": "2026-08-17T07:45:01.104042+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.81,
+      "boat_y": 9.41,
+      "speed_mps": 0.02
+    },
+    {
+      "timestamp": "2026-08-17T07:45:03.100927+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.81,
+      "boat_y": 9.38,
+      "speed_mps": 0.02
+    },
+    {
+      "timestamp": "2026-08-17T07:45:05.094151+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.81,
+      "boat_y": 9.35,
+      "speed_mps": 0.01
+    },
+    {
+      "timestamp": "2026-08-17T07:45:07.113360+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.81,
+      "boat_y": 9.33,
+      "speed_mps": 0.01
+    },
+    {
+      "timestamp": "2026-08-17T07:45:09.111775+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.82,
+      "boat_y": 9.3,
+      "speed_mps": 0.01
+    },
+    {
+      "timestamp": "2026-08-17T07:45:11.099624+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.82,
+      "boat_y": 9.28,
+      "speed_mps": 0.01
+    },
+    {
+      "timestamp": "2026-08-17T07:45:13.105361+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.82,
+      "boat_y": 9.26,
+      "speed_mps": 0.01
+    },
+    {
+      "timestamp": "2026-08-17T07:45:15.092819+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.82,
+      "boat_y": 9.24,
+      "speed_mps": 0.01
+    },
+    {
+      "timestamp": "2026-08-17T07:45:17.091005+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.82,
+      "boat_y": 9.23,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-17T07:45:19.102485+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.82,
+      "boat_y": 9.23,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-17T07:45:21.091512+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.82,
+      "boat_y": 9.23,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-17T07:45:23.094932+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.82,
+      "boat_y": 9.23,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-17T07:45:25.103276+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.82,
+      "boat_y": 9.23,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-17T07:45:27.104117+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.82,
+      "boat_y": 9.23,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-17T07:45:29.103998+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.82,
+      "boat_y": 9.23,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-17T07:45:31.095755+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.82,
+      "boat_y": 9.23,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-17T07:45:33.094866+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.82,
+      "boat_y": 9.23,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-17T07:45:35.098569+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.82,
+      "boat_y": 9.23,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-17T07:45:37.096781+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.82,
+      "boat_y": 9.23,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-17T07:45:39.102263+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.82,
+      "boat_y": 9.23,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-17T07:45:41.097191+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.82,
+      "boat_y": 9.23,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-17T07:45:43.101377+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.82,
+      "boat_y": 9.23,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-17T07:45:45.100583+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.82,
+      "boat_y": 9.23,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-17T07:45:47.095228+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.82,
+      "boat_y": 9.23,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-17T07:45:49.097177+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.82,
+      "boat_y": 9.23,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-17T07:45:51.102218+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.82,
+      "boat_y": 9.23,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-17T07:45:53.091342+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.82,
+      "boat_y": 9.23,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-17T07:45:55.095744+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.82,
+      "boat_y": 9.23,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-17T07:45:57.099217+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.82,
+      "boat_y": 9.23,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-17T07:45:59.091771+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.82,
+      "boat_y": 9.23,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-17T07:46:01.099383+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.82,
+      "boat_y": 9.23,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-17T07:46:03.098610+00:00",
+      "wall_name": "DINDING_BARAT_WEST",
+      "boat_x": -14.82,
+      "boat_y": 9.23,
+      "speed_mps": 0.0
+    }
+  ],
+  "test_number": 210,
+  "test_started_at": "2026-08-17T14:41:51.971438+07:00"
+}

@@ -1,0 +1,328 @@
+{
+  "run_id": "run_20260816_123457",
+  "log_dir": "E:\\KKI2026\\simulation\\logs\\run_20260816_123457",
+  "arena": "A",
+  "total_gates": 10,
+  "passed_valid": 10,
+  "missed": 0,
+  "progress_count": 10,
+  "total_markers": 2,
+  "markers_passed_valid": 1,
+  "markers_missed": 1,
+  "marker_progress_count": 2,
+  "buoy_touches": 0,
+  "wall_touches": 26,
+  "score_percent": 100.0,
+  "docked": false,
+  "docked_at": null,
+  "dock_target": [
+    11.5,
+    -13.0
+  ],
+  "dock_entry": [
+    11.5,
+    -10.45
+  ],
+  "dock_heading_deg": 180.0,
+  "dock_stable_s": 0.0,
+  "dock_position": null,
+  "gates": {
+    "gate_1": {
+      "name": "Arena A - Gate 1 (Slalom Kanan 1)",
+      "status": "PASSED_VALID",
+      "crossed_at": 77294.2939161,
+      "crossing_coord": [
+        11.06,
+        -6.0
+      ]
+    },
+    "gate_2": {
+      "name": "Arena A - Gate 2 (Slalom Kanan 2)",
+      "status": "PASSED_VALID",
+      "crossed_at": 77326.1693368,
+      "crossing_coord": [
+        9.41,
+        0.0
+      ]
+    },
+    "gate_3": {
+      "name": "Arena A - Gate 3 (Slalom Kanan 3)",
+      "status": "PASSED_VALID",
+      "crossed_at": 77357.5563361,
+      "crossing_coord": [
+        11.05,
+        6.0
+      ]
+    },
+    "gate_4": {
+      "name": "Arena A - Gate 4 (Koridor Atas 1)",
+      "status": "PASSED_VALID",
+      "crossed_at": 77383.5876691,
+      "crossing_coord": [
+        6.0,
+        9.51
+      ]
+    },
+    "gate_5": {
+      "name": "Arena A - Gate 5 (Koridor Atas 2)",
+      "status": "PASSED_VALID",
+      "crossed_at": 77397.5925432,
+      "crossing_coord": [
+        2.0,
+        10.53
+      ]
+    },
+    "gate_6": {
+      "name": "Arena A - Gate 6 (Koridor Atas 3)",
+      "status": "PASSED_VALID",
+      "crossed_at": 77408.7672312,
+      "crossing_coord": [
+        -2.0,
+        9.76
+      ]
+    },
+    "gate_7": {
+      "name": "Arena A - Gate 7 (Koridor Atas 4)",
+      "status": "PASSED_VALID",
+      "crossed_at": 77423.2529476,
+      "crossing_coord": [
+        -6.0,
+        10.38
+      ]
+    },
+    "gate_8": {
+      "name": "Arena A - Gate 8 (Slalom Kiri 1)",
+      "status": "PASSED_VALID",
+      "crossed_at": 77445.4161378,
+      "crossing_coord": [
+        -10.75,
+        6.0
+      ]
+    },
+    "gate_9": {
+      "name": "Arena A - Gate 9 (Slalom Kiri 2)",
+      "status": "PASSED_VALID",
+      "crossed_at": 77470.5205743,
+      "crossing_coord": [
+        -9.19,
+        0.0
+      ]
+    },
+    "gate_10": {
+      "name": "Arena A - Gate 10 (Slalom Kiri 3)",
+      "status": "PASSED_VALID",
+      "crossed_at": 77492.7553758,
+      "crossing_coord": [
+        -11.44,
+        -6.0
+      ]
+    }
+  },
+  "markers": {
+    "marker_biru": {
+      "name": "Arena A - Marker Biru (Bottom Checkpoint 1)",
+      "status": "PASSED_VALID",
+      "crossed_at": 77510.6951077,
+      "crossing_coord": [
+        -10.0,
+        -8.85
+      ]
+    },
+    "marker_hijau": {
+      "name": "Arena A - Marker Hijau (Bottom Checkpoint 2)",
+      "status": "MISSED_OUTSIDE",
+      "crossed_at": 77539.1850504,
+      "crossing_coord": [
+        -6.29,
+        -11.36
+      ]
+    }
+  },
+  "buoy_collisions": [],
+  "wall_collisions": [
+    {
+      "timestamp": "2026-08-16T12:39:49.968939+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -5.39,
+      "boat_y": -14.3,
+      "speed_mps": 0.16
+    },
+    {
+      "timestamp": "2026-08-16T12:39:51.047037+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -5.31,
+      "boat_y": -14.42,
+      "speed_mps": 0.13
+    },
+    {
+      "timestamp": "2026-08-16T12:39:53.048970+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -5.16,
+      "boat_y": -14.58,
+      "speed_mps": 0.1
+    },
+    {
+      "timestamp": "2026-08-16T12:39:55.063199+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -5.05,
+      "boat_y": -14.65,
+      "speed_mps": 0.04
+    },
+    {
+      "timestamp": "2026-08-16T12:39:57.054484+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -5.0,
+      "boat_y": -14.68,
+      "speed_mps": 0.03
+    },
+    {
+      "timestamp": "2026-08-16T12:39:59.053975+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -4.95,
+      "boat_y": -14.7,
+      "speed_mps": 0.03
+    },
+    {
+      "timestamp": "2026-08-16T12:40:01.049699+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -4.92,
+      "boat_y": -14.71,
+      "speed_mps": 0.02
+    },
+    {
+      "timestamp": "2026-08-16T12:40:03.052888+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -4.88,
+      "boat_y": -14.72,
+      "speed_mps": 0.02
+    },
+    {
+      "timestamp": "2026-08-16T12:40:05.046487+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -4.85,
+      "boat_y": -14.73,
+      "speed_mps": 0.02
+    },
+    {
+      "timestamp": "2026-08-16T12:40:07.057776+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -4.83,
+      "boat_y": -14.74,
+      "speed_mps": 0.02
+    },
+    {
+      "timestamp": "2026-08-16T12:40:09.061379+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -4.8,
+      "boat_y": -14.74,
+      "speed_mps": 0.01
+    },
+    {
+      "timestamp": "2026-08-16T12:40:11.059389+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -4.78,
+      "boat_y": -14.75,
+      "speed_mps": 0.01
+    },
+    {
+      "timestamp": "2026-08-16T12:40:13.063821+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -4.76,
+      "boat_y": -14.75,
+      "speed_mps": 0.01
+    },
+    {
+      "timestamp": "2026-08-16T12:40:15.061833+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -4.74,
+      "boat_y": -14.76,
+      "speed_mps": 0.01
+    },
+    {
+      "timestamp": "2026-08-16T12:40:17.054318+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -4.72,
+      "boat_y": -14.76,
+      "speed_mps": 0.01
+    },
+    {
+      "timestamp": "2026-08-16T12:40:19.054925+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -4.71,
+      "boat_y": -14.76,
+      "speed_mps": 0.01
+    },
+    {
+      "timestamp": "2026-08-16T12:40:21.052176+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -4.69,
+      "boat_y": -14.77,
+      "speed_mps": 0.01
+    },
+    {
+      "timestamp": "2026-08-16T12:40:23.058802+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -4.69,
+      "boat_y": -14.77,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T12:40:25.064294+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -4.69,
+      "boat_y": -14.77,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T12:40:27.052613+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -4.69,
+      "boat_y": -14.77,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T12:40:29.049702+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -4.69,
+      "boat_y": -14.77,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T12:40:31.048731+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -4.69,
+      "boat_y": -14.77,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T12:40:33.053195+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -4.69,
+      "boat_y": -14.77,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T12:40:35.056544+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -4.69,
+      "boat_y": -14.77,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T12:40:37.064579+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -4.69,
+      "boat_y": -14.77,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T12:40:39.048088+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -4.69,
+      "boat_y": -14.77,
+      "speed_mps": 0.0
+    }
+  ],
+  "test_number": 139,
+  "test_started_at": "2026-08-16T19:34:57.041875+07:00"
+}

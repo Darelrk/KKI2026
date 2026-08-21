@@ -1,0 +1,1574 @@
+{
+  "run_id": "run_20260816_105333",
+  "log_dir": "E:\\KKI2026\\simulation\\logs\\run_20260816_105333",
+  "arena": "A",
+  "total_gates": 10,
+  "passed_valid": 10,
+  "missed": 0,
+  "progress_count": 10,
+  "buoy_touches": 0,
+  "wall_touches": 208,
+  "score_percent": 100.0,
+  "docked": false,
+  "docked_at": null,
+  "dock_target": [
+    -9.7,
+    -8.7
+  ],
+  "dock_heading_deg": 149.35,
+  "dock_stable_s": 0.0,
+  "dock_position": null,
+  "gates": {
+    "gate_1": {
+      "name": "Arena A - Gate 1 (Slalom Kanan 1)",
+      "status": "PASSED_VALID",
+      "crossed_at": 71200.5320938,
+      "crossing_coord": [
+        11.08,
+        -6.0
+      ]
+    },
+    "gate_2": {
+      "name": "Arena A - Gate 2 (Slalom Kanan 2)",
+      "status": "PASSED_VALID",
+      "crossed_at": 71225.1955772,
+      "crossing_coord": [
+        9.43,
+        0.0
+      ]
+    },
+    "gate_3": {
+      "name": "Arena A - Gate 3 (Slalom Kanan 3)",
+      "status": "PASSED_VALID",
+      "crossed_at": 71249.7159378,
+      "crossing_coord": [
+        11.05,
+        6.0
+      ]
+    },
+    "gate_4": {
+      "name": "Arena A - Gate 4 (Koridor Atas 1)",
+      "status": "PASSED_VALID",
+      "crossed_at": 71271.8777095,
+      "crossing_coord": [
+        6.0,
+        9.46
+      ]
+    },
+    "gate_5": {
+      "name": "Arena A - Gate 5 (Koridor Atas 2)",
+      "status": "PASSED_VALID",
+      "crossed_at": 71283.4920028,
+      "crossing_coord": [
+        2.0,
+        10.24
+      ]
+    },
+    "gate_6": {
+      "name": "Arena A - Gate 6 (Koridor Atas 3)",
+      "status": "PASSED_VALID",
+      "crossed_at": 71293.270612,
+      "crossing_coord": [
+        -2.0,
+        9.63
+      ]
+    },
+    "gate_7": {
+      "name": "Arena A - Gate 7 (Koridor Atas 4)",
+      "status": "PASSED_VALID",
+      "crossed_at": 71305.6281357,
+      "crossing_coord": [
+        -6.0,
+        10.35
+      ]
+    },
+    "gate_8": {
+      "name": "Arena A - Gate 8 (Slalom Kiri 1)",
+      "status": "PASSED_VALID",
+      "crossed_at": 71324.203955,
+      "crossing_coord": [
+        -10.78,
+        6.0
+      ]
+    },
+    "gate_9": {
+      "name": "Arena A - Gate 9 (Slalom Kiri 2)",
+      "status": "PASSED_VALID",
+      "crossed_at": 71345.5215456,
+      "crossing_coord": [
+        -9.19,
+        0.0
+      ]
+    },
+    "gate_10": {
+      "name": "Arena A - Gate 10 (Slalom Kiri 3)",
+      "status": "PASSED_VALID",
+      "crossed_at": 71364.1575917,
+      "crossing_coord": [
+        -11.42,
+        -6.0
+      ]
+    }
+  },
+  "buoy_collisions": [],
+  "wall_collisions": [
+    {
+      "timestamp": "2026-08-16T10:58:02.016602+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.48,
+      "boat_y": -14.3,
+      "speed_mps": 0.07
+    },
+    {
+      "timestamp": "2026-08-16T10:58:03.057105+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.51,
+      "boat_y": -14.37,
+      "speed_mps": 0.06
+    },
+    {
+      "timestamp": "2026-08-16T10:58:05.060233+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.5,
+      "speed_mps": 0.01
+    },
+    {
+      "timestamp": "2026-08-16T10:58:07.064688+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.49,
+      "speed_mps": 0.01
+    },
+    {
+      "timestamp": "2026-08-16T10:58:09.047256+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:58:11.067152+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:58:13.047494+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:58:15.066439+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:58:17.058774+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:58:19.053725+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:58:21.061936+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:58:23.063546+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:58:25.051379+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:58:27.059445+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:58:29.056741+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:58:31.051376+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:58:33.046661+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:58:35.051677+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:58:37.060316+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:58:39.052805+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:58:41.050891+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:58:43.051690+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:58:45.049251+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:58:47.054489+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:58:49.059459+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:58:51.052852+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:58:53.049736+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:58:55.050335+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:58:57.057947+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:58:59.063046+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:59:01.051843+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:59:03.051428+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:59:05.061125+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:59:07.048586+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:59:09.052666+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:59:11.047092+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:59:13.059264+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:59:15.080164+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:59:17.050849+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:59:19.050597+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:59:21.058727+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:59:23.058351+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:59:25.052626+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:59:27.062055+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:59:29.047334+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:59:31.047360+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:59:33.059903+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:59:35.047471+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:59:37.049237+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:59:39.050972+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:59:41.048995+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:59:43.047326+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:59:45.059335+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:59:47.063756+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:59:49.049957+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:59:51.060247+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:59:53.049500+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:59:55.046189+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:59:57.053634+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T10:59:59.051744+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:00:01.059304+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:00:03.050680+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:00:05.055513+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:00:07.051893+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:00:09.053260+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:00:11.057463+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:00:13.054652+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:00:15.058971+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:00:17.053300+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:00:19.048323+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:00:21.051993+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:00:23.051180+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:00:25.046945+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:00:27.050663+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:00:29.056406+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:00:31.054819+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:00:33.046699+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:00:35.047947+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:00:37.055358+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:00:39.048249+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:00:41.052023+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:00:43.046840+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:00:45.058662+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:00:47.060886+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:00:49.057552+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:00:51.050856+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:00:53.047815+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:00:55.049723+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:00:57.049955+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:00:59.048047+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:01:01.054968+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:01:03.050704+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:01:05.048408+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:01:07.050336+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:01:09.048299+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:01:11.047966+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:01:13.052574+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:01:15.053785+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:01:17.055162+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:01:19.050781+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:01:21.053746+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:01:23.051293+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:01:25.046883+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:01:27.051466+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:01:29.054352+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:01:31.049498+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:01:33.048309+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:01:35.052864+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:01:37.059891+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:01:39.054580+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:01:41.052494+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:01:43.055975+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:01:45.058839+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:01:47.052608+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:01:49.046928+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:01:51.050468+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:01:53.048586+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:01:55.059824+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:01:57.059660+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:01:59.046745+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:02:01.047036+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:02:03.058870+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:02:05.049199+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:02:07.056913+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:02:09.051499+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:02:11.048014+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:02:13.051541+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:02:15.053804+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:02:17.047262+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:02:19.062999+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:02:21.050079+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:02:23.061977+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:02:25.053292+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:02:27.048166+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:02:29.047232+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:02:31.059622+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:02:33.053611+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:02:35.051321+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:02:37.051755+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:02:39.046389+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:02:41.051664+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:02:43.060104+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:02:45.053347+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:02:47.056512+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:02:49.056221+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:02:51.046678+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:02:53.048303+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:02:55.046187+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:02:57.053526+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:02:59.046996+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:03:01.051860+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:03:03.050968+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:03:05.051591+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:03:07.047200+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:03:09.049668+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:03:11.054827+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:03:13.053996+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:03:15.053397+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:03:17.051568+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:03:19.049531+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:03:21.051222+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:03:23.048248+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:03:25.051483+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:03:27.046247+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:03:29.056115+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:03:31.050670+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:03:33.048273+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:03:35.049946+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:03:37.050366+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:03:39.048089+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:03:41.050628+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:03:43.052876+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:03:45.048113+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:03:47.052944+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:03:49.069042+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:03:51.061495+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:03:53.049590+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:03:55.056982+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:03:57.050577+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:03:59.058771+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:04:01.056888+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:04:03.059644+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:04:05.058681+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:04:07.052875+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:04:09.055176+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:04:11.047344+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:04:13.057835+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:04:15.052484+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:04:17.046518+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:04:19.057395+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:04:21.053179+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:04:23.052545+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:04:25.048703+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:04:27.061240+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:04:29.048442+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:04:31.049519+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:04:33.046535+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:04:35.046800+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:04:37.052191+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:04:39.056051+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:04:41.053635+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:04:43.047408+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:04:45.049554+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:04:47.060075+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:04:49.054970+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:04:51.047959+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:04:53.050548+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    },
+    {
+      "timestamp": "2026-08-16T11:04:55.052505+00:00",
+      "wall_name": "DINDING_SELATAN_SOUTH",
+      "boat_x": -6.55,
+      "boat_y": -14.48,
+      "speed_mps": 0.0
+    }
+  ],
+  "test_number": 130,
+  "test_started_at": "2026-08-16T17:53:33.584551+07:00"
+}

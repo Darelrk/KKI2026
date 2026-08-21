@@ -1,0 +1,21 @@
+{
+  "settings_version": "0.0.6",
+  "datasets_dir": "E:\\KKI2026\\datasets",
+  "weights_dir": "weights",
+  "runs_dir": "runs",
+  "uuid": "caf3cd69d49d2249b0f8fe3602883c46c50e91070c85aca9e2dc69d4c593f7d2",
+  "sync": true,
+  "api_key": "",
+  "openai_api_key": "",
+  "clearml": true,
+  "comet": true,
+  "dvc": true,
+  "hub": true,
+  "mlflow": true,
+  "neptune": true,
+  "raytune": true,
+  "tensorboard": false,
+  "wandb": false,
+  "vscode_msg": true,
+  "openvino_msg": true
+}

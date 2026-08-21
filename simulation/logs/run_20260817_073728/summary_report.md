@@ -1,0 +1,120 @@
+# Laporan Hasil Uji Simulasi ASV KKI 2026 - run_20260817_073728
+
+- **No. Uji**: 209
+- **Jam Mulai (lokal)**: 2026-08-17 14:37:28 SE Asia Standard Time
+- **Waktu Mulai (UTC)**: 2026-08-17T07:37:28.141656+00:00
+- **Waktu Update (UTC)**: 2026-08-17T07:41:51.092463+00:00
+- **Durasi Sesi**: 263.0 detik
+- **Posisi Akhir Kapal**: X = -7.16 m, Y = 14.67 m
+- **Status Docking**: **BELUM**
+- **Posisi Docking**: -
+- **Skor Validasi Gate**: **7 / 10 Gate (70.0%)**
+- **Gate Terlewati (Valid)**: 7
+- **Gate Missed (Luar)**: 0
+- **Marker Bawah Valid**: **0 / 2**
+- **Marker Bawah Missed**: 0
+- **Sensor Sentuh Buoy (Buoy Collisions)**: **2 Kali**
+- **Sensor Tabrak Pembatas (Wall Collisions)**: **69 Kali**
+
+## 1. Detail Pelanggaran Tabrakan / Sentuh Buoy
+
+| No | Nama Buoy | Waktu Sentuh (UTC) | Posisi Kapal [X, Y] | Jarak Kontak (m) |
+|---|---|---|---|---|
+| 1 | gate_5_red | 2026-08-17T07:38:49.271396+00:00 | [2.23, 9.33] | 0.399 |
+| 2 | gate_7_green | 2026-08-17T07:39:25.000677+00:00 | [-6.29, 10.72] | 0.4 |
+
+## 2. Detail Tabrakan Dinding / Pembatas Kolam
+
+| No | Nama Dinding Pembatas | Waktu Tabrak (UTC) | Posisi Kapal [X, Y] | Kecepatan Benturan (m/s) |
+|---|---|---|---|---|
+| 1 | DINDING_UTARA_NORTH | 2026-08-17T07:39:35.289693+00:00 | [-6.83, 14.3] | 0.22 |
+| 2 | DINDING_UTARA_NORTH | 2026-08-17T07:39:37.096822+00:00 | [-6.98, 14.56] | 0.03 |
+| 3 | DINDING_UTARA_NORTH | 2026-08-17T07:39:39.096299+00:00 | [-7.03, 14.59] | 0.02 |
+| 4 | DINDING_UTARA_NORTH | 2026-08-17T07:39:41.099221+00:00 | [-7.06, 14.61] | 0.02 |
+| 5 | DINDING_UTARA_NORTH | 2026-08-17T07:39:43.093868+00:00 | [-7.09, 14.63] | 0.02 |
+| 6 | DINDING_UTARA_NORTH | 2026-08-17T07:39:45.094293+00:00 | [-7.11, 14.65] | 0.01 |
+| 7 | DINDING_UTARA_NORTH | 2026-08-17T07:39:47.102088+00:00 | [-7.13, 14.66] | 0.01 |
+| 8 | DINDING_UTARA_NORTH | 2026-08-17T07:39:49.099091+00:00 | [-7.15, 14.67] | 0.01 |
+| 9 | DINDING_UTARA_NORTH | 2026-08-17T07:39:51.092325+00:00 | [-7.16, 14.67] | 0.0 |
+| 10 | DINDING_UTARA_NORTH | 2026-08-17T07:39:53.091072+00:00 | [-7.16, 14.67] | 0.0 |
+| 11 | DINDING_UTARA_NORTH | 2026-08-17T07:39:55.091173+00:00 | [-7.16, 14.67] | 0.0 |
+| 12 | DINDING_UTARA_NORTH | 2026-08-17T07:39:57.097321+00:00 | [-7.16, 14.67] | 0.0 |
+| 13 | DINDING_UTARA_NORTH | 2026-08-17T07:39:59.104162+00:00 | [-7.16, 14.67] | 0.0 |
+| 14 | DINDING_UTARA_NORTH | 2026-08-17T07:40:01.095596+00:00 | [-7.16, 14.67] | 0.0 |
+| 15 | DINDING_UTARA_NORTH | 2026-08-17T07:40:03.100843+00:00 | [-7.16, 14.67] | 0.0 |
+| 16 | DINDING_UTARA_NORTH | 2026-08-17T07:40:05.092147+00:00 | [-7.16, 14.67] | 0.0 |
+| 17 | DINDING_UTARA_NORTH | 2026-08-17T07:40:07.100661+00:00 | [-7.16, 14.67] | 0.0 |
+| 18 | DINDING_UTARA_NORTH | 2026-08-17T07:40:09.090404+00:00 | [-7.16, 14.67] | 0.0 |
+| 19 | DINDING_UTARA_NORTH | 2026-08-17T07:40:11.096032+00:00 | [-7.16, 14.67] | 0.0 |
+| 20 | DINDING_UTARA_NORTH | 2026-08-17T07:40:13.091918+00:00 | [-7.16, 14.67] | 0.0 |
+| 21 | DINDING_UTARA_NORTH | 2026-08-17T07:40:15.105845+00:00 | [-7.16, 14.67] | 0.0 |
+| 22 | DINDING_UTARA_NORTH | 2026-08-17T07:40:17.099194+00:00 | [-7.16, 14.67] | 0.0 |
+| 23 | DINDING_UTARA_NORTH | 2026-08-17T07:40:19.095542+00:00 | [-7.16, 14.67] | 0.0 |
+| 24 | DINDING_UTARA_NORTH | 2026-08-17T07:40:21.099777+00:00 | [-7.16, 14.67] | 0.0 |
+| 25 | DINDING_UTARA_NORTH | 2026-08-17T07:40:23.108199+00:00 | [-7.16, 14.67] | 0.0 |
+| 26 | DINDING_UTARA_NORTH | 2026-08-17T07:40:25.109594+00:00 | [-7.16, 14.67] | 0.0 |
+| 27 | DINDING_UTARA_NORTH | 2026-08-17T07:40:27.091732+00:00 | [-7.16, 14.67] | 0.0 |
+| 28 | DINDING_UTARA_NORTH | 2026-08-17T07:40:29.104792+00:00 | [-7.16, 14.67] | 0.0 |
+| 29 | DINDING_UTARA_NORTH | 2026-08-17T07:40:31.093057+00:00 | [-7.16, 14.67] | 0.0 |
+| 30 | DINDING_UTARA_NORTH | 2026-08-17T07:40:33.142371+00:00 | [-7.16, 14.67] | 0.0 |
+| 31 | DINDING_UTARA_NORTH | 2026-08-17T07:40:35.102672+00:00 | [-7.16, 14.67] | 0.0 |
+| 32 | DINDING_UTARA_NORTH | 2026-08-17T07:40:37.108531+00:00 | [-7.16, 14.67] | 0.0 |
+| 33 | DINDING_UTARA_NORTH | 2026-08-17T07:40:39.094201+00:00 | [-7.16, 14.67] | 0.0 |
+| 34 | DINDING_UTARA_NORTH | 2026-08-17T07:40:41.106958+00:00 | [-7.16, 14.67] | 0.0 |
+| 35 | DINDING_UTARA_NORTH | 2026-08-17T07:40:43.097104+00:00 | [-7.16, 14.67] | 0.0 |
+| 36 | DINDING_UTARA_NORTH | 2026-08-17T07:40:45.107599+00:00 | [-7.16, 14.67] | 0.0 |
+| 37 | DINDING_UTARA_NORTH | 2026-08-17T07:40:47.095914+00:00 | [-7.16, 14.67] | 0.0 |
+| 38 | DINDING_UTARA_NORTH | 2026-08-17T07:40:49.099990+00:00 | [-7.16, 14.67] | 0.0 |
+| 39 | DINDING_UTARA_NORTH | 2026-08-17T07:40:51.104806+00:00 | [-7.16, 14.67] | 0.0 |
+| 40 | DINDING_UTARA_NORTH | 2026-08-17T07:40:53.093586+00:00 | [-7.16, 14.67] | 0.0 |
+| 41 | DINDING_UTARA_NORTH | 2026-08-17T07:40:55.107161+00:00 | [-7.16, 14.67] | 0.0 |
+| 42 | DINDING_UTARA_NORTH | 2026-08-17T07:40:57.100790+00:00 | [-7.16, 14.67] | 0.0 |
+| 43 | DINDING_UTARA_NORTH | 2026-08-17T07:40:59.107639+00:00 | [-7.16, 14.67] | 0.0 |
+| 44 | DINDING_UTARA_NORTH | 2026-08-17T07:41:01.095612+00:00 | [-7.16, 14.67] | 0.0 |
+| 45 | DINDING_UTARA_NORTH | 2026-08-17T07:41:03.092939+00:00 | [-7.16, 14.67] | 0.0 |
+| 46 | DINDING_UTARA_NORTH | 2026-08-17T07:41:05.095270+00:00 | [-7.16, 14.67] | 0.0 |
+| 47 | DINDING_UTARA_NORTH | 2026-08-17T07:41:07.100858+00:00 | [-7.16, 14.67] | 0.0 |
+| 48 | DINDING_UTARA_NORTH | 2026-08-17T07:41:09.107716+00:00 | [-7.16, 14.67] | 0.0 |
+| 49 | DINDING_UTARA_NORTH | 2026-08-17T07:41:11.093171+00:00 | [-7.16, 14.67] | 0.0 |
+| 50 | DINDING_UTARA_NORTH | 2026-08-17T07:41:13.095229+00:00 | [-7.16, 14.67] | 0.0 |
+| 51 | DINDING_UTARA_NORTH | 2026-08-17T07:41:15.097124+00:00 | [-7.16, 14.67] | 0.0 |
+| 52 | DINDING_UTARA_NORTH | 2026-08-17T07:41:17.094791+00:00 | [-7.16, 14.67] | 0.0 |
+| 53 | DINDING_UTARA_NORTH | 2026-08-17T07:41:19.096463+00:00 | [-7.16, 14.67] | 0.0 |
+| 54 | DINDING_UTARA_NORTH | 2026-08-17T07:41:21.107228+00:00 | [-7.16, 14.67] | 0.0 |
+| 55 | DINDING_UTARA_NORTH | 2026-08-17T07:41:23.092270+00:00 | [-7.16, 14.67] | 0.0 |
+| 56 | DINDING_UTARA_NORTH | 2026-08-17T07:41:25.092177+00:00 | [-7.16, 14.67] | 0.0 |
+| 57 | DINDING_UTARA_NORTH | 2026-08-17T07:41:27.094340+00:00 | [-7.16, 14.67] | 0.0 |
+| 58 | DINDING_UTARA_NORTH | 2026-08-17T07:41:29.099429+00:00 | [-7.16, 14.67] | 0.0 |
+| 59 | DINDING_UTARA_NORTH | 2026-08-17T07:41:31.097664+00:00 | [-7.16, 14.67] | 0.0 |
+| 60 | DINDING_UTARA_NORTH | 2026-08-17T07:41:33.099090+00:00 | [-7.16, 14.67] | 0.0 |
+| 61 | DINDING_UTARA_NORTH | 2026-08-17T07:41:35.093778+00:00 | [-7.16, 14.67] | 0.0 |
+| 62 | DINDING_UTARA_NORTH | 2026-08-17T07:41:37.091331+00:00 | [-7.16, 14.67] | 0.0 |
+| 63 | DINDING_UTARA_NORTH | 2026-08-17T07:41:39.092694+00:00 | [-7.16, 14.67] | 0.0 |
+| 64 | DINDING_UTARA_NORTH | 2026-08-17T07:41:41.101315+00:00 | [-7.16, 14.67] | 0.0 |
+| 65 | DINDING_UTARA_NORTH | 2026-08-17T07:41:43.094896+00:00 | [-7.16, 14.67] | 0.0 |
+| 66 | DINDING_UTARA_NORTH | 2026-08-17T07:41:45.103642+00:00 | [-7.16, 14.67] | 0.0 |
+| 67 | DINDING_UTARA_NORTH | 2026-08-17T07:41:47.099526+00:00 | [-7.16, 14.67] | 0.0 |
+| 68 | DINDING_UTARA_NORTH | 2026-08-17T07:41:49.098809+00:00 | [-7.16, 14.67] | 0.0 |
+| 69 | DINDING_UTARA_NORTH | 2026-08-17T07:41:51.090554+00:00 | [-7.16, 14.67] | 0.0 |
+
+## Detail Setiap Gerbang Buoy (Jarak 2.0m)
+
+| ID Gerbang | Nama Gate | Status | Koordinat Crossing | Waktu (s) |
+|---|---|---|---|---|
+| gate_1 | Arena A - Gate 1 (Slalom Kanan 1) | **PASSED (VALID)** | [11.24, -6.0] | 145838.5 |
+| gate_2 | Arena A - Gate 2 (Slalom Kanan 2) | **PASSED (VALID)** | [8.88, 0.0] | 145851.2 |
+| gate_3 | Arena A - Gate 3 (Slalom Kanan 3) | **PASSED (VALID)** | [11.4, 6.0] | 145865.5 |
+| gate_4 | Arena A - Gate 4 (Koridor Atas 1) | **PASSED (VALID)** | [6.0, 10.4] | 145886.9 |
+| gate_5 | Arena A - Gate 5 (Koridor Atas 2) | **PASSED (VALID)** | [2.0, 9.38] | 145896.9 |
+| gate_6 | Arena A - Gate 6 (Koridor Atas 3) | **PASSED (VALID)** | [-2.0, 10.44] | 145910.4 |
+| gate_7 | Arena A - Gate 7 (Koridor Atas 4) | **PASSED (VALID)** | [-6.0, 10.21] | 145930.4 |
+| gate_8 | Arena A - Gate 8 (Slalom Kiri 1) | **PENDING** | - | - |
+| gate_9 | Arena A - Gate 9 (Slalom Kiri 2) | **PENDING** | - | - |
+| gate_10 | Arena A - Gate 10 (Slalom Kiri 3) | **PENDING** | - | - |
+
+## Detail Checkpoint Marker Bawah
+
+| ID Marker | Nama Marker | Status | Koordinat Crossing | Waktu (s) |
+|---|---|---|---|---|
+| marker_biru | Arena A - Marker Biru (Bottom Checkpoint 1) | **PENDING** | - | - |
+| marker_hijau | Arena A - Marker Hijau (Bottom Checkpoint 2) | **PENDING** | - | - |

@@ -8,18 +8,17 @@ EXTERNPROTO "../protos/TargetDock.proto"
 
 WorldInfo {
   basicTimeStep 16
-  coordinateSystem "ENU"
   defaultDamping Damping {
-    linear 0.5
-    angular 0.5
+    linear 0
+    angular 0
   }
 }
 Viewpoint {
-  orientation -0.32 0.14 0.94 2.5
-  position 14.0 -18.0 12.0
+  orientation -0.30531758172644724 0.7626864457605848 0.5701671331651805 0.5796322844908932
+  position -40.52178344418959 -17.479753701598206 19.060095353173242
 }
 DirectionalLight {
-  direction 0.3 0.6 -1.0
+  direction 0.3 0.6 -1
   intensity 2.5
   castShadows TRUE
 }
@@ -28,31 +27,26 @@ Background {
     0.45 0.72 0.92
   ]
 }
-
-# --- POOL FLOOR (30m x 30m) ---
 DEF POOL_FLOOR Solid {
-  name "pool_floor"
-  translation 0 0 -0.85
+  translation 15 0 -0.85
   children [
     Shape {
       appearance PBRAppearance {
-        baseColor 0.72 0.75 0.80
+        baseColor 0.72 0.75 0.8
         roughness 0.9
       }
       geometry Box {
-        size 30 30 0.10
+        size 60 30 0.1
       }
     }
   ]
+  name "pool_floor"
   boundingObject Box {
-    size 30 30 0.10
+    size 60 30 0.1
   }
 }
-
-# --- WATER FLUID VOLUME (Top surface at Z = 0.0) ---
 DEF WATER Fluid {
-  name "water"
-  translation 0 0 -0.40
+  translation 15 0 -0.4
   children [
     Shape {
       appearance PBRAppearance {
@@ -62,53 +56,49 @@ DEF WATER Fluid {
         metalness 0.1
       }
       geometry DEF WATER_BOX Box {
-        size 30 30 0.80
+        size 60 30 0.8
       }
     }
   ]
-  viscosity 0.001
-  density 1000
+  name "water"
   boundingObject USE WATER_BOX
   locked TRUE
 }
-
-# --- PERIMETER WALLS (30m x 30m) ---
 DEF WALL_NORTH Solid {
-  name "wall_north"
-  translation 0 15.1 0.2
+  translation 15 15.1 0.2
   children [
     Shape {
       appearance PBRAppearance {
         baseColor 0.85 0.85 0.88
       }
       geometry Box {
-        size 30.2 0.2 1.2
+        size 60.2 0.2 1.2
       }
     }
   ]
+  name "wall_north"
   boundingObject Box {
-    size 30.2 0.2 1.2
+    size 60.2 0.2 1.2
   }
 }
 DEF WALL_SOUTH Solid {
-  name "wall_south"
-  translation 0 -15.1 0.2
+  translation 15 -15.1 0.2
   children [
     Shape {
       appearance PBRAppearance {
         baseColor 0.85 0.85 0.88
       }
       geometry Box {
-        size 30.2 0.2 1.2
+        size 60.2 0.2 1.2
       }
     }
   ]
+  name "wall_south"
   boundingObject Box {
-    size 30.2 0.2 1.2
+    size 60.2 0.2 1.2
   }
 }
 DEF WALL_WEST Solid {
-  name "wall_west"
   translation -15.1 0 0.2
   children [
     Shape {
@@ -120,12 +110,12 @@ DEF WALL_WEST Solid {
       }
     }
   ]
+  name "wall_west"
   boundingObject Box {
     size 0.2 30.2 1.2
   }
 }
-DEF WALL_EAST Solid {
-  name "wall_east"
+DEF WALL_ARENA_DIVIDER Solid {
   translation 15.1 0 0.2
   children [
     Shape {
@@ -137,157 +127,261 @@ DEF WALL_EAST Solid {
       }
     }
   ]
+  name "wall_arena_divider"
   boundingObject Box {
     size 0.2 30.2 1.2
   }
 }
-
-# =========================================================
-# SECTION 1: START / FINISH DOCK AREA (Bottom-Right, Biru)
-# =========================================================
+DEF WALL_EAST Solid {
+  translation 45.1 0 0.2
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.85 0.85 0.88
+      }
+      geometry Box {
+        size 0.2 30.2 1.2
+      }
+    }
+  ]
+  name "wall_east"
+  boundingObject Box {
+    size 0.2 30.2 1.2
+  }
+}
 TargetDock {
-  translation 11.5 -13.0 0.0
-  dockColor 0.12 0.35 0.95
-  dockSize 2.2 1.4 0.15
-  name "dock_start_finish_biru"
+  translation 11.5 -13 0
+  rotation 0 0 1 1.5708
+  name "dock_final_biru"
 }
 BuoyBlue {
-  translation 12.8 -12.4 0.0
+  translation 10.7 -12.4 0
   name "dock_buoy_1"
 }
 BuoyBlue {
-  translation 12.8 -13.0 0.0
+  translation 10.7 -13 0
   name "dock_buoy_2"
 }
 BuoyBlue {
-  translation 12.8 -13.6 0.0
+  translation 10.7 -13.6 0
   name "dock_buoy_3"
 }
-
-# =========================================================
-# SECTION 2: RIGHT LEG SLALOM GATES (Heading North)
-# Gate width = 2.0 meters between pairs
-# =========================================================
 BuoyRed {
-  translation 10.0 -6.0 0.0
+  translation 10 -6 0
   name "right_slalom_red_1"
 }
 BuoyGreen {
-  translation 12.0 -6.0 0.0
+  translation 12 -6 0
   name "right_slalom_green_1"
 }
-
 BuoyRed {
-  translation 8.0 0.0 0.0
+  translation 8 0 0
   name "right_slalom_red_2"
 }
 BuoyGreen {
-  translation 10.0 0.0 0.0
+  translation 10 0 0
   name "right_slalom_green_2"
 }
-
 BuoyRed {
-  translation 10.0 6.0 0.0
+  translation 10 6 0
   name "right_slalom_red_3"
 }
 BuoyGreen {
-  translation 12.0 6.0 0.0
+  translation 12 6 0
   name "right_slalom_green_3"
 }
-
-# =========================================================
-# SECTION 3: TOP STRAIGHT CORRIDOR (Hijau / Merah)
-# Jarak Hijau (North) dan Merah (South) = 2.0 meter
-# =========================================================
 BuoyGreen {
-  translation 6.0 11.0 0.0
+  translation 6 11 0
   name "top_gate_green_1"
 }
 BuoyRed {
-  translation 6.0 9.0 0.0
+  translation 6 9 0
   name "top_gate_red_1"
 }
-
 BuoyGreen {
-  translation 2.0 11.0 0.0
+  translation 2 11 0
   name "top_gate_green_2"
 }
 BuoyRed {
-  translation 2.0 9.0 0.0
+  translation 2 9 0
   name "top_gate_red_2"
 }
-
 BuoyGreen {
-  translation -2.0 11.0 0.0
+  translation -2 11 0
   name "top_gate_green_3"
 }
 BuoyRed {
-  translation -2.0 9.0 0.0
+  translation -2 9 0
   name "top_gate_red_3"
 }
-
 BuoyGreen {
-  translation -6.0 11.0 0.0
+  translation -6 11 0
   name "top_gate_green_4"
 }
 BuoyRed {
-  translation -6.0 9.0 0.0
+  translation -6 9 0
   name "top_gate_red_4"
 }
-
-# =========================================================
-# SECTION 4: LEFT LEG SLALOM GATES (Heading South)
-# Gate width = 2.0 meters between pairs
-# =========================================================
 BuoyRed {
-  translation -10.0 6.0 0.0
+  translation -10 6 0
   name "left_slalom_red_1"
 }
 BuoyGreen {
-  translation -12.0 6.0 0.0
+  translation -12 6 0
   name "left_slalom_green_1"
 }
-
 BuoyRed {
-  translation -8.0 0.0 0.0
+  translation -8 0 0
   name "left_slalom_red_2"
 }
 BuoyGreen {
-  translation -10.0 0.0 0.0
+  translation -10 0 0
   name "left_slalom_green_2"
 }
-
 BuoyRed {
-  translation -10.0 -6.0 0.0
+  translation -10 -6 0
   name "left_slalom_red_3"
 }
 BuoyGreen {
-  translation -12.0 -6.0 0.0
+  translation -12 -6 0
   name "left_slalom_green_3"
 }
-
-# =========================================================
-# SECTION 5: BOTTOM STRETCH & TARGET DOCKING STATIONS
-# =========================================================
 TargetDock {
-  translation -11.0 -10.5 0.0
-  dockColor 0.12 0.35 0.95
-  dockSize 1.6 0.8 0.15
-  name "dock_target_biru"
+  translation -9.7 -8.7 0
+  name "marker_checkpoint_biru"
+  collisionShape Box {
+    size 1.6 0.8 0.15
+  }
 }
 TargetDock {
-  translation -3.0 -12.5 0.0
-  dockColor 0.10 0.85 0.15
-  dockSize 1.6 0.8 0.15
-  name "dock_target_hijau"
+  translation -6.9 -11.9 0
+  name "marker_checkpoint_hijau"
+  dockColor 0.1 0.85 0.15
+  collisionShape Box {
+    size 1.6 0.8 0.15
+  }
 }
-
-# =========================================================
-# ASV BOAT (90cm x 30cm) at Start Position facing North
-# =========================================================
-KKIBoat {
-  translation 10.0 -11.5 0.04
+TargetDock {
+  translation 18.5 -13 0
   rotation 0 0 1 1.5708
-  name "kki_boat"
-  controller "asv_sim_agent"
+  name "arena_b_dock_final_biru"
+}
+BuoyBlue {
+  translation 19.3 -12.4 0
+  name "arena_b_dock_buoy_1"
+}
+BuoyBlue {
+  translation 19.3 -13 0
+  name "arena_b_dock_buoy_2"
+}
+BuoyBlue {
+  translation 19.3 -13.6 0
+  name "arena_b_dock_buoy_3"
+}
+BuoyRed {
+  translation 20 -6 0
+  name "arena_b_inner_red_1"
+}
+BuoyGreen {
+  translation 18 -6 0
+  name "arena_b_inner_green_1"
+}
+BuoyRed {
+  translation 22 0 0
+  name "arena_b_inner_red_2"
+}
+BuoyGreen {
+  translation 20 0 0
+  name "arena_b_inner_green_2"
+}
+BuoyRed {
+  translation 20 6 0
+  name "arena_b_inner_red_3"
+}
+BuoyGreen {
+  translation 18 6 0
+  name "arena_b_inner_green_3"
+}
+BuoyGreen {
+  translation 24 11 0
+  name "arena_b_top_green_1"
+}
+BuoyRed {
+  translation 24 9 0
+  name "arena_b_top_red_1"
+}
+BuoyGreen {
+  translation 28 11 0
+  name "arena_b_top_green_2"
+}
+BuoyRed {
+  translation 28 9 0
+  name "arena_b_top_red_2"
+}
+BuoyGreen {
+  translation 32 11 0
+  name "arena_b_top_green_3"
+}
+BuoyRed {
+  translation 32 9 0
+  name "arena_b_top_red_3"
+}
+BuoyGreen {
+  translation 36 11 0
+  name "arena_b_top_green_4"
+}
+BuoyRed {
+  translation 36 9 0
+  name "arena_b_top_red_4"
+}
+BuoyRed {
+  translation 40 6 0
+  name "arena_b_outer_red_1"
+}
+BuoyGreen {
+  translation 42 6 0
+  name "arena_b_outer_green_1"
+}
+BuoyRed {
+  translation 38 0 0
+  name "arena_b_outer_red_2"
+}
+BuoyGreen {
+  translation 40 0 0
+  name "arena_b_outer_green_2"
+}
+BuoyRed {
+  translation 40 -6 0
+  name "arena_b_outer_red_3"
+}
+BuoyGreen {
+  translation 42 -6 0
+  name "arena_b_outer_green_3"
+}
+TargetDock {
+  translation 39.7 -8.7 0
+  name "arena_b_marker_checkpoint_biru"
+  collisionShape Box {
+    size 1.6 0.8 0.15
+  }
+}
+TargetDock {
+  translation 36.9 -11.9 0
+  name "arena_b_marker_checkpoint_hijau"
+  dockColor 0.1 0.85 0.15
+  collisionShape Box {
+    size 1.6 0.8 0.15
+  }
+}
+KKIBoat {
+  hidden position_0_0 1.7710616651558094e-08
+  hidden linearVelocity_0 -7.606836359158e-11 -2.7939546594605534e-16 -1.4814016413242363e-17
+  hidden angularVelocity_0 -8.699826174213996e-16 2.422593595912962e-10 -4.5784875528520925e-10
+  hidden position_10_0 7.795314544305307e-16
+  hidden linearVelocity_10 -2.76384727194941e-10 4.3394177174690853e-14 8.598957488209633e-18
+  hidden angularVelocity_10 -5.862624886562104e-17 1.4922691817213582e-10 1.7664717791899468e-07
+  hidden linearVelocity_11 7.66738167263814e-09 5.0348253775361425e-14 -4.157378996004517e-17
+  hidden angularVelocity_11 -3.300278385959007e-17 1.4922692036546483e-10 1.7664716194676116e-07
+  translation 11.099999991163308 -11.497594319812565 0.030760647299834704
+  rotation 0.0002640765117698851 -0.0002640755398222797 0.9999999302638501 1.5708000697344082
 }
