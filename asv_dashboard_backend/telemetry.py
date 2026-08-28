@@ -245,7 +245,8 @@ class PixhawkTelemetryReader:
 
             now = time.monotonic()
             remote_command = self._remote_command
-            if remote_command is not None:
+            remote_command_selected = remote_command is not None
+            if remote_command_selected:
                 command = remote_command
                 command_age = now - self._remote_command_at
                 command_timeout = self.settings.remote_command_timeout
@@ -255,6 +256,12 @@ class PixhawkTelemetryReader:
                 command_age = now - self._actuator_command_at
                 command_timeout = self.settings.actuator_command_timeout
                 lane_enabled = self.settings.model_actuators_enabled
+
+            command_expired = (
+                command_age >= command_timeout
+                if remote_command_selected
+                else command_age > command_timeout
+            )
 
             heartbeat_age = (
                 float("inf")
@@ -270,7 +277,7 @@ class PixhawkTelemetryReader:
                 not lane_enabled
                 or command is None
                 or not command.enabled
-                or command_age >= command_timeout
+                or command_expired
                 or heartbeat_age > self.settings.pixhawk_heartbeat_timeout
                 or self._mode != "MANUAL"
                 or pilot_input_age <= 1.5
