@@ -1,6 +1,11 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { fetchDirectAsvLive, fetchDirectTelemetry } from './direct-live'
+import {
+  fetchControlMode,
+  fetchDirectAsvLive,
+  fetchDirectTelemetry,
+  putControlMode,
+} from './direct-live'
 
 const liveStatus = {
   id: 'default',
@@ -55,6 +60,60 @@ describe('direct live API', () => {
     await expect(
       fetchDirectTelemetry('https://bridge.example.test'),
     ).resolves.toEqual(telemetry)
+  })
+
+  it('fetches and updates control mode as JSON', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify({ mode: 'MANUAL' }), { status: 200 }),
+        )
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify({ mode: 'AUTONOMOUS' }), { status: 200 }),
+        ),
+    )
+
+    await expect(
+      fetchControlMode('https://bridge.example.test///'),
+    ).resolves.toBe('MANUAL')
+    await expect(
+      putControlMode('https://bridge.example.test///', 'AUTONOMOUS'),
+    ).resolves.toBe('AUTONOMOUS')
+
+    expect(fetch).toHaveBeenNthCalledWith(
+      1,
+      'https://bridge.example.test/api/control/mode',
+      expect.objectContaining({
+        cache: 'no-store',
+        headers: { accept: 'application/json' },
+      }),
+    )
+    expect(fetch).toHaveBeenNthCalledWith(
+      2,
+      'https://bridge.example.test/api/control/mode',
+      expect.objectContaining({
+        body: JSON.stringify({ mode: 'AUTONOMOUS' }),
+        cache: 'no-store',
+        headers: {
+          accept: 'application/json',
+          'content-type': 'application/json',
+        },
+        method: 'PUT',
+      }),
+    )
+  })
+
+  it('reports a forbidden control mode update with its status', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response('forbidden', { status: 403 })),
+    )
+
+    await expect(
+      putControlMode('https://bridge.example.test', 'AUTONOMOUS'),
+    ).rejects.toThrow('Direct bridge mode request failed: 403')
   })
 
   it('rejects a failed bridge response', async () => {
