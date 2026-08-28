@@ -5,7 +5,7 @@ import {
   screen,
   within,
 } from '@testing-library/react'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { DashboardShell } from './dashboard-shell'
 
@@ -101,6 +101,31 @@ describe('DashboardShell', () => {
     expect(screen.getByTestId('boat-marker')).toBeInTheDocument()
     expect(screen.queryByTestId('simulation-boat')).not.toBeInTheDocument()
   })
+  it('passes the editable runtime control mode through to SignalRail', () => {
+    const onControlModeChange = vi.fn()
+
+    render(
+      <DashboardShell
+        live={liveStatus}
+        telemetry={telemetry}
+        telemetryRealtimeStatus="connected"
+        underwaterFrame={underwaterFrame}
+        controlMode="MANUAL"
+        controlModeCanEdit
+        controlModeUpdating={false}
+        controlModeError={null}
+        onControlModeChange={onControlModeChange}
+      />,
+    )
+
+    expect(screen.getByRole('button', { name: 'MANUAL' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'AUTONOMOUS' }))
+    expect(onControlModeChange).toHaveBeenCalledWith('AUTONOMOUS')
+  })
+
 
   it('keeps mission controls in direct mode without replacing live GPS', () => {
     render(

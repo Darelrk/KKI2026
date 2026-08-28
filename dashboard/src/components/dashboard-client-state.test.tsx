@@ -6,6 +6,7 @@ import { useAsvLive } from '../lib/use-asv-live'
 import { useUnderwaterBroadcast } from '../lib/use-underwater-broadcast'
 import { useTelemetryBroadcast } from '../lib/use-telemetry-broadcast'
 import { useVisionMetadata } from '../lib/use-vision-metadata'
+import { useControlMode } from '../lib/use-control-mode'
 
 vi.mock('../lib/use-asv-live', () => ({ useAsvLive: vi.fn() }))
 vi.mock('../lib/use-underwater-broadcast', () => ({
@@ -16,6 +17,9 @@ vi.mock('../lib/use-telemetry-broadcast', () => ({
 }))
 vi.mock('../lib/use-vision-metadata', () => ({
   useVisionMetadata: vi.fn(),
+}))
+vi.mock('../lib/use-control-mode', () => ({
+  useControlMode: vi.fn(),
 }))
 
 afterEach(() => {
@@ -43,6 +47,17 @@ describe('DashboardClient states', () => {
       cache: null,
       realtimeStatus: 'error',
     })
+    vi.mocked(useControlMode).mockReturnValue({
+      mode: null,
+      isLoading: true,
+      isError: false,
+      error: null,
+      isUpdating: false,
+      canEdit: false,
+      readOnly: false,
+      updateMode: vi.fn(),
+    })
+
 
     render(<DashboardClient asvId="default" mode="direct" />)
 
@@ -72,6 +87,17 @@ describe('DashboardClient states', () => {
       cache: null,
       realtimeStatus: 'error',
     })
+    vi.mocked(useControlMode).mockReturnValue({
+      mode: 'MANUAL',
+      isLoading: false,
+      isError: true,
+      error: new Error('control mode unavailable'),
+      isUpdating: false,
+      canEdit: false,
+      readOnly: false,
+      updateMode: vi.fn(),
+    })
+
 
     render(<DashboardClient asvId="default" mode="direct" />)
 

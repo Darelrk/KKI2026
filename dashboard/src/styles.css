@@ -601,6 +601,77 @@ h2 {
     'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 0.76rem;
 }
+.control-mode-toggle {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.control-mode-toggle .eyebrow {
+  margin-bottom: 0.65rem;
+}
+
+.control-mode-toggle__choices {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.control-mode-toggle__button {
+  min-height: 2.5rem;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-elevated);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-family:
+    'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition:
+    border-color var(--transition-fast),
+    background var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.control-mode-toggle__button:hover:not(:disabled) {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.control-mode-toggle__button[aria-pressed='true'] {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+
+.control-mode-toggle__button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.control-mode-toggle__status,
+.control-mode-toggle__error,
+.control-mode-toggle__note {
+  margin: 0.65rem 0 0;
+  font-size: 0.74rem;
+}
+
+.control-mode-toggle__status {
+  color: var(--color-text-secondary);
+}
+
+.control-mode-toggle__error {
+  color: var(--color-danger);
+}
+
+.control-mode-toggle__note {
+  color: var(--color-text-muted);
+}
+
 
 .dashboard-shell__alert {
   padding: 0.8rem 0.95rem;

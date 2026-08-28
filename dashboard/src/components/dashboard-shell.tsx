@@ -21,6 +21,7 @@ import type { AsvLive, UnderwaterFrame } from '../lib/asv-types'
 import type { AsvDataMode } from '../lib/asv-data-mode'
 import type { AsvTelemetry } from '../lib/asv-telemetry'
 import type { VisionMetadataCache } from '../lib/vision-metadata'
+import type { ControlMode } from '../lib/control-mode'
 import type { VisionRealtimeStatus } from '../lib/use-vision-metadata'
 import type { ConnectionStatus } from './connection-bar'
 import type { CameraCaptureHandle } from '../lib/camera-capture'
@@ -33,6 +34,11 @@ type DashboardShellProps = {
   underwaterFrame: UnderwaterFrame | null
   visionMetadataCache?: VisionMetadataCache | null
   visionMetadataStatus?: VisionRealtimeStatus
+  controlMode?: ControlMode | null
+  controlModeCanEdit?: boolean
+  controlModeUpdating?: boolean
+  controlModeError?: Error | null
+  onControlModeChange?: (mode: ControlMode) => void
   surfaceStreamUrl?: string | null
   underwaterStreamUrl?: string | null
 }
@@ -45,6 +51,11 @@ export function DashboardShell({
   underwaterFrame,
   visionMetadataCache = null,
   visionMetadataStatus = 'error',
+  controlMode = null,
+  controlModeCanEdit = false,
+  controlModeUpdating = false,
+  controlModeError = null,
+  onControlModeChange = () => undefined,
   surfaceStreamUrl = asvStreamUrls.surface,
   underwaterStreamUrl = asvStreamUrls.underwater,
 }: DashboardShellProps) {
@@ -135,6 +146,11 @@ export function DashboardShell({
             live={displayLive ?? null}
             telemetryConnected={telemetry?.connected ?? null}
             telemetryStatus={displayTelemetryStatus}
+            controlMode={controlMode}
+            controlModeCanEdit={controlModeCanEdit}
+            controlModeUpdating={controlModeUpdating}
+            controlModeError={controlModeError}
+            onControlModeChange={onControlModeChange}
           />
           <TelemetryPanel
             telemetry={navigation}
