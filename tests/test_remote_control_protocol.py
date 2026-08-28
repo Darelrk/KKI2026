@@ -341,14 +341,31 @@ def test_remote_websocket_new_session_supersedes_old_with_4001() -> None:
             "/ws/control/default",
             headers={"origin": "https://remote.example.test"},
         ) as first:
+            first.send_json(VALID)
+            first_ack = first.receive_json()
+            assert first_ack["accepted"] is True
+            assert len(reader.commands) == 1
+            first_session_id = reader.commands[0][1]
+
             with client.websocket_connect(
                 "/ws/control/default",
                 headers={"origin": "https://remote.example.test"},
-            ):
+            ) as second:
+                assert reader.clears == [first_session_id]
+
+                second.send_json(VALID)
+                second_ack = second.receive_json()
+                assert second_ack["accepted"] is True
+                assert len(reader.commands) == 2
+                second_session_id = reader.commands[1][1]
+                assert second_session_id != first_session_id
+
                 with pytest.raises(WebSocketDisconnect) as error:
                     first.receive_text()
                 assert error.value.code == 4001
-            assert reader.clears
+                assert reader.clears == [first_session_id]
+                assert len(reader.commands) == 2
+                assert reader.commands[1][1] == second_session_id
 
 
 def test_remote_websocket_enabled_false_clears_owner_and_stale_does_not_submit() -> None:
