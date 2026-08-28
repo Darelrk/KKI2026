@@ -165,7 +165,7 @@ export function RemoteSurfaceCamera({
       peer.onicecandidate = (event) => {
         if (disposed || switchedToFallback || !event.candidate) return
         const candidate = event.candidate.candidate
-        if (typeof candidate === 'string') sendCandidate(candidate)
+        if (typeof candidate === 'string' && candidate !== '') sendCandidate(candidate)
       }
       peer.ontrack = (event) => {
         if (disposed || switchedToFallback) return

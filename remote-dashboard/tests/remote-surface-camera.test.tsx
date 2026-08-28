@@ -137,15 +137,20 @@ describe('RemoteSurfaceCamera', () => {
     const socket = FakeSignalingSocket.instances[0]!
     const peer = FakePeerConnection.instances[0]!
 
+    peer.onicecandidate?.({ candidate: { candidate: '' } })
+    expect(socket.sent).toHaveLength(0)
+
     peer.onicecandidate?.({ candidate: { candidate: 'pre-open-candidate' } })
     expect(socket.sent).toHaveLength(0)
 
     socket.open()
     await act(async () => {})
-    expect(socket.sent.map((payload) => JSON.parse(payload))).toContainEqual({
-      type: 'webrtc/candidate',
-      value: 'pre-open-candidate',
-    })
+    const candidateMessages = socket.sent.map((payload) => JSON.parse(payload)).filter(
+      (message) => message.type === 'webrtc/candidate',
+    )
+    expect(candidateMessages).toEqual([
+      { type: 'webrtc/candidate', value: 'pre-open-candidate' },
+    ])
 
     peer.onicecandidate?.({ candidate: { candidate: 'open-candidate' } })
     expect(socket.sent.map((payload) => JSON.parse(payload))).toContainEqual({
