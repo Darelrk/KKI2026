@@ -446,6 +446,26 @@ def test_remote_control_expiry_at_exact_timeout_releases_without_sending_pwm(
         (7, 9, 0, 0, 0, 0, 0, 0, 0, 0),
     ]
 
+def test_model_actuator_survives_exact_timeout_boundary(monkeypatch) -> None:
+    now = [10.0]
+    monkeypatch.setattr(
+        "asv_dashboard_backend.telemetry.time.monotonic", lambda: now[0]
+    )
+    reader, connection = make_remote_ready_reader(model_actuators_enabled=True)
+    reader.submit_actuator_command(
+        ActuatorCommand(steering_pwm=1510, throttle_pwm=1540, enabled=True)
+    )
+    reader._apply_actuator_command()
+
+    now[0] = 10.0 + reader.settings.actuator_command_timeout
+    reader._last_heartbeat_monotonic = now[0]
+    reader._apply_actuator_command()
+
+    assert connection.mav.sent == [
+        (7, 9, 1510, 65535, 1540, 65535, 65535, 65535, 65535, 65535),
+        (7, 9, 1510, 65535, 1540, 65535, 65535, 65535, 65535, 65535),
+    ]
+
 
 def test_remote_control_owner_mismatch_does_not_clear_slot() -> None:
     reader, _ = make_remote_ready_reader()
