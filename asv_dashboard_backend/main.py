@@ -13,7 +13,7 @@ from fastapi.responses import StreamingResponse
 
 from .config import BridgeSettings
 from .frames import FrameTooLargeError, build_underwater_payload
-from .state import AsvLiveStatus, BridgeState, VisionMetadata
+from .state import AsvLiveStatus, BridgeState, ControlModePayload, VisionMetadata
 from .telemetry import ActuatorCommand, PixhawkTelemetry, PixhawkTelemetryReader
 
 
@@ -57,7 +57,7 @@ def create_app(
         CORSMiddleware,
         allow_origins=list(resolved_settings.cors_origins),
         allow_credentials=False,
-        allow_methods=["GET"],
+        allow_methods=["GET", "PUT"],
         allow_headers=["Accept", "Content-Type"],
     )
     app.state.settings = resolved_settings
@@ -70,6 +70,15 @@ def create_app(
     @app.get("/api/status", response_model=AsvLiveStatus)
     async def get_status() -> AsvLiveStatus:
         return resolved_state.status
+
+    @app.get("/api/control/mode", response_model=ControlModePayload)
+    async def get_control_mode() -> ControlModePayload:
+        return ControlModePayload(mode=resolved_state.control_mode)
+
+    @app.put("/api/control/mode", response_model=ControlModePayload)
+    async def put_control_mode(update: ControlModePayload) -> ControlModePayload:
+        mode = resolved_state.set_control_mode(update.mode)
+        return ControlModePayload(mode=mode)
 
     @app.get("/api/telemetry", response_model=PixhawkTelemetry)
     async def get_telemetry() -> PixhawkTelemetry:

@@ -54,6 +54,65 @@ def test_control_mode_payload_rejects_invalid_case_and_extra_fields() -> None:
     with pytest.raises(ValidationError):
         ControlModePayload.model_validate({"mode": "MANUAL", "extra": True})
 
+def test_control_mode_http_defaults_manual_and_changes_without_restarting_app() -> None:
+    app = create_app(settings=settings())
+
+    with TestClient(app) as client:
+        initial = client.get("/api/control/mode")
+        autonomous = client.put(
+            "/api/control/mode",
+            json={"mode": "AUTONOMOUS"},
+        )
+        after_autonomous = client.get("/api/control/mode")
+        manual = client.put(
+            "/api/control/mode",
+            json={"mode": "MANUAL"},
+        )
+        after_manual = client.get("/api/control/mode")
+
+    assert initial.status_code == 200
+    assert initial.json() == {"mode": "MANUAL"}
+    assert autonomous.status_code == 200
+    assert autonomous.json() == {"mode": "AUTONOMOUS"}
+    assert after_autonomous.status_code == 200
+    assert after_autonomous.json() == {"mode": "AUTONOMOUS"}
+    assert manual.status_code == 200
+    assert manual.json() == {"mode": "MANUAL"}
+    assert after_manual.status_code == 200
+    assert after_manual.json() == {"mode": "MANUAL"}
+
+
+def test_control_mode_http_rejects_invalid_payload() -> None:
+    app = create_app(settings=settings())
+
+    with TestClient(app) as client:
+        response = client.put(
+            "/api/control/mode",
+            json={"mode": "manual"},
+        )
+
+    assert response.status_code == 422
+
+
+def test_control_mode_preflight_allows_configured_dashboard_origin() -> None:
+    app = create_app(settings=settings())
+
+    with TestClient(app) as client:
+        response = client.options(
+            "/api/control/mode",
+            headers={
+                "Origin": "https://dashboard.example.test",
+                "Access-Control-Request-Method": "PUT",
+                "Access-Control-Request-Headers": "content-type",
+            },
+        )
+
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == (
+        "https://dashboard.example.test"
+    )
+    assert "PUT" in response.headers["access-control-allow-methods"]
+
 
 class CapturingTelemetryReader:
     def __init__(self) -> None:
