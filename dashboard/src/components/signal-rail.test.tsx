@@ -1,7 +1,9 @@
-import { render, screen } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { cleanup, render, screen } from '@testing-library/react'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { SignalRail } from './signal-rail'
+
+afterEach(cleanup)
 
 const live = {
   id: 'default',
@@ -42,5 +44,31 @@ describe('SignalRail', () => {
     ).toHaveAttribute('aria-pressed', 'false')
     expect(screen.queryByText('AUTO / ONBOARD')).not.toBeInTheDocument()
     expect(screen.queryByText(/RC MANUAL|MAVLink/i)).not.toBeInTheDocument()
+  })
+
+  it('shows unavailable runtime mode without changing the toggle labels', () => {
+    render(
+      <SignalRail
+        live={live}
+        telemetryConnected={false}
+        telemetryStatus="error"
+        controlMode={null}
+        controlModeCanEdit={false}
+        controlModeLoading={false}
+        controlModeReadOnly={false}
+        controlModeUpdating={false}
+        controlModeError={null}
+        onControlModeChange={vi.fn()}
+      />,
+    )
+
+    expect(
+      screen.getByText('Unavailable', { selector: 'dd' }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'MANUAL' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'AUTONOMOUS' }),
+    ).toBeInTheDocument()
+    expect(screen.queryByText('AUTO / ONBOARD')).not.toBeInTheDocument()
   })
 })

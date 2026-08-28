@@ -125,6 +125,48 @@ describe('DashboardShell', () => {
     fireEvent.click(screen.getByRole('button', { name: 'AUTONOMOUS' }))
     expect(onControlModeChange).toHaveBeenCalledWith('AUTONOMOUS')
   })
+  it('forwards control mode loading and fixture state to SignalRail', () => {
+    const { rerender } = render(
+      <DashboardShell
+        mode="direct"
+        live={liveStatus}
+        telemetry={telemetry}
+        telemetryRealtimeStatus="connected"
+        underwaterFrame={underwaterFrame}
+        controlMode="AUTONOMOUS"
+        controlModeCanEdit={false}
+        controlModeLoading={false}
+        controlModeReadOnly
+        controlModeUpdating={false}
+        controlModeError={null}
+        onControlModeChange={vi.fn()}
+      />,
+    )
+
+    expect(screen.getByRole('note')).toHaveTextContent(
+      'Fixture mode is read-only.',
+    )
+
+    rerender(
+      <DashboardShell
+        mode="direct"
+        live={liveStatus}
+        telemetry={telemetry}
+        telemetryRealtimeStatus="connected"
+        underwaterFrame={underwaterFrame}
+        controlMode={null}
+        controlModeCanEdit={false}
+        controlModeLoading
+        controlModeReadOnly={false}
+        controlModeUpdating={false}
+        controlModeError={null}
+        onControlModeChange={vi.fn()}
+      />,
+    )
+
+    expect(screen.getByText('Loading control mode…')).toBeInTheDocument()
+    expect(screen.queryByRole('note')).not.toBeInTheDocument()
+  })
 
 
   it('keeps mission controls in direct mode without replacing live GPS', () => {

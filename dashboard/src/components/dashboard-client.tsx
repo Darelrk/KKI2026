@@ -29,6 +29,8 @@ export function DashboardClient({ asvId, mode }: DashboardClientProps) {
       telemetryRealtimeStatus={telemetry.realtimeStatus}
       controlMode={controlMode.mode}
       controlModeCanEdit={controlMode.canEdit}
+      controlModeLoading={controlMode.isLoading}
+      controlModeReadOnly={controlMode.readOnly}
       controlModeUpdating={controlMode.isUpdating}
       controlModeError={controlMode.error}
       onControlModeChange={controlMode.updateMode}

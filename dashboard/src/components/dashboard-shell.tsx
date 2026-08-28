@@ -36,6 +36,8 @@ type DashboardShellProps = {
   visionMetadataStatus?: VisionRealtimeStatus
   controlMode?: ControlMode | null
   controlModeCanEdit?: boolean
+  controlModeLoading?: boolean
+  controlModeReadOnly?: boolean
   controlModeUpdating?: boolean
   controlModeError?: Error | null
   onControlModeChange?: (mode: ControlMode) => void
@@ -53,6 +55,8 @@ export function DashboardShell({
   visionMetadataStatus = 'error',
   controlMode = null,
   controlModeCanEdit = false,
+  controlModeLoading = false,
+  controlModeReadOnly = false,
   controlModeUpdating = false,
   controlModeError = null,
   onControlModeChange = () => undefined,
@@ -148,6 +152,8 @@ export function DashboardShell({
             telemetryStatus={displayTelemetryStatus}
             controlMode={controlMode}
             controlModeCanEdit={controlModeCanEdit}
+            controlModeLoading={controlModeLoading}
+            controlModeReadOnly={controlModeReadOnly}
             controlModeUpdating={controlModeUpdating}
             controlModeError={controlModeError}
             onControlModeChange={onControlModeChange}

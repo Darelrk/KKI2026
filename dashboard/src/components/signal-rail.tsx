@@ -13,6 +13,8 @@ type SignalRailProps = {
   telemetryStatus: ConnectionStatus
   controlMode?: ControlMode | null
   controlModeCanEdit?: boolean
+  controlModeLoading?: boolean
+  controlModeReadOnly?: boolean
   controlModeUpdating?: boolean
   controlModeError?: Error | null
   onControlModeChange?: (mode: ControlMode) => void
@@ -24,6 +26,8 @@ export function SignalRail({
   telemetryStatus,
   controlMode = null,
   controlModeCanEdit = false,
+  controlModeLoading = false,
+  controlModeReadOnly = false,
   controlModeUpdating = false,
   controlModeError = null,
   onControlModeChange = () => undefined,
@@ -85,6 +89,8 @@ export function SignalRail({
       <ControlModeToggle
         mode={controlMode}
         canEdit={controlModeCanEdit}
+        isLoading={controlModeLoading}
+        readOnly={controlModeReadOnly}
         isUpdating={controlModeUpdating}
         updateError={controlModeError}
         onChange={onControlModeChange}

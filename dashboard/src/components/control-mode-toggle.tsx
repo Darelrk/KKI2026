@@ -4,6 +4,8 @@ type ControlModeToggleProps = {
   mode: ControlMode | null
   canEdit: boolean
   isUpdating: boolean
+  isLoading: boolean
+  readOnly: boolean
   updateError: Error | null
   onChange: (mode: ControlMode) => void
 }
@@ -14,10 +16,12 @@ export function ControlModeToggle({
   mode,
   canEdit,
   isUpdating,
+  isLoading,
+  readOnly,
   updateError,
   onChange,
 }: ControlModeToggleProps) {
-  const disabled = !canEdit || isUpdating
+  const disabled = !canEdit || isUpdating || isLoading
 
   const handleChange = (nextMode: ControlMode) => {
     if (disabled || mode === null || mode === nextMode) return
@@ -53,13 +57,17 @@ export function ControlModeToggle({
         <p className="control-mode-toggle__status" role="status">
           Updating control mode…
         </p>
+      ) : isLoading ? (
+        <p className="control-mode-toggle__status" role="status">
+          Loading control mode…
+        </p>
       ) : null}
       {updateError ? (
         <p className="control-mode-toggle__error" role="alert">
           {updateError.message}
         </p>
       ) : null}
-      {!canEdit && !isUpdating ? (
+      {readOnly && !isUpdating && !isLoading ? (
         <p className="control-mode-toggle__note" role="note">
           Fixture mode is read-only.
         </p>

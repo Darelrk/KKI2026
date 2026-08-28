@@ -66,6 +66,8 @@ describe('DashboardClient states', () => {
       screen.getByRole('heading', { name: 'Mission route' }),
     ).toBeInTheDocument()
     expect(screen.queryByText('Telemetry unavailable')).not.toBeInTheDocument()
+    expect(screen.getByText('Loading control mode…')).toBeInTheDocument()
+    expect(screen.queryByRole('note')).not.toBeInTheDocument()
   })
 
   it('keeps the dashboard available when the live status request fails', () => {

@@ -13,6 +13,8 @@ describe('ControlModeToggle', () => {
         mode="MANUAL"
         canEdit
         isUpdating={false}
+        isLoading={false}
+        readOnly={false}
         updateError={null}
         onChange={onChange}
       />,
@@ -40,6 +42,8 @@ describe('ControlModeToggle', () => {
         mode="MANUAL"
         canEdit
         isUpdating
+        isLoading={false}
+        readOnly={false}
         updateError={null}
         onChange={onChange}
       />,
@@ -56,19 +60,42 @@ describe('ControlModeToggle', () => {
     fireEvent.click(screen.getByRole('button', { name: 'AUTONOMOUS' }))
     expect(onChange).not.toHaveBeenCalled()
   })
+  it('announces control mode loading without a fixture note', () => {
+    render(
+      <ControlModeToggle
+        mode={null}
+        canEdit={false}
+        isUpdating={false}
+        isLoading
+        readOnly={false}
+        updateError={null}
+        onChange={vi.fn()}
+      />,
+    )
+
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'Loading control mode…',
+    )
+    expect(screen.queryByRole('note')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'MANUAL' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'AUTONOMOUS' })).toBeDisabled()
+  })
 
   it('announces an update error', () => {
     render(
       <ControlModeToggle
         mode="MANUAL"
-        canEdit
+        canEdit={false}
         isUpdating={false}
+        isLoading={false}
         updateError={new Error('server rejected mode')}
+        readOnly={false}
         onChange={vi.fn()}
       />,
     )
 
     expect(screen.getByRole('alert')).toHaveTextContent('server rejected mode')
+    expect(screen.queryByRole('note')).not.toBeInTheDocument()
   })
 
   it('marks fixture mode as read-only', () => {
@@ -78,7 +105,9 @@ describe('ControlModeToggle', () => {
         mode="AUTONOMOUS"
         canEdit={false}
         isUpdating={false}
+        isLoading={false}
         updateError={null}
+        readOnly
         onChange={onChange}
       />,
     )
@@ -105,6 +134,8 @@ describe('ControlModeToggle', () => {
         mode={null}
         canEdit
         isUpdating={false}
+        isLoading={false}
+        readOnly={false}
         updateError={null}
         onChange={onChange}
       />,
