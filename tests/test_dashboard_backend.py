@@ -142,9 +142,16 @@ def test_autonomous_mode_change_clears_remote_reader() -> None:
             "/api/control/mode",
             json={"mode": "AUTONOMOUS"},
         )
+        repeated_response = client.put(
+            "/api/control/mode",
+            json={"mode": "AUTONOMOUS"},
+        )
 
     assert response.status_code == 200
-    assert reader.clears == [None]
+    assert response.json() == {"mode": "AUTONOMOUS"}
+    assert repeated_response.status_code == 200
+    assert repeated_response.json() == {"mode": "AUTONOMOUS"}
+    assert reader.clears == [None, None]
 
 
 def actuator_settings() -> BridgeSettings:

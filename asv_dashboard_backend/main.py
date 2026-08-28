@@ -92,9 +92,8 @@ def create_app(
 
     @app.put("/api/control/mode", response_model=ControlModePayload)
     async def put_control_mode(update: ControlModePayload) -> ControlModePayload:
-        previous_mode = resolved_state.control_mode
         mode = resolved_state.set_control_mode(update.mode)
-        if mode == "AUTONOMOUS" and previous_mode != mode:
+        if mode == "AUTONOMOUS":
             clear_remote_control()
         return ControlModePayload(mode=mode)
 
