@@ -1,6 +1,9 @@
 # Install cloudflared as a system service separately.
 # The existing camera fallback keeps its browser surface outside this ingress.
-# The remote host below explicitly exposes one approved Go2RTC surface.
+# The remote app requests the surface source with `?src=atas`.
+# cloudflared path matching does not inspect query strings, so path routing cannot
+# enforce `src=atas` against a caller. Strict source isolation would require a
+# separate explicitly scoped proxy/Go2RTC configuration and is outside this implementation.
 # Cloudflare Tunnel is transport/TLS only; it provides no application authentication.
 tunnel: replace-with-tunnel-id
 credentials-file: /etc/cloudflared/replace-with-tunnel-id.json
