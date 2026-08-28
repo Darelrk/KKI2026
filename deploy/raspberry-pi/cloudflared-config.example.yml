@@ -1,6 +1,7 @@
 # Install cloudflared as a system service separately.
-# Keep the browser's raw surface camera URL outside this fallback ingress.
-# This bridge only exposes metadata WebSocket and bounded fallback/debug MJPEG.
+# The existing camera fallback keeps its browser surface outside this ingress.
+# The remote host below explicitly exposes one approved Go2RTC surface.
+# Cloudflare Tunnel is transport/TLS only; it provides no application authentication.
 tunnel: replace-with-tunnel-id
 credentials-file: /etc/cloudflared/replace-with-tunnel-id.json
 
@@ -11,4 +12,25 @@ ingress:
   - hostname: camera.example.com
     path: ^/stream\.mjpg$
     service: http://127.0.0.1:8080
+  # Approved remote control/video ingress; no status, telemetry, vision, or actuator POST routes.
+  - hostname: remote.monitor-kapal-pora-pora.web.id
+    path: ^/ws/control/[^/]+$
+    service: http://127.0.0.1:8080
+  - hostname: remote.monitor-kapal-pora-pora.web.id
+    path: ^/api/ws$
+    service: http://127.0.0.1:1984
+  - hostname: remote.monitor-kapal-pora-pora.web.id
+    path: ^/api/webrtc$
+    service: http://127.0.0.1:1984
+  - hostname: remote.monitor-kapal-pora-pora.web.id
+    path: ^/api/stream\.mp4$
+    service: http://127.0.0.1:1984
+  - hostname: remote.monitor-kapal-pora-pora.web.id
+    path: ^/stream/atas$
+    service: http://127.0.0.1:1984
+  - hostname: remote.monitor-kapal-pora-pora.web.id
+    path: ^/.*$
+    service: http_status:404
+
+  # Global fallback for all other hostnames.
   - service: http_status:404
