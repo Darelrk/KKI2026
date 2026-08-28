@@ -2,20 +2,28 @@
 
 from __future__ import annotations
 
-import secrets
 import asyncio
-from datetime import datetime, timezone
+import json
+import secrets
+import time
 from contextlib import asynccontextmanager
+from datetime import datetime, timezone
 
 from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
+from pydantic import ValidationError
 
 from .config import BridgeSettings
+from .control import (
+    ControlAck,
+    ControlError,
+    ControlSessionRegistry,
+    RemoteControlCommand,
+)
 from .frames import FrameTooLargeError, build_underwater_payload
 from .state import AsvLiveStatus, BridgeState, ControlModePayload, VisionMetadata
 from .telemetry import ActuatorCommand, PixhawkTelemetry, PixhawkTelemetryReader
-
 
 def create_app(
     *,
@@ -27,6 +35,13 @@ def create_app(
     resolved_settings = settings or BridgeSettings.from_env()
     resolved_state = state or BridgeState(resolved_settings)
     resolved_telemetry = telemetry_reader or PixhawkTelemetryReader(resolved_settings)
+    control_registry = ControlSessionRegistry()
+    control_sockets: dict[str, WebSocket] = {}
+
+    def clear_remote_control(session_id: str | None = None) -> None:
+        clear = getattr(resolved_telemetry, "clear_remote_control", None)
+        if callable(clear):
+            clear(session_id)
 
     @asynccontextmanager
     async def lifespan(_: FastAPI):
@@ -77,7 +92,10 @@ def create_app(
 
     @app.put("/api/control/mode", response_model=ControlModePayload)
     async def put_control_mode(update: ControlModePayload) -> ControlModePayload:
+        previous_mode = resolved_state.control_mode
         mode = resolved_state.set_control_mode(update.mode)
+        if mode == "AUTONOMOUS" and previous_mode != mode:
+            clear_remote_control()
         return ControlModePayload(mode=mode)
 
     @app.get("/api/telemetry", response_model=PixhawkTelemetry)
@@ -142,6 +160,153 @@ def create_app(
             raise HTTPException(status_code=409, detail="ASV id does not match bridge")
         resolved_state.publish_detection(metadata)
         return metadata
+    @app.websocket("/ws/control/{asv_id}")
+    async def control_websocket(websocket: WebSocket, asv_id: str) -> None:
+        origin = websocket.headers.get("origin")
+        if (
+            asv_id != resolved_settings.asv_id
+            or not origin
+            or origin not in resolved_settings.cors_origins
+            or not resolved_settings.remote_control_enabled
+        ):
+            await websocket.close(code=1008)
+            return
+
+        await websocket.accept()
+        session_id = secrets.token_urlsafe(18)
+        _, previous_owner = control_registry.open(asv_id, session_id)
+        control_sockets[session_id] = websocket
+        if previous_owner is not None:
+            clear_remote_control(previous_owner)
+            previous_socket = control_sockets.get(previous_owner)
+            if previous_socket is not None:
+                try:
+                    await previous_socket.close(code=4001)
+                except (RuntimeError, WebSocketDisconnect):
+                    pass
+
+        async def send_error(code: str, message: str) -> None:
+            error = ControlError(type="error", code=code, message=message)
+            await websocket.send_json(error.model_dump(mode="json"))
+
+        async def send_ack(
+            command: RemoteControlCommand,
+            accepted: bool,
+            reason: str | None,
+            server_received_at_ms: int,
+        ) -> None:
+            ack = ControlAck(
+                type="ack",
+                seq=command.seq,
+                accepted=accepted,
+                reason=reason,
+                client_sent_at_ms=command.client_sent_at_ms,
+                server_received_at_ms=server_received_at_ms,
+            )
+            await websocket.send_json(ack.model_dump(mode="json"))
+
+        def reader_rejection_reason() -> str | None:
+            check = getattr(resolved_telemetry, "remote_control_rejection_reason", None)
+            if not callable(check):
+                return None
+            try:
+                reason = check()
+            except Exception:
+                return "pixhawk_unavailable"
+            return reason if reason in {
+                "remote_control_disabled",
+                "runtime_mode_autonomous",
+                "pixhawk_unavailable",
+                "flightmode_not_manual",
+                "pilot_input_active",
+            } else ("pixhawk_unavailable" if reason is not None else None)
+
+        try:
+            while True:
+                try:
+                    incoming = await websocket.receive()
+                except WebSocketDisconnect:
+                    break
+                if incoming.get("type") == "websocket.disconnect":
+                    break
+                text = incoming.get("text")
+                if not isinstance(text, str):
+                    await send_error(
+                        "invalid_message",
+                        "control frame must be a text JSON object",
+                    )
+                    continue
+                try:
+                    payload = json.loads(text)
+                except (json.JSONDecodeError, TypeError, UnicodeDecodeError):
+                    await send_error(
+                        "invalid_json",
+                        "control frame must be valid JSON",
+                    )
+                    continue
+                try:
+                    command = RemoteControlCommand.model_validate(payload)
+                except ValidationError:
+                    await send_error(
+                        "invalid_message",
+                        "control frame does not match the control schema",
+                    )
+                    continue
+
+                server_received_at_ms = time.time_ns() // 1_000_000
+                sequence_reason = control_registry.validate_sequence(
+                    session_id, command.seq
+                )
+                if sequence_reason is not None:
+                    await send_ack(
+                        command,
+                        accepted=False,
+                        reason=sequence_reason,
+                        server_received_at_ms=server_received_at_ms,
+                    )
+                    continue
+
+                received_at = time.monotonic()
+                if not command.enabled:
+                    clear_remote_control(session_id)
+                    await send_ack(
+                        command,
+                        accepted=True,
+                        reason=None,
+                        server_received_at_ms=server_received_at_ms,
+                    )
+                    continue
+
+                reason: str | None = None
+                if not resolved_settings.remote_control_enabled:
+                    reason = "remote_control_disabled"
+                elif resolved_state.control_mode != "MANUAL":
+                    reason = "runtime_mode_autonomous"
+                else:
+                    reason = reader_rejection_reason()
+
+                submit = getattr(resolved_telemetry, "submit_remote_control", None)
+                if reason is None and not callable(submit):
+                    reason = "pixhawk_unavailable"
+                if reason is None:
+                    try:
+                        submit(command, session_id, received_at)
+                    except Exception:
+                        reason = "pixhawk_unavailable"
+
+                await send_ack(
+                    command,
+                    accepted=reason is None,
+                    reason=reason,
+                    server_received_at_ms=server_received_at_ms,
+                )
+        finally:
+            if control_registry.is_owner(asv_id, session_id):
+                clear_remote_control(session_id)
+                control_registry.release(asv_id, session_id)
+            if control_sockets.get(session_id) is websocket:
+                del control_sockets[session_id]
+
 
     @app.websocket("/ws/vision/{asv_id}")
     async def vision_metadata_websocket(websocket: WebSocket, asv_id: str) -> None:

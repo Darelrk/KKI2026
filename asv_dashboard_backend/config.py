@@ -30,6 +30,8 @@ class BridgeSettings:
     pixhawk_heartbeat_timeout: float = 1.0
     pixhawk_track_max_points: int = 500
     pixhawk_reconnect_seconds: float = 0.5
+    remote_control_enabled: bool = False
+    remote_command_timeout: float = 0.5
     model_actuators_enabled: bool = False
     actuator_control_token: str | None = None
     actuator_command_timeout: float = 2.5
@@ -63,6 +65,14 @@ class BridgeSettings:
             raise ConfigError("ASV_PIXHAWK_RECONNECT_SECONDS must be positive")
         if self.actuator_command_timeout <= 0:
             raise ConfigError("ASV_ACTUATOR_COMMAND_TIMEOUT must be positive")
+        if not 0 < self.remote_command_timeout <= 0.5:
+            raise ConfigError(
+                "ASV_REMOTE_COMMAND_TIMEOUT must be greater than 0 and at most 0.5"
+            )
+        if self.remote_control_enabled and not self.pixhawk_enabled:
+            raise ConfigError(
+                "ASV_PIXHAWK_ENABLED must be true when remote control is enabled"
+            )
         if self.model_actuators_enabled and not self.pixhawk_enabled:
             raise ConfigError(
                 "ASV_PIXHAWK_ENABLED must be true when model actuators are enabled"
@@ -95,6 +105,12 @@ class BridgeSettings:
             pixhawk_track_max_points=_int_env("ASV_PIXHAWK_TRACK_MAX_POINTS", 500),
             pixhawk_reconnect_seconds=_float_env(
                 "ASV_PIXHAWK_RECONNECT_SECONDS", 0.5
+            ),
+            remote_control_enabled=_bool_env(
+                "ASV_REMOTE_CONTROL_ENABLED", False
+            ),
+            remote_command_timeout=_float_env(
+                "ASV_REMOTE_COMMAND_TIMEOUT", 0.5
             ),
             model_actuators_enabled=_bool_env(
                 "ASV_MODEL_ACTUATORS_ENABLED", False
