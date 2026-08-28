@@ -446,6 +446,29 @@ def test_remote_control_expiry_at_exact_timeout_releases_without_sending_pwm(
         (7, 9, 0, 0, 0, 0, 0, 0, 0, 0),
     ]
 
+
+def test_remote_control_expiry_after_timeout_releases_without_sending_again(
+    monkeypatch,
+) -> None:
+    now = [10.0]
+    monkeypatch.setattr(
+        "asv_dashboard_backend.telemetry.time.monotonic", lambda: now[0]
+    )
+    reader, connection = make_remote_ready_reader()
+    reader.submit_remote_control(make_remote_command(), "session-a", 10.0)
+
+    reader._apply_actuator_command()
+    now[0] = 10.501
+    reader._apply_actuator_command()
+    sent_count = len(connection.mav.sent)
+    reader._apply_actuator_command()
+
+    assert connection.mav.sent == [
+        (7, 9, 1490, 65535, 1560, 65535, 65535, 65535, 65535, 65535),
+        (7, 9, 0, 0, 0, 0, 0, 0, 0, 0),
+    ]
+    assert sent_count == len(connection.mav.sent)
+
 def test_model_actuator_survives_exact_timeout_boundary(monkeypatch) -> None:
     now = [10.0]
     monkeypatch.setattr(
