@@ -28,9 +28,7 @@ export function useControlMode(
       return queryKey
     },
     onSuccess: (nextMode, _variables, mutationQueryKey) => {
-      if (mutationQueryKey) {
-        queryClient.setQueryData(mutationQueryKey, nextMode)
-      }
+      queryClient.setQueryData(mutationQueryKey, nextMode)
     },
   })
   const updateMode: typeof mutation.mutate =

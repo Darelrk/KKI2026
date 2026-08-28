@@ -1,10 +1,8 @@
 import { asvTelemetrySchema } from './asv-telemetry'
-import {
-  controlModeResponseSchema,
-  type ControlMode,
-} from './control-mode'
+import { controlModeResponseSchema } from './control-mode'
 import { asvLiveSchema } from './asv-types'
 
+import type { ControlMode } from './control-mode'
 import type { AsvLive } from './asv-types'
 import type { AsvTelemetry } from './asv-telemetry'
 

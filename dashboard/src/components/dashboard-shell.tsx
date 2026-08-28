@@ -26,6 +26,7 @@ import type { VisionRealtimeStatus } from '../lib/use-vision-metadata'
 import type { ConnectionStatus } from './connection-bar'
 import type { CameraCaptureHandle } from '../lib/camera-capture'
 
+
 type DashboardShellProps = {
   mode?: AsvDataMode
   live: AsvLive | null | undefined
