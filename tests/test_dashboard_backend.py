@@ -117,7 +117,7 @@ def test_control_mode_preflight_allows_configured_dashboard_origin() -> None:
 class CapturingTelemetryReader:
     def __init__(self) -> None:
         self.commands = []
-
+        self.clears = []
     async def run(self, _publish) -> None:
         return
 
@@ -129,6 +129,22 @@ class CapturingTelemetryReader:
 
     def submit_actuator_command(self, command) -> None:
         self.commands.append(command)
+    def clear_remote_control(self, session_id=None) -> None:
+        self.clears.append(session_id)
+
+
+def test_autonomous_mode_change_clears_remote_reader() -> None:
+    reader = CapturingTelemetryReader()
+    app = create_app(settings=settings(), telemetry_reader=reader)
+
+    with TestClient(app) as client:
+        response = client.put(
+            "/api/control/mode",
+            json={"mode": "AUTONOMOUS"},
+        )
+
+    assert response.status_code == 200
+    assert reader.clears == [None]
 
 
 def actuator_settings() -> BridgeSettings:
