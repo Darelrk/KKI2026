@@ -19,6 +19,6 @@
     "backend:dev": "python -m uvicorn asv_dashboard_backend.main:app --host 127.0.0.1 --port 8080",
     "backend:test": "python -m pytest -q",
     "backend:compile": "python -m compileall -q asv_dashboard_backend vision_route.py vision_test.py tests",
-    "check": "npm run lint && npm run typecheck && npm run test && npm run backend:test && npm run backend:compile"
+    "check": "npm run lint && npm run typecheck && npm run test && npm run backend:test && npm run backend:compile && npm run check --workspace remote-dashboard"
   }
 }

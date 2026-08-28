@@ -18,7 +18,7 @@ export interface PeerDescription {
 
 export interface PeerConnectionLike {
   connectionState?: string
-  onicecandidate: ((event: { candidate: unknown | null }) => void) | null
+  onicecandidate: ((event: { candidate: { candidate: string } | null }) => void) | null
   ontrack: ((event: { streams?: MediaStream[] }) => void) | null
   onconnectionstatechange: (() => void) | null
   addTransceiver(kind: string, init: { direction: 'recvonly' }): unknown
@@ -73,6 +73,7 @@ export function RemoteSurfaceCamera({
     let peer: PeerConnectionLike | null = null
     let offer: PeerDescription | null = null
     let socketOpen = false
+    const pendingCandidates: string[] = []
 
     const clearFallbackTimer = () => {
       if (fallbackTimerRef.current === null) return
@@ -82,6 +83,8 @@ export function RemoteSurfaceCamera({
 
     const closeResources = () => {
       clearFallbackTimer()
+      socketOpen = false
+      pendingCandidates.length = 0
       if (socket && socket.readyState !== 3) {
         try {
           socket.close(1000, 'surface player stopped')
@@ -110,6 +113,32 @@ export function RemoteSurfaceCamera({
     }
     fallbackHandlerRef.current = switchToFallback
 
+    const sendCandidate = (candidate: string) => {
+      if (disposed || switchedToFallback) return
+      if (!socket || !socketOpen || socket.readyState !== OPEN) {
+        pendingCandidates.push(candidate)
+        return
+      }
+      try {
+        socket.send(JSON.stringify({ type: 'webrtc/candidate', value: candidate }))
+      } catch {
+        switchToFallback()
+      }
+    }
+
+    const flushPendingCandidates = () => {
+      if (!socket || !socketOpen || socket.readyState !== OPEN) return
+      while (pendingCandidates.length > 0) {
+        const candidate = pendingCandidates.shift()!
+        try {
+          socket.send(JSON.stringify({ type: 'webrtc/candidate', value: candidate }))
+        } catch {
+          switchToFallback()
+          return
+        }
+      }
+    }
+
     const sendOffer = () => {
       if (!socket || !socketOpen || !offer || socket.readyState !== OPEN) return
       try {
@@ -134,12 +163,9 @@ export function RemoteSurfaceCamera({
       peer.addTransceiver('video', { direction: 'recvonly' })
       peer.addTransceiver('audio', { direction: 'recvonly' })
       peer.onicecandidate = (event) => {
-        if (disposed || switchedToFallback || !event.candidate || !socket || socket.readyState !== OPEN) return
-        try {
-          socket.send(JSON.stringify({ type: 'webrtc/candidate', value: event.candidate }))
-        } catch {
-          switchToFallback()
-        }
+        if (disposed || switchedToFallback || !event.candidate) return
+        const candidate = event.candidate.candidate
+        if (typeof candidate === 'string') sendCandidate(candidate)
       }
       peer.ontrack = (event) => {
         if (disposed || switchedToFallback) return
@@ -159,6 +185,7 @@ export function RemoteSurfaceCamera({
       socket = signalingFactory(resolvedUrls.signaling)
       socket.onopen = () => {
         socketOpen = true
+        flushPendingCandidates()
         sendOffer()
       }
       socket.onmessage = (event) => {

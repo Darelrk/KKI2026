@@ -75,8 +75,16 @@ describe('ControlChannel', () => {
     socket.open()
     channel.setPwmPair({ steering_pwm: 1400, throttle_pwm: 1600 })
     channel.engage()
+    expect(lastCommand(socket)).toMatchObject({
+      type: 'control',
+      seq: 1,
+      steering_pwm: 1400,
+      throttle_pwm: 1600,
+      enabled: true,
+    })
     channel.setPwmPair({ steering_pwm: 1450, throttle_pwm: 1650 })
-
+    expect(socket.sent).toHaveLength(1)
+    vi.advanceTimersByTime(200)
     expect(lastCommand(socket)).toMatchObject({
       type: 'control',
       seq: 2,
@@ -100,14 +108,18 @@ describe('ControlChannel', () => {
     channel.engage()
     channel.setPwmPair({ steering_pwm: 1100, throttle_pwm: 1900 })
     channel.setPwmPair({ steering_pwm: 1200, throttle_pwm: 1800 })
-    expect(lastCommand(socket)).toMatchObject({ steering_pwm: 1200, throttle_pwm: 1800 })
+    expect(socket.sent).toHaveLength(1)
 
     const beforeRefresh = socket.sent.length
     vi.advanceTimersByTime(199)
     expect(socket.sent).toHaveLength(beforeRefresh)
     vi.advanceTimersByTime(1)
-    expect(socket.sent.length).toBeGreaterThan(beforeRefresh)
-    expect(lastCommand(socket)).toMatchObject({ steering_pwm: 1200, throttle_pwm: 1800, enabled: true })
+    expect(socket.sent).toHaveLength(beforeRefresh + 1)
+    expect(lastCommand(socket)).toMatchObject({
+      steering_pwm: 1200,
+      throttle_pwm: 1800,
+      enabled: true,
+    })
   })
 
   it('releases on explicit release, socket errors, and close without auto-enable', () => {

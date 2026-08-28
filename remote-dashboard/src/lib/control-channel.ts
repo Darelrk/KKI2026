@@ -184,7 +184,6 @@ export class ControlChannel implements ControlChannelLike {
     const parsed = PwmPairSchema.safeParse(pair)
     if (!parsed.success) return false
     this.latestPair = parsed.data
-    if (this.engaged && isOpen(this.socket)) this.sendCurrent(true)
     return true
   }
 

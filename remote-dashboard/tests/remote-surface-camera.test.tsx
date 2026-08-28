@@ -46,7 +46,7 @@ class FakePeerConnection implements PeerConnectionLike {
   readonly transceivers: string[] = []
   readonly remoteDescriptions: RTCSessionDescriptionInit[] = []
   readonly candidates: unknown[] = []
-  onicecandidate: ((event: { candidate: unknown | null }) => void) | null = null
+  onicecandidate: PeerConnectionLike['onicecandidate'] = null
   ontrack: ((event: { streams?: MediaStream[] }) => void) | null = null
   onconnectionstatechange: (() => void) | null = null
   connectionState: RTCPeerConnectionState = 'new'
@@ -125,6 +125,35 @@ describe('RemoteSurfaceCamera', () => {
     expect(container.querySelector('img')).toHaveAttribute('src', urls.mjpeg)
     expect(JSON.stringify(container.innerHTML)).not.toMatch(/bawah|vision|model|overlay|canvas/i)
   })
+
+  it('sends ICE candidate strings after socket open, including queued candidates', async () => {
+    render(
+      <RemoteSurfaceCamera
+        urls={urls}
+        signalingFactory={(url) => new FakeSignalingSocket(url)}
+        peerConnectionFactory={() => new FakePeerConnection()}
+      />,
+    )
+    const socket = FakeSignalingSocket.instances[0]!
+    const peer = FakePeerConnection.instances[0]!
+
+    peer.onicecandidate?.({ candidate: { candidate: 'pre-open-candidate' } })
+    expect(socket.sent).toHaveLength(0)
+
+    socket.open()
+    await act(async () => {})
+    expect(socket.sent.map((payload) => JSON.parse(payload))).toContainEqual({
+      type: 'webrtc/candidate',
+      value: 'pre-open-candidate',
+    })
+
+    peer.onicecandidate?.({ candidate: { candidate: 'open-candidate' } })
+    expect(socket.sent.map((payload) => JSON.parse(payload))).toContainEqual({
+      type: 'webrtc/candidate',
+      value: 'open-candidate',
+    })
+  })
+
 
   it('switches to raw fallback immediately on signaling close and cleans resources', async () => {
     const { container } = render(
