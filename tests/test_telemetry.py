@@ -427,7 +427,7 @@ def test_remote_control_invalid_mutation_releases_without_sending_bad_pwm(
     assert len(connection.mav.sent) == 4
 
 
-def test_remote_control_expiry_releases_channels_without_model_fallback(
+def test_remote_control_expiry_at_exact_timeout_releases_without_sending_pwm(
     monkeypatch,
 ) -> None:
     now = [10.0]
@@ -438,10 +438,13 @@ def test_remote_control_expiry_releases_channels_without_model_fallback(
     reader.submit_remote_control(make_remote_command(), "session-a", 10.0)
 
     reader._apply_actuator_command()
-    now[0] = 10.501
+    now[0] = 10.5
     reader._apply_actuator_command()
 
-    assert connection.mav.sent[-1] == (7, 9, 0, 0, 0, 0, 0, 0, 0, 0)
+    assert connection.mav.sent == [
+        (7, 9, 1490, 65535, 1560, 65535, 65535, 65535, 65535, 65535),
+        (7, 9, 0, 0, 0, 0, 0, 0, 0, 0),
+    ]
 
 
 def test_remote_control_owner_mismatch_does_not_clear_slot() -> None:

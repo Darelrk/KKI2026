@@ -270,7 +270,7 @@ class PixhawkTelemetryReader:
                 not lane_enabled
                 or command is None
                 or not command.enabled
-                or command_age > command_timeout
+                or command_age >= command_timeout
                 or heartbeat_age > self.settings.pixhawk_heartbeat_timeout
                 or self._mode != "MANUAL"
                 or pilot_input_age <= 1.5
