@@ -42,6 +42,11 @@ def test_control_mode_defaults_to_manual_and_setter_transitions_both_directions(
     assert state.control_mode == "MANUAL"
 
 
+def test_control_mode_setter_rejects_lowercase_mode() -> None:
+    with pytest.raises(ValidationError):
+        BridgeState(settings()).set_control_mode("manual")
+
+
 def test_control_mode_payload_rejects_invalid_case_and_extra_fields() -> None:
     with pytest.raises(ValidationError):
         ControlModePayload.model_validate({"mode": "manual"})
