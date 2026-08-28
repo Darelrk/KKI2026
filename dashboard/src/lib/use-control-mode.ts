@@ -27,6 +27,8 @@ export function useControlMode(
       queryClient.setQueryData(queryKey, nextMode)
     },
   })
+  const updateMode: typeof mutation.mutate =
+    dataMode === 'fixture' ? () => {} : mutation.mutate
 
   return {
     mode: query.data ?? null,
@@ -36,6 +38,6 @@ export function useControlMode(
     isUpdating: mutation.isPending,
     canEdit: dataMode === 'direct' && query.isSuccess,
     readOnly: dataMode === 'fixture',
-    updateMode: mutation.mutate,
+    updateMode,
   }
 }

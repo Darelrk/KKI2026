@@ -114,6 +114,11 @@ describe('useControlMode', () => {
 
     expect(result.current.readOnly).toBe(true)
     expect(result.current.canEdit).toBe(false)
+    await act(async () => {
+      result.current.updateMode('MANUAL')
+      await Promise.resolve()
+    })
+    expect(result.current.mode).toBe('AUTONOMOUS')
     expect(fetchControlMode).not.toHaveBeenCalled()
     expect(putControlMode).not.toHaveBeenCalled()
   })
