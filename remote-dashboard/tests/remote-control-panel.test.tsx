@@ -57,4 +57,13 @@ describe('RemoteControlPanel', () => {
     expect(channel.setPwmPair).toHaveBeenCalledWith({ steering_pwm: 1501, throttle_pwm: 1500 })
     expect(channel.release).toHaveBeenCalledTimes(2)
   })
+
+  it('releases on unmount', () => {
+    const channel = makeChannel()
+    const { unmount } = render(<RemoteControlPanel channel={channel} />)
+
+    unmount()
+
+    expect(channel.release).toHaveBeenCalledTimes(1)
+  })
 })

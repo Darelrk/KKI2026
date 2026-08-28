@@ -15,6 +15,7 @@ from asv_dashboard_backend.control import (
     RemoteControlCommand,
 )
 from asv_dashboard_backend.main import create_app
+from asv_dashboard_backend.state import BridgeState
 
 
 VALID = {
@@ -178,6 +179,15 @@ def test_ack_reason_coherence_and_error_codes_are_strict() -> None:
     with pytest.raises(ValidationError):
         ControlAck.model_validate({**accepted.model_dump(), "accepted": 1})
 
+    for change in (
+        {"seq": 0},
+        {"client_sent_at_ms": -1},
+        {"server_received_at_ms": 9_007_199_254_740_992},
+        {"reason": "unknown"},
+    ):
+        with pytest.raises(ValidationError):
+            ControlAck.model_validate({**accepted.model_dump(), **change})
+
     for code in ("invalid_json", "invalid_message", "origin_not_allowed"):
         assert ControlError.model_validate(
             {"type": "error", "code": code, "message": "internal"}
@@ -205,6 +215,9 @@ def test_registry_keeps_one_active_session_strict_sequence_and_owner_release() -
     assert previous == first
     assert registry.validate_sequence(first, 2) == "superseded"
     assert registry.validate_sequence(second, 1) is None
+    assert registry.validate_sequence(second, 3) is None
+    assert registry.validate_sequence(second, 2) == "stale_sequence"
+    assert registry.validate_sequence(second, 3) == "stale_sequence"
     assert registry.is_owner("default", second)
     assert not registry.release("default", first)
     assert registry.is_owner("default", second)
@@ -256,11 +269,34 @@ def test_remote_websocket_malformed_json_gets_error_and_stays_alive() -> None:
     assert ack["accepted"] is True
 
 
+def test_remote_websocket_non_object_json_gets_error_and_stays_alive() -> None:
+    reader = FakeRemoteReader()
+    app = create_app(settings=remote_settings(), telemetry_reader=reader)
+
+    with TestClient(app) as client:
+        with client.websocket_connect(
+            "/ws/control/default",
+            headers={"origin": "https://remote.example.test"},
+        ) as socket:
+            socket.send_text("[]")
+            error = socket.receive_json()
+            socket.send_json(VALID)
+            ack = socket.receive_json()
+
+    assert error == {
+        "type": "error",
+        "code": "invalid_message",
+        "message": "control frame does not match the control schema",
+    }
+    assert ack["accepted"] is True
+
+
 def test_remote_websocket_rejects_wrong_asv_origin_and_disabled_feature() -> None:
     cases = (
         (remote_settings(), "/ws/control/other", "https://remote.example.test"),
         (remote_settings(), "/ws/control/default", "https://other.example.test"),
         (replace(remote_settings(), remote_control_enabled=False), "/ws/control/default", "https://remote.example.test"),
+        (remote_settings(), "/ws/control/default", ""),
     )
 
     for settings, path, origin in cases:
@@ -270,6 +306,30 @@ def test_remote_websocket_rejects_wrong_asv_origin_and_disabled_feature() -> Non
                 with client.websocket_connect(path, headers={"origin": origin}):
                     pass
         assert error.value.code == 1008
+
+
+def test_remote_websocket_rejects_autonomous_runtime_mode_without_submit() -> None:
+    reader = FakeRemoteReader()
+    settings = remote_settings()
+    state = BridgeState(settings)
+    state.set_control_mode("AUTONOMOUS")
+    app = create_app(
+        settings=settings,
+        state=state,
+        telemetry_reader=reader,
+    )
+
+    with TestClient(app) as client:
+        with client.websocket_connect(
+            "/ws/control/default",
+            headers={"origin": "https://remote.example.test"},
+        ) as socket:
+            socket.send_json(VALID)
+            ack = socket.receive_json()
+
+    assert ack["accepted"] is False
+    assert ack["reason"] == "runtime_mode_autonomous"
+    assert reader.commands == []
 
 
 def test_remote_websocket_new_session_supersedes_old_with_4001() -> None:

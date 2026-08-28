@@ -219,4 +219,27 @@ describe('RemoteSurfaceCamera', () => {
     expect(container.querySelector('img')).toHaveAttribute('src', urls.mjpeg)
     expect(FakeSignalingSocket.instances).toHaveLength(1)
   })
+
+  it('switches to raw fallback immediately on signaling error and cleans resources', async () => {
+    const { container } = render(
+      <RemoteSurfaceCamera
+        urls={urls}
+        signalingFactory={(url) => new FakeSignalingSocket(url)}
+        peerConnectionFactory={() => new FakePeerConnection()}
+      />,
+    )
+    const socket = FakeSignalingSocket.instances[0]!
+    socket.open()
+    await act(async () => {})
+    const peer = FakePeerConnection.instances[0]!
+
+    await act(async () => {
+      socket.onerror?.()
+    })
+
+    expect(peer.closed).toBe(true)
+    expect(container.querySelector('video')).toBeNull()
+    expect(container.querySelector('img')).toHaveAttribute('src', urls.mjpeg)
+    expect(FakeSignalingSocket.instances).toHaveLength(1)
+  })
 })

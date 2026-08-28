@@ -41,6 +41,12 @@ describe('remote control protocol', () => {
     }).success).toBe(false)
   })
 
+  it('rejects non-object command payloads', () => {
+    for (const value of [null, [], 'control', 1, true]) {
+      expect(ControlCommandSchema.safeParse(value).success).toBe(false)
+    }
+  })
+
   it.each([
     ['fractional sequence', { seq: 1.5 }],
     ['string PWM', { steering_pwm: '1500' }],
@@ -72,6 +78,7 @@ describe('remote control protocol', () => {
       client_sent_at_ms: 10,
       server_received_at_ms: 11,
     }).success).toBe(false)
+
     expect(ControlErrorSchema.safeParse({
       type: 'error',
       code: CONTROL_ERROR_CODES[0],
@@ -82,6 +89,22 @@ describe('remote control protocol', () => {
       code: 'secret_leak',
       message: 'bad',
       extra: true,
+    }).success).toBe(false)
+  })
+  it.each([
+    ['zero sequence', { seq: 0 }],
+    ['negative client timestamp', { client_sent_at_ms: -1 }],
+    ['unsafe server timestamp', { server_received_at_ms: MAX_SAFE_INTEGER + 1 }],
+    ['unknown rejection reason', { accepted: false, reason: 'unknown' }],
+  ])('rejects invalid acknowledgement %s', (_name, patch) => {
+    expect(ControlAckSchema.safeParse({
+      type: 'ack',
+      seq: 2,
+      accepted: true,
+      reason: null,
+      client_sent_at_ms: 10,
+      server_received_at_ms: 11,
+      ...patch,
     }).success).toBe(false)
   })
 })
