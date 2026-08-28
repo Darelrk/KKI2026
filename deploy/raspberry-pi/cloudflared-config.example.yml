@@ -26,7 +26,7 @@ ingress:
     path: ^/api/stream\.mp4$
     service: http://127.0.0.1:1984
   - hostname: remote.monitor-kapal-pora-pora.web.id
-    path: ^/stream/atas$
+    path: ^/api/stream\.mjpeg$
     service: http://127.0.0.1:1984
   - hostname: remote.monitor-kapal-pora-pora.web.id
     path: ^/.*$
