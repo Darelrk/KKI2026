@@ -46,7 +46,7 @@
 - `ASV_REMOTE_CONTROL_ENABLED` default `false`; enabling membutuhkan `ASV_PIXHAWK_ENABLED=true`. `ASV_REMOTE_COMMAND_TIMEOUT` default/deployment `0.5`, dan konfigurasi menolak nilai `>0.5`.
 - Deadman memakai `time.monotonic()` server sejak command diterima. Reader hanya mengirim latest remote command yang masih owner, berumur `<=0.5` detik, dan lolos feature flag, `BridgeState.control_mode == MANUAL`, connection/heartbeat, observed `_mode == MANUAL`, pilot-input guard, serta validasi actuator.
 - `POST /api/control/actuator` dan `ASV_CONTROL_TOKEN` tetap untuk publisher/model Pi-only; remote channel tidak memakai endpoint tersebut. CORS HTTP dan Origin WebSocket exact allowlist tanpa wildcard, `allow_credentials=false`; allowlist bukan autentikasi.
-- Camera hanya Go2RTC `wss://remote.monitor-kapal-pora-pora.web.id/api/ws?src=atas`, `/api/webrtc`, `/api/stream.mp4`, dan raw fallback `https://remote.monitor-kapal-pora-pora.web.id/stream/atas`. Tidak ada `bawah`, `/ws/vision`, vision metadata, model, YOLO, canvas, atau overlay.
+- Camera hanya Go2RTC `wss://remote.monitor-kapal-pora-pora.web.id/api/ws?src=atas`, `/api/webrtc`, `/api/stream.mp4`, dan raw fallback `https://remote.monitor-kapal-pora-pora.web.id/api/stream.mjpeg?src=atas`. Tidak ada `bawah`, `/ws/vision`, vision metadata, model, YOLO, canvas, atau overlay.
 
 ---
 
@@ -180,12 +180,12 @@ git commit -m "feat: enforce remote PWM deadman in Pixhawk reader"
 - [ ] **Step 1: Tulis failing config check.**
 
 ```bash
-python -c "from pathlib import Path; p=Path('deploy/raspberry-pi/cloudflared-config.example.yml').read_text(); required=['remote.monitor-kapal-pora-pora.web.id','^/ws/control/','^/api/ws$','^/stream/atas$']; assert all(x in p for x in required)"
+python -c "from pathlib import Path; p=Path('deploy/raspberry-pi/cloudflared-config.example.yml').read_text(); required=['remote.monitor-kapal-pora-pora.web.id','^/ws/control/','^/api/ws$','^/api/stream\\.mjpeg$']; assert all(x in p for x in required)"
 ```
 
 Expected sebelum edit: `AssertionError` karena route minimal remote belum ada.
 
-- [ ] **Step 2: Implementasikan env dan ingress.** Tambahkan `ASV_REMOTE_CONTROL_ENABLED=false` dan `ASV_REMOTE_COMMAND_TIMEOUT=0.5`; pertahankan `ASV_PIXHAWK_ENABLED=false` pada contoh umum. Runtime Pi pengendali mengubah Pixhawk menjadi `true` dan mengisi `ASV_CORS_ORIGINS` dengan exact HTTPS origin Vercel serta optional `http://localhost:3001`; tidak ada wildcard, token, atau secret frontend.
+- [ ] **Step 2: Implementasikan env dan ingress.** Tambahkan `ASV_REMOTE_CONTROL_ENABLED=false` dan `ASV_REMOTE_COMMAND_TIMEOUT=0.5`; pertahankan `ASV_PIXHAWK_ENABLED=false` pada contoh umum. Runtime Pi pengendali mengubah Pixhawk menjadi `true` dan mengisi `ASV_CORS_ORIGINS` dengan exact HTTPS origin Vercel serta origin development `http://localhost:3000` untuk dashboard lama dan `http://localhost:3001` untuk remote workspace bila diperlukan; tidak ada wildcard, token, atau secret frontend.
 
 Tambahkan sebelum catch-all Cloudflare route berikut, tanpa mengganti host lama:
 
@@ -203,7 +203,7 @@ Tambahkan sebelum catch-all Cloudflare route berikut, tanpa mengganti host lama:
     path: ^/api/stream\.mp4$
     service: http://127.0.0.1:1984
   - hostname: remote.monitor-kapal-pora-pora.web.id
-    path: ^/stream/atas$
+    path: ^/api/stream\.mjpeg$
     service: http://127.0.0.1:1984
   - hostname: remote.monitor-kapal-pora-pora.web.id
     path: ^/.*$
@@ -250,7 +250,7 @@ it('uses one surface Go2RTC path', () => {
     signaling: 'wss://remote.monitor-kapal-pora-pora.web.id/api/ws?src=atas',
     webrtc: 'https://remote.monitor-kapal-pora-pora.web.id/api/webrtc',
     streamMp4: 'https://remote.monitor-kapal-pora-pora.web.id/api/stream.mp4',
-    mjpeg: 'https://remote.monitor-kapal-pora-pora.web.id/stream/atas',
+    mjpeg: 'https://remote.monitor-kapal-pora-pora.web.id/api/stream.mjpeg?src=atas',
   })
 })
 ```
@@ -267,7 +267,7 @@ Expected: `FAIL` karena workspace dan module remote belum dibuat.
 
 `control-protocol.ts` menyamakan Pydantic strict dan safe integer; `control-channel.ts` memakai satu WebSocket, latest pair, sequence reset 1 per socket session, refresh `200 ms`, pending ack/RTT/error/timeout internal, reconnect `250/500/1000/2000/5000 ms`, dan no auto-enable setelah close. `buildControlUrl()` memetakan HTTPS→WSS/HTTP→WS serta menghasilkan `/ws/control/default`.
 
-`video-urls.ts` hanya menghasilkan `api/ws?src=atas`, `api/webrtc`, `api/stream.mp4`, dan `/stream/atas`; `remote-surface-camera.tsx` membuat satu peer receive-only/signaling socket, offer/answer/candidate sesuai Go2RTC, membersihkan peer/socket/timer, lalu memakai raw `<img>` setelah tiga detik/error/close.
+`video-urls.ts` hanya menghasilkan `api/ws?src=atas`, `api/webrtc`, `api/stream.mp4`, dan `/api/stream.mjpeg?src=atas`; `remote-surface-camera.tsx` membuat satu peer receive-only/signaling socket, offer/answer/candidate sesuai Go2RTC, membersihkan peer/socket/timer, lalu memakai raw `<img>` setelah tiga detik/error/close.
 
 `remote-control-panel.tsx` hanya merender dua `<input type="range" min="1000" max="2000" step="1">` berlabel `Throttle PWM` dan `Steering PWM`, default `1500`. Pointer down/focus keyboard movement memanggil internal `enable(pair)`; pointer up/cancel/blur/key release memanggil `disable()`; perubahan saat aktif memanggil `update(pair)`. Tidak ada button tambahan, ack/status/error/latency text, mode/autonomy, arm/disarm, atau command normalized. Semua input invalid tidak mengubah pair dan tidak mengirim command.
 
@@ -345,22 +345,22 @@ VITE_REMOTE_ASV_ID=default
 
 Run `vercel --cwd remote-dashboard --prod`; catat origin production output apa adanya untuk allowlist Pi. Jangan set `ASV_CONTROL_TOKEN`, secret, service key, proxy, atau API route Vercel.
 
-- [ ] **Step 2: Validasi route minimal sebelum enable.** Pada Pi pengendali set runtime `ASV_PIXHAWK_ENABLED=true`, `ASV_REMOTE_CONTROL_ENABLED=false`, `ASV_REMOTE_COMMAND_TIMEOUT=0.5`, serta exact Vercel origin pada `ASV_CORS_ORIGINS`; optional development origin hanya `http://localhost:3001`. Restart service existing dan jalankan:
+- [ ] **Step 2: Validasi route minimal sebelum enable.** Pada Pi pengendali set runtime `ASV_PIXHAWK_ENABLED=true`, `ASV_REMOTE_CONTROL_ENABLED=false`, `ASV_REMOTE_COMMAND_TIMEOUT=0.5`, serta exact Vercel origin pada `ASV_CORS_ORIGINS`; origin development bila diperlukan adalah `http://localhost:3000` untuk dashboard lama dan `http://localhost:3001` untuk remote workspace. Restart service existing dan jalankan:
 
 ```bash
 cloudflared tunnel ingress validate --config deploy/raspberry-pi/cloudflared-config.example.yml
-curl -i https://remote.monitor-kapal-pora-pora.web.id/stream/atas
+curl -i "https://remote.monitor-kapal-pora-pora.web.id/api/stream.mjpeg?src=atas"
 ```
 
 Expected: ingress `OK`, raw surface response `200` dengan MJPEG content type; control socket production close `1008` karena feature disabled.
 
-- [ ] **Step 3: DevTools smoke minimal.** Di halaman production pastikan hanya dua slider dan satu surface camera; tidak ada status, telemetry, latency, ack, mode, autonomy, underwater, atau data lain. Network hanya melihat Go2RTC `/api/ws?src=atas` atau fallback `/stream/atas`; tidak ada `/api/ws?src=bawah`, `/ws/vision`, vision metadata, model/YOLO, canvas, atau POST actuator. WS control tepat `wss://remote.monitor-kapal-pora-pora.web.id/ws/control/default`; slider mengirim direct integer PWM dan release internal `enabled=false`; ack tidak dirender. WebRTC timeout tiga detik membersihkan resource dan menampilkan raw MJPEG tanpa memengaruhi control channel.
+- [ ] **Step 3: DevTools smoke minimal.** Di halaman production pastikan hanya dua slider dan satu surface camera; tidak ada status, telemetry, latency, ack, mode, autonomy, underwater, atau data lain. Network hanya melihat Go2RTC `/api/ws?src=atas` atau fallback `/api/stream.mjpeg?src=atas`; tidak ada `/api/ws?src=bawah`, `/ws/vision`, vision metadata, model/YOLO, canvas, atau POST actuator. WS control tepat `wss://remote.monitor-kapal-pora-pora.web.id/ws/control/default`; slider mengirim direct integer PWM dan release internal `enabled=false`; ack tidak dirender. WebRTC timeout tiga detik membersihkan resource dan menampilkan raw MJPEG tanpa memengaruhi control channel.
 
 - [ ] **Step 4: Bench enable dan safety verification.** Dengan propeller aman/disconnected, transmitter tersedia, observed Pixhawk mode `MANUAL`, heartbeat sehat, pilot neutral, dan satu reader terbukti, ubah `ASV_REMOTE_CONTROL_ENABLED=true` tanpa menaikkan timeout, lalu restart service. Uji Origin/ASV/feature rejection, second-tab supersede `4001`, slider release, close tab/network, frame stop `>500 ms`, autonomous mode, heartbeat loss, flightmode change, dan pilot input; setiap kasus harus release tanpa synthetic success/neutral command.
 
 - [ ] **Step 5: Ukur corrected p95 tanpa panel UI.** Sinkronkan NTP dan catat offset browser↔Pi; jangan klaim one-way latency tanpa correction. Dari DevTools console, buka WSS control, kirim 1000 frame `enabled:true` berisi `1500/1500` setiap `200 ms` dengan sequence unik, kumpulkan `server_received_at_ms - client_sent_at_ms - correctedOffset`, lalu kirim satu `enabled:false` dan close. Simpan p50/p95/p99/max, frame loss, reconnect count, dan RTT p95 sebagai artifact operasional, bukan UI. Acceptance p95 corrected `<=100 ms` pada controlled/near-edge network; Internet publik di luar target tidak boleh melemahkan deadman `500 ms`. Ack hanya ingress evidence, bukan actuator applied.
 
-- [ ] **Step 6: Rollback.** Set `ASV_REMOTE_CONTROL_ENABLED=false`, restart `asv-dashboard.service`, pastikan reader release dan handshake close `1008`. Jika tunnel gagal, remove host remote atau ubah host remote menjadi `http_status:404` tanpa menyentuh host lama. Jika video gagal, rollback route/player Go2RTC ke raw `/stream/atas`; jangan membuat backend/Pixhawk kedua atau mengubah deadman.
+- [ ] **Step 6: Rollback.** Set `ASV_REMOTE_CONTROL_ENABLED=false`, restart `asv-dashboard.service`, pastikan reader release dan handshake close `1008`. Jika tunnel gagal, remove host remote atau ubah host remote menjadi `http_status:404` tanpa menyentuh host lama. Jika video gagal, rollback route/player Go2RTC ke raw `/api/stream.mjpeg?src=atas`; jangan membuat backend/Pixhawk kedua atau mengubah deadman.
 
 ---
 

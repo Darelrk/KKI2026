@@ -84,7 +84,7 @@ Keputusan arsitektur utama:
                  /api/ws                /ws/control/{id}
                  /api/webrtc                   │
                  /api/stream.mp4               │
-                 /stream/atas                  ▼
+                 /api/stream.mjpeg?src=atas  ▼
                        │                 satu Pixhawk MAVLink
                        ▼                 PixhawkTelemetryReader
                  raw WebRTC/MJPEG
@@ -121,7 +121,7 @@ Endpoint status/telemetry FastAPI bukan bagian dari remote app dan tidak dirutek
 | File | Tanggung jawab pada desain ini |
 |---|---|
 | `deploy/raspberry-pi/asv-dashboard.env.example` | Mendokumentasikan `ASV_REMOTE_CONTROL_ENABLED=false` sebagai default aman, `ASV_REMOTE_COMMAND_TIMEOUT=0.5`, `ASV_PIXHAWK_ENABLED=true` hanya pada host yang memang akan dikendalikan, serta `ASV_CORS_ORIGINS` berisi origin Vercel remote yang sebenarnya dan origin development yang diperlukan saja. `ASV_CONTROL_TOKEN` tetap rahasia di Pi untuk jalur model dan tidak pernah disalin ke Vercel. |
-| `deploy/raspberry-pi/cloudflared-config.example.yml` | Menambahkan route host `remote.monitor-kapal-pora-pora.web.id` hanya ke FastAPI untuk `/ws/control/.*` dan ke Go2RTC untuk `/api/ws`, `/api/webrtc`, `/api/stream.mp4`, serta `/stream/atas`. Route lain berakhir 404 pada host remote. Upgrade WebSocket harus diteruskan. Ingress host lama tetap ada. |
+| `deploy/raspberry-pi/cloudflared-config.example.yml` | Menambahkan route host `remote.monitor-kapal-pora-pora.web.id` hanya ke FastAPI untuk `/ws/control/.*` dan ke Go2RTC untuk `/api/ws`, `/api/webrtc`, `/api/stream.mp4`, serta `/api/stream.mjpeg?src=atas`. Route lain berakhir 404 pada host remote. Upgrade WebSocket harus diteruskan. Ingress host lama tetap ada. |
 | `deploy/raspberry-pi/asv-dashboard.service` | Tetap menjalankan satu `uvicorn asv_dashboard_backend.main:app` pada port 8080. Tidak ada unit service baru untuk remote control dan tidak ada service Pixhawk kedua. |
 | service Go2RTC existing | Tetap menjadi pemilik media pada port lokal 1984. Konfigurasi source `atas` harus sudah menghasilkan raw Go2RTC/WebRTC/MJPEG sebelum remote UI diaktifkan. |
 
@@ -155,7 +155,7 @@ Remote app tidak memanggil endpoint FastAPI status/telemetry/health. Ia hanya me
 | WSS `/api/ws?src=atas` | Go2RTC :1984 | Signaling WebRTC untuk player source `atas`. |
 | HTTP `/api/webrtc` | Go2RTC :1984 | Negosiasi HTTP bila diperlukan oleh kontrak Go2RTC existing untuk source `atas`. |
 | HTTP `/api/stream.mp4` | Go2RTC :1984 | Compatibility path media Go2RTC bila diperlukan oleh player surface. |
-| HTTP `/stream/atas` | Go2RTC :1984 | Fallback raw MJPEG untuk source `atas`. |
+| HTTP `/api/stream.mjpeg?src=atas` | Go2RTC :1984 | Fallback raw MJPEG untuk source `atas`. |
 
 Tidak ada request remote ke `/healthz`, `/api/status`, `/api/telemetry`, `PUT /api/control/mode`, `POST /api/control/actuator`, `/api/vision/metadata`, `/ws/vision`, atau path media source lain. Response media ditangani sebagai media; tidak ada schema metadata atau data tambahan yang dirender.
 
@@ -257,7 +257,7 @@ Handshake memakai kontrak Go2RTC existing:
 Player memakai video receive-only, `autoplay`, `playsInline`, dan `muted`. Jika koneksi WebRTC tidak usable dalam tiga detik atau masuk state error/close, player menutup resource-nya dan beralih ke satu raw MJPEG element:
 
 ```text
-https://remote.monitor-kapal-pora-pora.web.id/stream/atas
+https://remote.monitor-kapal-pora-pora.web.id/api/stream.mjpeg?src=atas
 ```
 
 Fallback tersebut tetap raw; tidak ada re-encode FastAPI, YOLO, bounding box, canvas, vision metadata, underwater source, atau control message pada jalur video. Kegagalan video tidak mematikan atau menghidupkan kembali control WebSocket.
@@ -312,7 +312,7 @@ Jika salah satu kondisi gagal, reader memanggil release existing bila override a
 
 ### 8.1 Origin HTTP
 
-`ASV_CORS_ORIGINS` berisi daftar origin exact yang diperlukan: origin deployment Vercel remote yang benar dan `http://localhost:3001` hanya untuk development bila memang digunakan. Origin adalah skema+host+port tanpa path dan tanpa wildcard. `allow_credentials` tetap `false`. Method/path media Go2RTC yang diperlukan oleh remote boleh melewati origin tersebut; method existing untuk dashboard lama tetap dipertahankan sesuai kontrak backend, tetapi host remote tidak membuka endpoint FastAPI status/telemetry.
+`ASV_CORS_ORIGINS` berisi daftar origin exact yang diperlukan: origin deployment Vercel remote yang benar, `http://localhost:3000` untuk dashboard lama, dan `http://localhost:3001` untuk remote workspace saat development bila memang digunakan. Origin adalah skema+host+port tanpa path dan tanpa wildcard. `allow_credentials` tetap `false`. Method/path media Go2RTC yang diperlukan oleh remote boleh melewati origin tersebut; method existing untuk dashboard lama tetap dipertahankan sesuai kontrak backend, tetapi host remote tidak membuka endpoint FastAPI status/telemetry.
 
 Origin frontend Vercel berbeda dari hostname backend tunnel. `https://remote.monitor-kapal-pora-pora.web.id` adalah target control/video, bukan otomatis nilai `Access-Control-Allow-Origin`. Origin Vercel yang sebenarnya harus dicatat pada environment Pi sebelum app production mengirim traffic.
 
@@ -332,7 +332,7 @@ Aturan host remote pada tunnel yang sama secara konseptual adalah:
 | `remote.monitor-kapal-pora-pora.web.id/api/ws` | `http://127.0.0.1:1984` | Go2RTC signaling; `src=atas` wajib. |
 | `remote.monitor-kapal-pora-pora.web.id/api/webrtc` | `http://127.0.0.1:1984` | Go2RTC HTTP negotiation untuk surface bila diperlukan. |
 | `remote.monitor-kapal-pora-pora.web.id/api/stream.mp4` | `http://127.0.0.1:1984` | Go2RTC compatibility path untuk surface bila diperlukan. |
-| `remote.monitor-kapal-pora-pora.web.id/stream/atas` | `http://127.0.0.1:1984` | Satu-satunya raw MJPEG fallback surface. |
+| `remote.monitor-kapal-pora-pora.web.id/api/stream.mjpeg?src=atas` | `http://127.0.0.1:1984` | Satu-satunya raw MJPEG fallback surface. |
 | route lain | `http_status:404` | Tidak dipublikasikan pada host remote. |
 
 Tidak ada route remote untuk `/healthz`, `/api/status`, `/api/telemetry`, endpoint vision, metadata, frame upload, actuator POST, atau control-mode mutation. Status/telemetry tetap internal atau berada pada ingress host lama sesuai konfigurasi existing dan tidak pernah dipanggil remote app.
