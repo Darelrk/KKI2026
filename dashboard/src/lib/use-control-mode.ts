@@ -25,9 +25,12 @@ export function useControlMode(
     mutationFn: (nextMode: ControlMode) => putControlMode(asvBridgeUrl, nextMode),
     onMutate: async () => {
       await queryClient.cancelQueries({ queryKey })
+      return queryKey
     },
-    onSuccess: (nextMode) => {
-      queryClient.setQueryData(queryKey, nextMode)
+    onSuccess: (nextMode, _variables, mutationQueryKey) => {
+      if (mutationQueryKey) {
+        queryClient.setQueryData(mutationQueryKey, nextMode)
+      }
     },
   })
   const updateMode: typeof mutation.mutate =

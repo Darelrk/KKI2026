@@ -124,6 +124,70 @@ describe('useControlMode', () => {
     })
   })
 
+  it('keeps a pending direct mutation bound to its original cache', async () => {
+    vi.mocked(fetchControlMode).mockResolvedValue('MANUAL')
+    let resolvePut!: (mode: 'MANUAL' | 'AUTONOMOUS') => void
+    const pendingPut = new Promise<'MANUAL' | 'AUTONOMOUS'>((resolve) => {
+      resolvePut = resolve
+    })
+    vi.mocked(putControlMode).mockReturnValue(pendingPut)
+
+    const queryClient = new QueryClient({
+      defaultOptions: {
+        mutations: { retry: false },
+        queries: { retry: false },
+      },
+    })
+    const setQueryData = vi.spyOn(queryClient, 'setQueryData')
+    const { result, rerender } = renderHook(
+      ({ dataMode }: { dataMode: 'direct' | 'fixture' }) =>
+        useControlMode('shared-asv', dataMode),
+      {
+        initialProps: { dataMode: 'direct' },
+        wrapper: createWrapper(queryClient),
+      },
+    )
+
+    await waitFor(() => {
+      expect(result.current.mode).toBe('MANUAL')
+    })
+
+    act(() => {
+      result.current.updateMode('AUTONOMOUS')
+    })
+    await waitFor(() => {
+      expect(putControlMode).toHaveBeenCalledWith(bridgeUrl, 'AUTONOMOUS')
+    })
+
+    rerender({ dataMode: 'fixture' })
+    await waitFor(() => {
+      expect(result.current.mode).toBe('AUTONOMOUS')
+      expect(result.current.readOnly).toBe(true)
+    })
+    setQueryData.mockClear()
+
+    await act(async () => {
+      resolvePut('AUTONOMOUS')
+      await pendingPut
+    })
+    await waitFor(() => {
+      expect(result.current.isUpdating).toBe(false)
+    })
+
+    expect(result.current.mode).toBe('AUTONOMOUS')
+    expect(result.current.readOnly).toBe(true)
+    expect(setQueryData).toHaveBeenCalledWith(
+      ['asv-control-mode', 'shared-asv', 'direct'],
+      'AUTONOMOUS',
+    )
+    expect(setQueryData).not.toHaveBeenCalledWith(
+      ['asv-control-mode', 'shared-asv', 'fixture'],
+      'AUTONOMOUS',
+    )
+    expect(
+      queryClient.getQueryData(['asv-control-mode', 'shared-asv', 'fixture']),
+    ).toBe('AUTONOMOUS')
+  })
 
   it('transitions between MANUAL and AUTONOMOUS', async () => {
     vi.mocked(fetchControlMode).mockResolvedValue('MANUAL')
