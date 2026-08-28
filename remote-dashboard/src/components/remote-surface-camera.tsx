@@ -204,7 +204,11 @@ export function RemoteSurfaceCamera({
           return
         }
         if (payload.type === 'webrtc/candidate' && payload.value !== undefined) {
-          const candidate = typeof payload.value === 'string' ? { candidate: payload.value } : payload.value
+          if (typeof payload.value === 'string' && payload.value === '') return
+          const candidate =
+            typeof payload.value === 'string'
+              ? { candidate: payload.value, sdpMid: '0', sdpMLineIndex: 0 }
+              : payload.value
           void peer.addIceCandidate(candidate).catch(switchToFallback)
         }
       }

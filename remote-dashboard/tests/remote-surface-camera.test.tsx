@@ -126,6 +126,46 @@ describe('RemoteSurfaceCamera', () => {
     expect(JSON.stringify(container.innerHTML)).not.toMatch(/bawah|vision|model|overlay|canvas/i)
   })
 
+  it('normalizes incoming Go2RTC ICE candidate strings for browser compatibility', async () => {
+    render(
+      <RemoteSurfaceCamera
+        urls={urls}
+        signalingFactory={(url) => new FakeSignalingSocket(url)}
+        peerConnectionFactory={() => new FakePeerConnection()}
+      />,
+    )
+    const socket = FakeSignalingSocket.instances[0]!
+    const peer = FakePeerConnection.instances[0]!
+
+    socket.message({ type: 'webrtc/candidate', value: 'candidate:remote' })
+    await act(async () => {})
+
+    expect(peer.candidates).toEqual([
+      {
+        candidate: 'candidate:remote',
+        sdpMid: '0',
+        sdpMLineIndex: 0,
+      },
+    ])
+  })
+
+  it('ignores empty incoming Go2RTC ICE candidate strings', async () => {
+    render(
+      <RemoteSurfaceCamera
+        urls={urls}
+        signalingFactory={(url) => new FakeSignalingSocket(url)}
+        peerConnectionFactory={() => new FakePeerConnection()}
+      />,
+    )
+    const socket = FakeSignalingSocket.instances[0]!
+    const peer = FakePeerConnection.instances[0]!
+
+    socket.message({ type: 'webrtc/candidate', value: '' })
+    await act(async () => {})
+
+    expect(peer.candidates).toEqual([])
+  })
+
   it('sends ICE candidate strings after socket open, including queued candidates', async () => {
     render(
       <RemoteSurfaceCamera
