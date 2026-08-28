@@ -6,12 +6,14 @@
 
 ## 1. Problem dan tujuan
 
-Dashboard `dashboard/` saat ini adalah dashboard operasional/model yang sudah berjalan. Kebutuhan baru adalah workspace remote terpisah untuk operator yang memerlukan dua hal dengan jalur yang jujur dan rendah latensi:
+Dashboard `dashboard/` saat ini adalah dashboard operasional/model yang sudah berjalan. Kebutuhan baru adalah workspace remote terpisah untuk operator yang memerlukan permukaan kendali sekecil mungkin dengan jalur yang jujur dan rendah latensi:
 
-1. melihat video kamera mentah dari Go2RTC;
-2. mengirim nilai PWM steering dan throttle secara langsung melalui koneksi WebSocket persisten.
+1. satu stream kamera permukaan mentah dari Go2RTC, dengan source `atas`;
+2. dua slider direct PWM: `steering_pwm` dan `throttle_pwm`.
 
-Target utama adalah waktu dari input operator di browser sampai command diterima backend FastAPI **≤100 ms** pada kondisi jaringan yang dikendalikan. Internet publik dan rute Cloudflare tidak dapat diberi SLA 100 ms; karena itu target ini harus diukur, dilaporkan sebagai distribusi latency, dan tidak boleh dipakai untuk melemahkan deadman atau guard keselamatan.
+UI remote **hanya** merender satu permukaan kamera mentah dan dua slider tersebut. UI tidak merender telemetry, status, latency, sequence, kamera underwater, model/YOLO, overlay, vision metadata, autonomy toggle, acknowledgement, rejection, atau data lain. Penanganan kegagalan koneksi/input boleh memakai perilaku native browser yang diperlukan untuk mencegah operasi tidak aman, misalnya menghentikan input dan membuat slider disabled; UI tidak menambahkan banner, toast, angka, atau indikator status sendiri.
+
+Target internal adalah waktu dari input operator di browser sampai command diterima backend FastAPI **≤100 ms** pada kondisi jaringan yang dikendalikan. Internet publik dan rute Cloudflare tidak dapat diberi SLA 100 ms; target ini diukur melalui test harness/log, bukan ditampilkan di UI, dan tidak boleh dipakai untuk melemahkan deadman atau guard keselamatan.
 
 Keputusan arsitektur utama:
 
@@ -30,23 +32,22 @@ Keputusan arsitektur utama:
 ### 2.1 Termasuk
 
 - Workspace frontend baru `remote-dashboard/` dengan package dan deployment Vercel mandiri.
-- UI dua stream raw: surface `atas` dan underwater `bawah`.
-- Negosiasi Go2RTC WebRTC melalui WebSocket, dengan raw MJPEG sebagai fallback.
-- Panel direct PWM dengan `steering_pwm` dan `throttle_pwm`, masing-masing integer valid **1000..2000**.
-- Persistent WebSocket `/ws/control/{asv_id}` untuk command, acknowledgement, reconnect, sequence, timestamp, dan latest-command semantics.
+- Satu player kamera permukaan raw Go2RTC untuk source `atas`; WebRTC adalah jalur utama dan raw MJPEG adalah fallback dari stream yang sama.
+- Tepat dua input accessible bertipe range untuk direct PWM `steering_pwm` dan `throttle_pwm`, masing-masing integer valid **1000..2000**.
+- Persistent WebSocket `/ws/control/{asv_id}` untuk command, acknowledgement, reconnect, sequence, timestamp, dan latest-command semantics; data protocol tersebut boleh tetap internal dan tidak dirender.
 - Deadman backend 500 ms memakai waktu monotonic server.
 - Pelepasan override segera ketika control WebSocket disconnect, superseded, expired, backend berhenti, atau guard Pixhawk gagal.
 - Pemeliharaan validasi PWM, expiry, heartbeat Pixhawk, observed flightmode `MANUAL`, pilot-input guard, dan actuator safety yang sudah ada.
 - CORS HTTP dan pemeriksaan `Origin` WebSocket yang membatasi browser remote tanpa menyebutnya sebagai autentikasi.
-- Routing hostname remote pada tunnel yang sama untuk FastAPI dan Go2RTC.
-- Kontrak pengukuran latency, acceptance criteria, rollout, dan rollback.
+- Routing hostname remote pada tunnel yang sama hanya untuk control WSS dan path Go2RTC yang diperlukan oleh source `atas`.
+- Kontrak pengukuran latency internal, acceptance criteria, rollout, dan rollback.
 
 ### 2.2 Tidak termasuk
 
 - Penggantian atau penghapusan dashboard lama `dashboard/`.
 - Backend cloud baru, Vercel API route, Vercel Function sebagai proxy, database realtime, atau Supabase pada live control path.
 - Koneksi Pixhawk kedua, proses MAVLink di browser, arm/disarm, perubahan mode Pixhawk, parameter write, mission upload, atau autonomous runner baru.
-- YOLO/model inference, vision metadata, canvas overlay, tracking, atau sensor fusion pada remote dashboard.
+- Kamera underwater `bawah` pada remote app, telemetry, status, latency, sequence, model/YOLO inference, vision metadata, canvas overlay, acknowledgement/rejection display, autonomy toggle, atau panel/data UI lain.
 - Perubahan firmware ArduPilot, konfigurasi mekanik kapal, atau perilaku autonomous navigation.
 - Implementasi source, test, build, atau perubahan pada `simulation/`, `model/`, `worlds/`, dan perubahan pengguna yang sudah ada.
 - Autentikasi aplikasi. Ketiadaan autentikasi adalah keputusan risiko yang disengaja dan dijelaskan pada bagian keamanan.
@@ -60,33 +61,34 @@ Keputusan arsitektur utama:
 5. `POST /api/control/actuator` tetap menjadi jalur existing yang memakai token Pi-only untuk publisher/model. Remote WebSocket tidak memakai endpoint POST tersebut dan tidak membawa token ke browser.
 6. Command yang disimpan hanya command terbaru; tidak ada antrean histori PWM yang dapat diputar terlambat.
 7. Jika salah satu guard keselamatan gagal, output override dilepas sehingga transmitter RC/Pixhawk memperoleh kembali otoritas sesuai perilaku existing.
+8. Data ack, rejection, sequence, timestamp, deadman, dan latency hanya menjadi bagian protokol/log/test internal. Tidak ada komponen remote yang merendernya.
 
 ## 4. Arsitektur dan topologi
 
 ```text
                            project Vercel terpisah
-┌────────────────────────────────────────────────────────────────┐
-│ remote-dashboard/                                             │
-│  raw video UI       direct PWM UI       status/latency UI      │
-└───────────┬──────────────────────┬──────────────────────┬─────┘
-            │ HTTPS GET             │ WSS control          │ WSS Go2RTC + media
-            │ status/telemetry      │ /ws/control/default  │ /api/ws?src=...
-            ▼                       ▼                      ▼
-┌────────────────────────────────────────────────────────────────┐
-│ Cloudflare Tunnel Pora Pora yang sama                          │
-│ hostname remote.monitor-kapal-pora-pora.web.id                 │
-└───────────┬──────────────────────┬──────────────────────┬─────┘
-            │                      │                      │
-            ▼                      ▼                      ▼
-  FastAPI :8080             FastAPI :8080          Go2RTC :1984
-  /api/status               /ws/control/{id}       /api/ws
-  /api/telemetry            /healthz               /api/webrtc
-                                                     /stream/{src}
-            │                      │                      │
-            └──────────────┬───────┘                      │
-                           ▼                              ▼
-                    satu Pixhawk MAVLink            raw WebRTC/MJPEG
-                    PixhawkTelemetryReader           tanpa YOLO/overlay
+┌───────────────────────────────────────────────────────────────┐
+│ remote-dashboard/                                            │
+│  satu raw surface player (`atas`)       dua slider PWM       │
+└──────────────────────┬───────────────────────┬──────────────┘
+                       │ HTTPS/WSS Go2RTC       │ WSS control
+                       │ /api/ws?src=atas      │ /ws/control/default
+                       ▼                        ▼
+┌───────────────────────────────────────────────────────────────┐
+│ Cloudflare Tunnel Pora Pora yang sama                         │
+│ hostname remote.monitor-kapal-pora-pora.web.id                │
+└──────────────────────┬───────────────────────┬──────────────┘
+                       │                       │
+                       ▼                       ▼
+                 Go2RTC :1984           FastAPI :8080
+                 /api/ws                /ws/control/{id}
+                 /api/webrtc                   │
+                 /api/stream.mp4               │
+                 /stream/atas                  ▼
+                       │                 satu Pixhawk MAVLink
+                       ▼                 PixhawkTelemetryReader
+                 raw WebRTC/MJPEG
+                 tanpa YOLO/overlay
 ```
 
 Host lama `monitor-kapal-pora-pora.web.id` tetap melayani dashboard lama sesuai konfigurasi existing. Host remote hanya menambahkan ingress pada tunnel yang sama; tidak ada tunnel, FastAPI process, atau koneksi Pixhawk kedua.
@@ -94,7 +96,9 @@ Host lama `monitor-kapal-pora-pora.web.id` tetap melayani dashboard lama sesuai 
 Video dan kontrol adalah dua jalur terpisah:
 
 - Control: browser → WSS → Cloudflare → FastAPI → latest command → `PixhawkTelemetryReader` → `RC_CHANNELS_OVERRIDE` bila semua guard lolos.
-- Video: browser → Go2RTC signaling WSS/HTTPS → Cloudflare → Go2RTC → WebRTC; jika WebRTC gagal, browser mengambil raw MJPEG. Jalur ini tidak mengirim command dan tidak menerima metadata vision.
+- Video: browser → Go2RTC signaling WSS/HTTPS → Cloudflare → Go2RTC → satu stream source `atas`; jika WebRTC gagal, player yang sama beralih ke raw MJPEG. Jalur ini tidak mengirim command dan tidak menerima metadata vision.
+
+Endpoint status/telemetry FastAPI bukan bagian dari remote app dan tidak dirutekan pada host remote. Endpoint tersebut tetap boleh dipakai secara internal atau oleh host dashboard lama sesuai konfigurasi existing.
 
 ## 5. Tanggung jawab component dan file
 
@@ -105,7 +109,7 @@ Video dan kontrol adalah dua jalur terpisah:
 | `asv_dashboard_backend/config.py` | Menambah konfigurasi eksplisit `remote_control_enabled` dari `ASV_REMOTE_CONTROL_ENABLED` dengan default aman `false`, serta timeout remote tetap `0.5` detik dari `ASV_REMOTE_COMMAND_TIMEOUT`. Jika remote control diaktifkan tanpa `ASV_PIXHAWK_ENABLED=true`, konfigurasi ditolak. `cors_origins` tetap explicit, tanpa wildcard. Timeout heartbeat existing tidak diperlebar. |
 | `asv_dashboard_backend/control.py` (baru) | Menjadi modul kecil untuk schema Pydantic strict (`RemoteControlCommand`, `ControlAck`, `ControlError`) dan registry satu sesi control aktif per `asv_id`. Modul ini tidak mengimpor `pymavlink`, tidak membuka socket Pixhawk, dan tidak menerapkan PWM. |
 | `asv_dashboard_backend/state.py` | Tetap menjadi pemilik status live dan `control_mode` aplikasi. Jika registry sesi ditempatkan di sini pada implementasi, ia hanya menyimpan identitas sesi/latest lease; ia tidak mengirim MAVLink. `control_mode` tidak digabung dengan `_mode` Pixhawk. |
-| `asv_dashboard_backend/main.py` | Menambahkan adapter `@app.websocket("/ws/control/{asv_id}")`, memeriksa ASV id dan Origin, menerima text JSON, memvalidasi melalui schema, mengirim ack/error, dan memanggil method reader. Route ini tidak membuat reader atau koneksi baru. Route HTTP read-only existing tetap dipakai untuk status/telemetry. |
+| `asv_dashboard_backend/main.py` | Menambahkan adapter `@app.websocket("/ws/control/{asv_id}")`, memeriksa ASV id dan Origin, menerima text JSON, memvalidasi melalui schema, mengirim ack/error internal, dan memanggil method reader. Route ini tidak membuat reader atau koneksi baru. Route HTTP read-only existing tetap dipakai untuk dashboard lama/internal, bukan remote app. |
 | `asv_dashboard_backend/telemetry.py` | Tetap memiliki satu `PixhawkTelemetryReader`. Menambahkan penyimpanan command remote/latest owner dan method clear/release yang aman. Loop existing tetap memeriksa umur command, heartbeat, observed `MANUAL`, pilot-input guard, feature flag, dan koneksi sebelum mengirim override. Pelepasan disconnect harus dapat dipanggil segera dan thread-safe. |
 | `asv_dashboard_backend/vision_publisher.py` | Tidak diubah oleh remote control. Publisher model tetap memakai `POST /api/control/actuator` dan `ASV_CONTROL_TOKEN`; lane actuator existing tidak diganti menjadi WebSocket browser. |
 | `tests/test_remote_control_protocol.py` (baru) | Test schema strict, tipe integer, batas PWM, sequence, timestamp, ack/error, dan latest-command/session rules tanpa hardware. |
@@ -117,9 +121,9 @@ Video dan kontrol adalah dua jalur terpisah:
 | File | Tanggung jawab pada desain ini |
 |---|---|
 | `deploy/raspberry-pi/asv-dashboard.env.example` | Mendokumentasikan `ASV_REMOTE_CONTROL_ENABLED=false` sebagai default aman, `ASV_REMOTE_COMMAND_TIMEOUT=0.5`, `ASV_PIXHAWK_ENABLED=true` hanya pada host yang memang akan dikendalikan, serta `ASV_CORS_ORIGINS` berisi origin Vercel remote yang sebenarnya dan origin development yang diperlukan saja. `ASV_CONTROL_TOKEN` tetap rahasia di Pi untuk jalur model dan tidak pernah disalin ke Vercel. |
-| `deploy/raspberry-pi/cloudflared-config.example.yml` | Menambahkan route host `remote.monitor-kapal-pora-pora.web.id` ke FastAPI untuk `/healthz`, `/api/status`, `/api/telemetry`, dan `/ws/control/.*`; menambahkan route host yang sama ke Go2RTC untuk `/api/ws`, `/api/webrtc`, `/api/stream.mp4`, dan `/stream/(atas|bawah)`. Route lain berakhir 404. Upgrade WebSocket harus diteruskan. Ingress host lama tetap ada. |
+| `deploy/raspberry-pi/cloudflared-config.example.yml` | Menambahkan route host `remote.monitor-kapal-pora-pora.web.id` hanya ke FastAPI untuk `/ws/control/.*` dan ke Go2RTC untuk `/api/ws`, `/api/webrtc`, `/api/stream.mp4`, serta `/stream/atas`. Route lain berakhir 404 pada host remote. Upgrade WebSocket harus diteruskan. Ingress host lama tetap ada. |
 | `deploy/raspberry-pi/asv-dashboard.service` | Tetap menjalankan satu `uvicorn asv_dashboard_backend.main:app` pada port 8080. Tidak ada unit service baru untuk remote control dan tidak ada service Pixhawk kedua. |
-| service Go2RTC existing | Tetap menjadi pemilik media pada port lokal 1984. Konfigurasi source `atas` dan `bawah` harus sudah menghasilkan raw Go2RTC/WebRTC/MJPEG sebelum remote UI diaktifkan. |
+| service Go2RTC existing | Tetap menjadi pemilik media pada port lokal 1984. Konfigurasi source `atas` harus sudah menghasilkan raw Go2RTC/WebRTC/MJPEG sebelum remote UI diaktifkan. |
 
 ### 5.3 Workspace frontend baru
 
@@ -129,30 +133,31 @@ Video dan kontrol adalah dua jalur terpisah:
 |---|---|
 | `remote-dashboard/package.json` | Script dev/build/preview/test/typecheck untuk package remote dan dependency minimum frontend. Tidak ada proxy control atau server runtime yang menyimpan token. |
 | `remote-dashboard/vite.config.ts` dan `remote-dashboard/vercel.json` | Build static untuk project Vercel terpisah dan fallback SPA. Browser memanggil hostname tunnel secara langsung; tidak ada serverless relay. |
-| `remote-dashboard/src/main.tsx` dan `remote-dashboard/src/app.tsx` | Bootstrap app, membaca `VITE_REMOTE_BACKEND_ORIGIN` dan `VITE_REMOTE_ASV_ID`, lalu merender shell remote. Default ASV id adalah `default`. |
+| `remote-dashboard/src/main.tsx` dan `remote-dashboard/src/app.tsx` | Bootstrap app, membaca `VITE_REMOTE_BACKEND_ORIGIN` dan `VITE_REMOTE_ASV_ID`, lalu merender satu player source `atas` dan tepat dua slider. Default ASV id adalah `default`. Tidak ada fetch status/telemetry. |
 | `remote-dashboard/src/lib/control-protocol.ts` | Zod schema/type yang sama dengan Pydantic control protocol. Tidak mengubah nilai PWM menjadi normalized intent dan tidak melakukan network I/O. |
-| `remote-dashboard/src/lib/control-channel.ts` | Pemilik satu WebSocket control persisten: connect, close, reconnect backoff, sequence, coalescing command terbaru, refresh deadman ≤200 ms ketika enabled, ack/error, dan pengukuran RTT. Tidak memakai `fetch` POST untuk input. |
-| `remote-dashboard/src/lib/video-urls.ts` | Menurunkan URL Go2RTC dari satu origin remote untuk source `atas`/`bawah`, termasuk WSS signaling dan raw MJPEG fallback. Tidak mengetahui control protocol. |
-| `remote-dashboard/src/lib/live-data.ts` | Fetch read-only `/api/status` dan `/api/telemetry` dengan `cache: no-store`, validasi response, serta status offline. Tidak mengirim mode change atau actuator command. |
-| `remote-dashboard/src/components/remote-control-panel.tsx` | Input accessible untuk steering/throttle direct PWM 1000..2000, neutral 1500, hold-to-enable/deadman UI, dan tampilan ack/rejection. UI tidak menyediakan arm, disarm, atau autonomous toggle. |
-| `remote-dashboard/src/components/remote-video-wall.tsx` | Dua player raw Go2RTC/WebRTC dengan fallback MJPEG. Tidak membuat canvas overlay, tidak memanggil `/ws/vision`, dan tidak membaca vision metadata. |
-| `remote-dashboard/src/components/remote-status-strip.tsx` | Menampilkan koneksi control, status backend/telemetry, sequence terakhir, dan latency yang benar-benar terukur. Ia tidak menyimpulkan command diterapkan hanya dari ack queued. |
-| `remote-dashboard/src/components/remote-app.test.tsx`, `remote-dashboard/src/lib/control-protocol.test.ts`, dan `remote-dashboard/src/lib/control-channel.test.ts` | Test kontrak UI/protocol, no-POST, refresh/expiry/reconnect, ack/error, dan direct PWM. Test video memastikan request hanya ke Go2RTC raw path dan tidak ada metadata overlay. |
+| `remote-dashboard/src/lib/control-channel.ts` | Pemilik satu WebSocket control persisten: connect, close, reconnect backoff, sequence, coalescing command terbaru, refresh deadman ≤200 ms ketika slider sedang dipegang, ack/error internal, dan pengukuran RTT untuk test/log. Tidak memakai `fetch` POST untuk input dan tidak mengekspos data protocol ke DOM. |
+| `remote-dashboard/src/lib/video-urls.ts` | Menurunkan URL Go2RTC dari satu origin remote untuk source `atas`, termasuk WSS signaling dan raw MJPEG fallback. Tidak mengetahui control protocol. |
+| `remote-dashboard/src/components/remote-control-panel.tsx` | Merender tepat dua input range accessible untuk steering/throttle direct PWM 1000..2000. Tidak ada tombol enable, autonomy toggle, ack/rejection, status, atau angka data lain. `enabled` hanya field protocol internal selama pointer/keyboard engagement aktif. |
+| `remote-dashboard/src/components/remote-video-player.tsx` | Merender satu player raw Go2RTC/WebRTC untuk source `atas`; ketika gagal, player WebRTC dibersihkan dan diganti raw MJPEG `atas`. Tidak membuat canvas overlay, tidak memanggil `/ws/vision`, dan tidak membaca vision metadata. |
+| `remote-dashboard/src/components/remote-app.test.tsx`, `remote-dashboard/src/lib/control-protocol.test.ts`, dan `remote-dashboard/src/lib/control-channel.test.ts` | Test kontrak bahwa DOM hanya memiliki satu media surface dan dua slider, protocol/direct PWM, no-POST, refresh/expiry/reconnect, ack/error internal, serta native disable saat koneksi/input gagal. Test video memastikan request hanya ke Go2RTC raw path source `atas` dan tidak ada metadata/overlay. |
 | `package.json` root | Menambahkan `remote-dashboard` ke npm workspaces dan script package-level bila diperlukan. `dashboard/` tetap menjadi workspace/package lama. Lockfile hanya berubah sebagai konsekuensi metadata workspace saat implementasi, bukan bagian dari desain atau commit ini. |
+
+Tidak ada `live-data.ts` atau `remote-status-strip.ts` pada remote workspace. Komponen yang merender status/telemetry/latency/sequence atau kamera kedua berada di luar desain ini.
 
 ## 6. Kontrak HTTP, WebSocket, dan video
 
-### 6.1 Read-only HTTP
+### 6.1 Path media remote
 
-Remote app hanya memakai endpoint berikut melalui `https://remote.monitor-kapal-pora-pora.web.id`:
+Remote app tidak memanggil endpoint FastAPI status/telemetry/health. Ia hanya memakai path Go2RTC yang diperlukan untuk satu source surface `atas` melalui `https://remote.monitor-kapal-pora-pora.web.id`:
 
-| Method | Path | Pemilik | Fungsi |
-|---|---|---|---|
-| `GET` | `/healthz` | FastAPI :8080 | Liveness tunnel/backend. |
-| `GET` | `/api/status` | FastAPI :8080 | Status ASV/model existing; bukan sumber command. |
-| `GET` | `/api/telemetry` | FastAPI :8080 | Telemetry read-only existing. |
+| Method/path | Pemilik | Fungsi |
+|---|---|---|
+| WSS `/api/ws?src=atas` | Go2RTC :1984 | Signaling WebRTC untuk player source `atas`. |
+| HTTP `/api/webrtc` | Go2RTC :1984 | Negosiasi HTTP bila diperlukan oleh kontrak Go2RTC existing untuk source `atas`. |
+| HTTP `/api/stream.mp4` | Go2RTC :1984 | Compatibility path media Go2RTC bila diperlukan oleh player surface. |
+| HTTP `/stream/atas` | Go2RTC :1984 | Fallback raw MJPEG untuk source `atas`. |
 
-Response status/telemetry harus divalidasi frontend dengan schema existing yang relevan. `cache: no-store` wajib dipakai agar status mati tidak tertahan cache Vercel/browser. Remote app tidak memakai `PUT /api/control/mode`, `POST /api/control/actuator`, `/api/vision/metadata`, atau `/ws/vision`.
+Tidak ada request remote ke `/healthz`, `/api/status`, `/api/telemetry`, `PUT /api/control/mode`, `POST /api/control/actuator`, `/api/vision/metadata`, `/ws/vision`, atau path media source lain. Response media ditangani sebagai media; tidak ada schema metadata atau data tambahan yang dirender.
 
 ### 6.2 Control WebSocket
 
@@ -199,7 +204,7 @@ Ack backend dikirim untuk setiap command yang lolos parsing JSON/schema:
 }
 ```
 
-`accepted=true` berarti command valid dan masuk ke latest-command slot setelah ingress safety gate; ini **bukan** klaim bahwa MAVLink sudah diterapkan pada aktuator. `server_received_at_ms` diambil segera setelah frame diterima/validasi selesai menggunakan UTC epoch milliseconds untuk measurement dan audit. `accepted=false` memakai schema sama dengan `reason` berikut:
+`accepted=true` berarti command valid dan masuk ke latest-command slot setelah ingress safety gate; ini **bukan** klaim bahwa MAVLink sudah diterapkan pada aktuator. `server_received_at_ms` diambil segera setelah frame diterima/validasi selesai menggunakan UTC epoch milliseconds untuk measurement dan audit. Ack dan reason diproses internal oleh channel dan tidak dirender oleh remote UI. `accepted=false` memakai schema sama dengan `reason` berikut:
 
 - `stale_sequence`: `seq` tidak lebih besar dari sequence terakhir sesi;
 - `remote_control_disabled`: feature flag remote false;
@@ -221,7 +226,7 @@ Payload untuk kesalahan yang tidak memiliki `seq` valid adalah:
 }
 ```
 
-`code` terbatas pada `invalid_json`, `invalid_message`, dan `origin_not_allowed`. Pesan error tidak boleh memuat secret atau stack trace. Setelah error schema, koneksi tetap boleh hidup agar client dapat mengirim frame valid berikutnya; setelah Origin/ASV/feature gate handshake ditolak, koneksi ditutup.
+`code` terbatas pada `invalid_json`, `invalid_message`, dan `origin_not_allowed`. Pesan error tidak boleh memuat secret atau stack trace. Setelah error schema, koneksi tetap boleh hidup agar client dapat mengirim frame valid berikutnya; setelah Origin/ASV/feature gate handshake ditolak, koneksi ditutup. Semua ack/error tetap internal dan tidak menjadi elemen atau teks UI.
 
 ### 6.3 Sesi, ownership, dan latest-command semantics
 
@@ -229,16 +234,16 @@ Payload untuk kesalahan yang tidak memiliki `seq` valid adalah:
 - Koneksi baru yang sudah melewati ASV/Origin/feature checks menggantikan sesi lama. Sesi lama ditutup dengan close code aplikasi `4001` (`superseded`) dan latest command miliknya dilepas sebelum sesi baru menerima control.
 - `seq` dimulai dari 1 pada setiap sesi dan harus meningkat ketat. Sequence lama tidak pernah mengubah slot.
 - Backend menyimpan satu command terbaru beserta `session_id`, `seq`, dan waktu monotonic penerimaan. Tidak ada queue per input.
-- Browser mengirim frame pertama segera ketika operator menekan/menahan enable. Ketika nilai stabil, channel mengirim refresh command paling lambat setiap 200 ms; command yang belum terkirim diganti dengan nilai terbaru, bukan diantrikan.
-- `enabled=false` dikirim segera saat tombol dilepas, panel unmount, atau tab kehilangan kontrol; backend tetap mengandalkan disconnect/expiry karena event browser bukan jaminan keselamatan.
+- Tidak ada kontrol enable terpisah di UI. Saat operator mulai menekan/menahan salah satu slider dengan pointer atau keyboard, channel mengirim `enabled=true`; selama engagement aktif, channel mengirim refresh paling lambat setiap 200 ms. Command yang belum terkirim diganti dengan nilai terbaru, bukan diantrikan.
+- `pointerup`, `pointercancel`, pelepasan tombol keyboard, kehilangan fokus, `visibilitychange` ke hidden, unmount, atau error input mengirim `enabled=false`, menghentikan refresh, dan meminta release. WebSocket `error`/`close` juga menghentikan refresh dan membuat kedua slider disabled memakai state native browser agar tidak ada input yang tampak aktif tanpa jalur kendali.
+- Ack, rejection, sequence, timestamp, dan alasan disabled tidak ditampilkan; hanya state disabled native yang boleh terlihat bila diperlukan untuk keselamatan.
 
 ### 6.4 Raw video
 
-Untuk surface (`atas`) dan underwater (`bawah`), frontend membuka signaling Go2RTC secara independen:
+Remote app hanya membuka satu signaling/player Go2RTC untuk surface (`atas`):
 
 ```text
 wss://remote.monitor-kapal-pora-pora.web.id/api/ws?src=atas
-wss://remote.monitor-kapal-pora-pora.web.id/api/ws?src=bawah
 ```
 
 Handshake memakai kontrak Go2RTC existing:
@@ -249,24 +254,23 @@ Handshake memakai kontrak Go2RTC existing:
 { "type": "webrtc/candidate", "value": "<candidate>" }
 ```
 
-Player memakai video receive-only, `autoplay`, `playsInline`, dan `muted`. Jika koneksi WebRTC tidak usable dalam tiga detik atau masuk state error/close, player menutup resource-nya dan memakai raw MJPEG:
+Player memakai video receive-only, `autoplay`, `playsInline`, dan `muted`. Jika koneksi WebRTC tidak usable dalam tiga detik atau masuk state error/close, player menutup resource-nya dan beralih ke satu raw MJPEG element:
 
 ```text
 https://remote.monitor-kapal-pora-pora.web.id/stream/atas
-https://remote.monitor-kapal-pora-pora.web.id/stream/bawah
 ```
 
-Fallback tersebut tetap raw; tidak ada re-encode FastAPI, YOLO, bounding box, canvas, vision metadata, atau control message pada jalur video. Kegagalan video tidak mematikan atau menghidupkan kembali control WebSocket.
+Fallback tersebut tetap raw; tidak ada re-encode FastAPI, YOLO, bounding box, canvas, vision metadata, underwater source, atau control message pada jalur video. Kegagalan video tidak mematikan atau menghidupkan kembali control WebSocket.
 
 ## 7. Lifecycle, guard, error, reconnect, dan deadman
 
 ### 7.1 Handshake dan startup
 
 1. Browser memuat static app dari project Vercel remote.
-2. App memanggil `GET /healthz`, status, dan telemetry dengan origin Vercel yang terdaftar.
-3. App membuka WSS control dengan `Origin` browser. Backend menolak ASV id yang salah, Origin yang tidak ada/di luar allowlist, atau `ASV_REMOTE_CONTROL_ENABLED=false` dengan close code `1008`.
-4. Jika handshake diterima, backend membuat session id dan latest slot kosong. Tidak ada override aktif sebelum command valid `enabled=true`.
-5. Go2RTC player membuka jalurnya sendiri; video ready tidak menjadi prasyarat control dan sebaliknya.
+2. App membuka satu jalur media Go2RTC untuk `atas` dan WSS control. App tidak memanggil status, telemetry, atau health endpoint.
+3. Backend menolak ASV id yang salah, Origin yang tidak ada/di luar allowlist, atau `ASV_REMOTE_CONTROL_ENABLED=false` dengan close code `1008`.
+4. Jika handshake diterima, backend membuat session id dan latest slot kosong. Tidak ada override aktif sebelum operator melakukan engagement pada salah satu slider dan command valid `enabled=true`.
+5. Go2RTC player membuka jalurnya sendiri; video ready bukan prasyarat control dan sebaliknya.
 
 ### 7.2 Penerimaan dan penerapan command
 
@@ -278,8 +282,8 @@ Pada ingress, backend melakukan urutan berikut:
 4. catat `server_received_at_ms` dan waktu monotonic;
 5. untuk `enabled=false`, bersihkan slot dan release;
 6. untuk `enabled=true`, cek feature flag, `BridgeState.control_mode == MANUAL`, Pixhawk connected/heartbeat, observed flight mode `MANUAL`, dan pilot-input guard;
-7. jika aman, replace latest slot dan kirim ack accepted;
-8. jika tidak aman, kirim ack rejected tanpa membuat command aktif.
+7. jika aman, replace latest slot dan kirim ack accepted internal;
+8. jika tidak aman, kirim ack rejected internal tanpa membuat command aktif.
 
 Loop `PixhawkTelemetryReader` tetap menjadi satu-satunya jalur yang memanggil `rc_channels_override_send`. Setiap iterasi menerapkan hanya latest slot yang:
 
@@ -298,19 +302,19 @@ Jika salah satu kondisi gagal, reader memanggil release existing bila override a
 - Disconnect WebSocket masuk ke `finally` handler; jika sesi tersebut masih owner latest slot, slot dibersihkan dan release dipanggil segera, tanpa menunggu siklus refresh.
 - Jika koneksi tetap terbuka tetapi frame berhenti, umur slot melampaui 500 ms dan reader melepas override pada iterasi kontrol berikutnya. Dengan loop existing maksimum 100 ms, release tidak menunggu input berikutnya.
 - Sesi baru menutup sesi lama dan melepaskan command lama sebelum mengambil ownership.
-- Saat `BridgeState.control_mode` berubah ke `AUTONOMOUS`, backend membersihkan/release command remote aktif dan menolak command `enabled=true` dengan `runtime_mode_autonomous`; setelah menerima rejection itu, remote UI menjadi read-only. Route remote tidak pernah melakukan transisi tersebut.
+- Saat `BridgeState.control_mode` berubah ke `AUTONOMOUS`, backend membersihkan/release command remote aktif dan menolak command `enabled=true` dengan `runtime_mode_autonomous`; remote UI tidak menampilkan mode tersebut dan tidak memiliki toggle untuk mengubahnya.
 - `AUTONOMOUS` di atas adalah state aplikasi. Guard observed Pixhawk `_mode == MANUAL` tetap wajib dan tidak diganti menjadi pengecekan state aplikasi.
-- Saat heartbeat Pixhawk hilang sesuai `pixhawk_heartbeat_timeout` existing, reader me-release dan melakukan reconnect sesuai lifecycle existing. Remote client menerima rejection/status offline dan baru boleh mengirim lagi setelah gate sehat.
-- Saat backend process berhenti/restart, `PixhawkTelemetryReader.close()` tetap me-release override. Reconnect browser dimulai dengan backoff `250 ms, 500 ms, 1 s, 2 s`, maksimum `5 s`; setelah reconnect, operator harus menahan enable lagi.
-- Error video hanya mengaktifkan fallback raw MJPEG. Error control tidak pernah diganti dengan command netral sintetis yang disamarkan sebagai sukses; status UI menunjukkan offline/rejected.
+- Saat heartbeat Pixhawk hilang sesuai `pixhawk_heartbeat_timeout` existing, reader me-release dan melakukan reconnect sesuai lifecycle existing. Ack/rejection tetap internal; remote tidak menampilkan status offline.
+- Saat backend process berhenti/restart, `PixhawkTelemetryReader.close()` tetap me-release override. Reconnect browser dimulai dengan backoff `250 ms, 500 ms, 1 s, 2 s`, maksimum `5 s`; setelah reconnect, operator harus memulai engagement slider lagi. Selama channel gagal, kedua input tetap disabled secara native.
+- Error video hanya mengaktifkan fallback raw MJPEG. Error control tidak pernah diganti dengan command netral sintetis yang disamarkan sebagai sukses.
 
 ## 8. CORS, Origin, Cloudflare, dan Vercel
 
 ### 8.1 Origin HTTP
 
-`ASV_CORS_ORIGINS` berisi daftar origin exact yang diperlukan: origin deployment Vercel remote yang benar dan `http://localhost:3001` hanya untuk development bila memang digunakan. Origin adalah skema+host+port tanpa path dan tanpa wildcard. `allow_credentials` tetap `false`. Hanya method read-only `GET` yang diperlukan oleh remote app; method existing untuk dashboard lama tetap dipertahankan sesuai kontrak backend, tetapi remote ingress tidak membuka route yang tidak diperlukan.
+`ASV_CORS_ORIGINS` berisi daftar origin exact yang diperlukan: origin deployment Vercel remote yang benar dan `http://localhost:3001` hanya untuk development bila memang digunakan. Origin adalah skema+host+port tanpa path dan tanpa wildcard. `allow_credentials` tetap `false`. Method/path media Go2RTC yang diperlukan oleh remote boleh melewati origin tersebut; method existing untuk dashboard lama tetap dipertahankan sesuai kontrak backend, tetapi host remote tidak membuka endpoint FastAPI status/telemetry.
 
-Origin frontend Vercel berbeda dari hostname backend tunnel. `https://remote.monitor-kapal-pora-pora.web.id` adalah target API/video, bukan otomatis nilai `Access-Control-Allow-Origin`. Origin Vercel yang sebenarnya harus dicatat pada environment Pi sebelum app production mengirim traffic.
+Origin frontend Vercel berbeda dari hostname backend tunnel. `https://remote.monitor-kapal-pora-pora.web.id` adalah target control/video, bukan otomatis nilai `Access-Control-Allow-Origin`. Origin Vercel yang sebenarnya harus dicatat pada environment Pi sebelum app production mengirim traffic.
 
 ### 8.2 Origin WebSocket
 
@@ -324,17 +328,14 @@ Aturan host remote pada tunnel yang sama secara konseptual adalah:
 
 | Host/path | Service lokal | Alasan |
 |---|---|---|
-| `remote.monitor-kapal-pora-pora.web.id/healthz` | `http://127.0.0.1:8080` | Liveness backend. |
-| `remote.monitor-kapal-pora-pora.web.id/api/status` | `http://127.0.0.1:8080` | Status read-only. |
-| `remote.monitor-kapal-pora-pora.web.id/api/telemetry` | `http://127.0.0.1:8080` | Telemetry read-only. |
 | `remote.monitor-kapal-pora-pora.web.id/ws/control/.*` | `http://127.0.0.1:8080` | Persistent control WSS dan upgrade. |
-| `remote.monitor-kapal-pora-pora.web.id/api/ws` | `http://127.0.0.1:1984` | Go2RTC signaling; `src` tetap query parameter. |
-| `remote.monitor-kapal-pora-pora.web.id/api/webrtc` | `http://127.0.0.1:1984` | Go2RTC HTTP negotiation bila diperlukan. |
-| `remote.monitor-kapal-pora-pora.web.id/api/stream.mp4` | `http://127.0.0.1:1984` | Go2RTC compatibility path. |
-| `remote.monitor-kapal-pora-pora.web.id/stream/atas` atau `/stream/bawah` | `http://127.0.0.1:1984` | Raw MJPEG fallback. |
+| `remote.monitor-kapal-pora-pora.web.id/api/ws` | `http://127.0.0.1:1984` | Go2RTC signaling; `src=atas` wajib. |
+| `remote.monitor-kapal-pora-pora.web.id/api/webrtc` | `http://127.0.0.1:1984` | Go2RTC HTTP negotiation untuk surface bila diperlukan. |
+| `remote.monitor-kapal-pora-pora.web.id/api/stream.mp4` | `http://127.0.0.1:1984` | Go2RTC compatibility path untuk surface bila diperlukan. |
+| `remote.monitor-kapal-pora-pora.web.id/stream/atas` | `http://127.0.0.1:1984` | Satu-satunya raw MJPEG fallback surface. |
 | route lain | `http_status:404` | Tidak dipublikasikan pada host remote. |
 
-Ingress existing untuk host lama tidak diganti. Endpoint vision, metadata, frame upload, actuator POST, dan control-mode mutation tidak menjadi kebutuhan remote host.
+Tidak ada route remote untuk `/healthz`, `/api/status`, `/api/telemetry`, endpoint vision, metadata, frame upload, actuator POST, atau control-mode mutation. Status/telemetry tetap internal atau berada pada ingress host lama sesuai konfigurasi existing dan tidak pernah dipanggil remote app.
 
 ## 9. Security tradeoff
 
@@ -346,13 +347,13 @@ Mitigasi yang tetap diwajibkan tanpa menyelundupkan token ke frontend:
 
 - default feature flag remote `false`, lalu aktifkan hanya pada Pi yang benar;
 - TLS/WSS/HTTPS dan hostname khusus remote;
-- route tunnel allowlist hanya untuk path status, telemetry, control WSS, dan raw Go2RTC;
+- route tunnel allowlist hanya untuk control WSS dan raw Go2RTC surface `atas`;
 - CORS exact origin dan pemeriksaan Origin WSS untuk mengurangi cross-site misuse, sambil tetap menganggapnya bukan auth;
 - satu sesi control aktif per ASV agar dua tab tidak mengirim override bersamaan; sesi baru tetap dapat mengambil alih karena auth memang tidak ada;
 - expiry server 500 ms, immediate release disconnect, heartbeat guard, observed `MANUAL`, pilot-input guard, dan validasi PWM 1000..2000;
 - `ASV_CONTROL_TOKEN` model tetap hanya berada di environment Pi; tidak ada static control token, secret, atau service key pada bundle Vercel;
-- tidak menyediakan arm/disarm, mode mutation, parameter write, atau autonomous spawn dari remote UI;
-- logging latency/sequence tidak mencatat secret.
+- tidak menyediakan arm/disarm, mode mutation, parameter write, autonomous spawn, atau data/status panel dari remote UI;
+- logging latency/sequence tidak mencatat secret dan tidak menambahkannya ke DOM.
 
 Tradeoff yang diterima: Origin check/CORS tidak mencegah penyerang yang mengetahui hostname dan dapat membuat WebSocket sendiri. Dengan tidak adanya auth, pengoperasian harus memperlakukan hostname sebagai endpoint kendali publik dan menjaga transmitter/operator siap mengambil alih. Auth aplikasi, Cloudflare Access, atau policy jaringan tambahan bukan bagian desain ini.
 
@@ -370,17 +371,17 @@ Budget untuk input event sampai frame command diterima dan disimpan backend:
 | Margin scheduling/clock/measurement | ≤5 ms |
 | **Total target** | **≤100 ms** |
 
-Budget ini tidak berarti actuator fisik pasti bergerak dalam 100 ms. Waktu Pixhawk loop, MAVLink, servo, ESC, dan dinamika kapal dilaporkan terpisah. Deadman 500 ms tetap batas keselamatan yang lebih penting daripada throughput.
+Budget ini tidak berarti actuator fisik pasti bergerak dalam 100 ms. Waktu Pixhawk loop, MAVLink, servo, ESC, dan dinamika kapal diukur terpisah melalui log/test harness. Deadman 500 ms tetap batas keselamatan yang lebih penting daripada throughput. Tidak ada angka budget atau hasil latency yang dirender di UI.
 
-### 10.2 Metode pengukuran
+### 10.2 Metode pengukuran internal
 
-Setiap command valid membawa `client_sent_at_ms`; backend mengembalikan nilai tersebut dan `server_received_at_ms` pada ack.
+Setiap command valid membawa `client_sent_at_ms`; backend mengembalikan nilai tersebut dan `server_received_at_ms` pada ack internal.
 
-- Untuk measurement authoritative input→backend, browser dan Pi disinkronkan NTP/clock source yang sama. Hitung `server_received_at_ms - client_sent_at_ms` per sequence. Simpan p50, p95, p99, max, frame loss, dan reconnect count dari sekurang-kurangnya 1000 command pada rate refresh yang sama dengan production.
+- Untuk measurement authoritative input→backend, browser dan Pi disinkronkan NTP/clock source yang sama. Test harness menghitung `server_received_at_ms - client_sent_at_ms` per sequence dan menyimpan p50, p95, p99, max, frame loss, serta reconnect count dari sekurang-kurangnya 1000 command pada rate refresh yang sama dengan production.
 - Karena clock publik dapat skew, test harness mencatat offset clock sebelum run dan menolak hasil yang tidak dikoreksi. Timestamp ack tidak boleh dipakai untuk mengklaim latency satu arah tanpa koreksi tersebut.
-- UI hanya menampilkan metric yang dapat diukur tanpa klaim palsu: RTT browser `performance.now()` dari send sampai ack, sequence terakhir, dan status channel. RTT bukan latency satu arah dan diberi label RTT.
+- RTT browser `performance.now()` dari send sampai ack boleh dicatat oleh test harness/log untuk diagnosis, tetapi tidak ditampilkan, tidak menjadi status, dan tidak masuk DOM.
 - Acceptance latency production memakai p95 ≤100 ms pada jaringan terkontrol/near-edge. Hasil Internet publik di atas 100 ms dicatat sebagai kondisi transport yang tidak dijamin, bukan alasan menghapus guard atau menaikkan deadman. Backend parse/queue tetap harus memenuhi ≤10 ms pada test lokal.
-- Ack `accepted` mengukur penerimaan/queue backend, bukan keberhasilan transmisi `RC_CHANNELS_OVERRIDE`; status Pixhawk/telemetry dan log reader menjadi bukti jalur hardware yang terpisah.
+- Ack `accepted` mengukur penerimaan/queue backend, bukan keberhasilan transmisi `RC_CHANNELS_OVERRIDE`; status Pixhawk/telemetry dan log reader menjadi bukti jalur hardware yang terpisah, bukan data remote UI.
 
 ## 11. Testing dan acceptance criteria
 
@@ -402,26 +403,28 @@ Implementasi dianggap memenuhi desain jika test berikut tersedia dan lulus:
 
 ### 11.2 Kontrak frontend
 
+- DOM remote memiliki tepat satu player/media surface source `atas` dan tepat dua input range direct PWM: steering dan throttle.
+- Tidak ada tombol enable, autonomy toggle, kamera kedua, panel status/telemetry, angka latency/sequence/PWM, acknowledgement/rejection text, overlay model/YOLO, vision metadata, atau elemen data lain.
 - UI mengirim `steering_pwm`/`throttle_pwm` langsung, bukan normalized intent atau field alternatif.
 - Interaksi input membuat frame WebSocket pada channel persisten dan tidak membuat POST per event.
-- Hold-to-enable mengirim refresh ≤200 ms, release mengirim `enabled=false`, unmount menutup channel, dan reconnect tidak mengaktifkan kembali kontrol otomatis.
-- Duplicate ack, rejection, timeout, close, dan backoff ditampilkan secara jujur; UI tidak menganggap accepted sebagai actuator applied.
-- URL control selalu WSS pada production origin remote dan URL video hanya berasal dari Go2RTC `api/ws`/raw MJPEG path.
-- Test network tidak menemukan `/ws/vision`, `/api/vision/metadata`, YOLO/model request, canvas detection overlay, atau static token pada bundle remote.
-- WebRTC player membersihkan peer/WebSocket/timer dan beralih ke raw MJPEG dalam tiga detik tanpa memengaruhi control channel.
-- Status offline muncul ketika FastAPI/tunnel/telemetry tidak tersedia; tidak ada command sintetis yang dikirim sebagai fallback.
+- Engagement pointer/keyboard mengirim `enabled=true` dengan refresh ≤200 ms; release, blur, visibility hidden, unmount, atau input cancellation mengirim `enabled=false` dan menghentikan refresh.
+- Ack, rejection, timeout, close, backoff, dan deadman tidak ditampilkan. WebSocket error/close atau kegagalan input hanya boleh menghentikan refresh dan membuat input disabled dengan state native browser bila diperlukan untuk keselamatan.
+- URL control selalu WSS pada production origin remote dan URL video hanya berasal dari Go2RTC `api/ws`/raw MJPEG path dengan `src=atas`.
+- Test network tidak menemukan `/ws/vision`, `/api/vision/metadata`, `/api/status`, `/api/telemetry`, YOLO/model request, kamera `bawah`, canvas detection overlay, atau static token pada bundle remote.
+- WebRTC player membersihkan peer/WebSocket/timer dan beralih ke satu raw MJPEG `atas` dalam tiga detik tanpa memengaruhi control channel.
+- Tidak ada command sintetis yang dikirim sebagai fallback ketika media atau control gagal.
 
 ### 11.3 Acceptance operasional
 
 Sebelum enable di air:
 
-1. Deploy remote project Vercel dan catat origin production yang sebenarnya.
-2. Isi CORS exact origin pada Pi dan konfigurasi ingress hostname remote pada tunnel Pora Pora yang sama.
-3. Verifikasi `GET /healthz`, status, telemetry, Go2RTC WebRTC, dan raw MJPEG dari browser production.
+1. Deploy remote project Vercel terpisah dan catat origin production yang sebenarnya.
+2. Isi CORS exact origin pada Pi dan konfigurasi ingress hostname remote pada tunnel Pora Pora yang sama, hanya untuk control WSS dan path Go2RTC surface.
+3. Verifikasi dari browser production bahwa satu stream raw surface `atas` dapat memakai WebRTC dan fallback MJPEG; pastikan tidak ada request status/telemetry dari remote app.
 4. Uji control di bangku dengan propulsi aman/disconnected dan transmitter tersedia sebagai override fisik.
-5. Verifikasi browser menerima ack sequence/timestamp, backend hanya memiliki satu Pixhawk reader, observed mode `MANUAL`, dan command release saat tombol dilepas.
+5. Verifikasi secara internal browser menerima ack, backend hanya memiliki satu Pixhawk reader, observed mode `MANUAL`, dan command release saat slider dilepas; tidak perlu merender hasil tersebut.
 6. Putuskan jaringan/close tab; ukur release ≤500 ms plus scheduling loop existing dan pastikan output kembali ke authority Pixhawk/transmitter.
-7. Jalankan latency probe 1000 command dengan NTP-corrected timestamp; catat p50/p95/p99 dan kondisi jaringan. P95 terkontrol harus ≤100 ms.
+7. Jalankan latency probe internal 1000 command dengan NTP-corrected timestamp; catat p50/p95/p99 dan kondisi jaringan. P95 terkontrol harus ≤100 ms; hasil hanya menjadi log/test evidence.
 8. Pastikan dashboard lama tetap berfungsi pada host lama dan tidak menerima perubahan UI atau jalur data remote.
 
 ## 12. Rollout dan rollback
@@ -429,11 +432,11 @@ Sebelum enable di air:
 ### Rollout bertahap
 
 1. Tambahkan workspace dan kontrak backend dengan feature flag tetap `ASV_REMOTE_CONTROL_ENABLED=false`.
-2. Tambahkan ingress remote pada tunnel yang sama dengan route video/read-only lebih dulu; verifikasi raw Go2RTC dan status.
+2. Tambahkan ingress remote pada tunnel yang sama dengan route surface Go2RTC/control WSS; verifikasi satu raw stream `atas` lebih dulu.
 3. Deploy static remote app ke project Vercel terpisah; set hanya public origin backend/video dan ASV id. Jangan set token.
-4. Tambahkan origin Vercel production ke allowlist CORS/WS pada Pi, lalu uji handshake control dalam mode disabled untuk memastikan penolakan jujur.
+4. Tambahkan origin Vercel production ke allowlist CORS/WS pada Pi, lalu uji handshake control dalam mode disabled untuk memastikan penolakan internal tetap benar.
 5. Set `ASV_REMOTE_CONTROL_ENABLED=true` hanya setelah Pixhawk reader, observed `MANUAL`, safety switch, transmitter fallback, dan bench test diverifikasi. Restart service secara normal sehingga close path me-release override.
-6. Pantau ack rejection, RTT, ingress p95, reconnect, heartbeat, dan release. Tidak ada perubahan pada dashboard lama selama rollout.
+6. Pantau log ack/rejection, RTT, ingress p95, reconnect, heartbeat, dan release secara internal. Tidak ada perubahan pada dashboard lama selama rollout.
 
 ### Rollback
 
@@ -441,15 +444,15 @@ Sebelum enable di air:
 - Jika perlu, hapus route `/ws/control/.*` dari hostname remote atau arahkan host remote ke `http_status:404`; route dashboard lama tetap dipertahankan.
 - Rollback Vercel ke deployment remote sebelumnya atau nonaktifkan project remote. Tidak perlu dan tidak boleh membuat backend/Pixhawk kedua.
 - Biarkan `ASV_MODEL_ACTUATORS_ENABLED` dan `ASV_CONTROL_TOKEN` existing tetap sesuai jalur model; jangan menghapus token Pi sebagai cara rollback remote.
-- Jika video bermasalah, rollback hanya route/player Go2RTC ke raw MJPEG; jangan mengubah control deadman atau menyamakan jalur video dengan control.
+- Jika video bermasalah, rollback hanya route/player Go2RTC ke raw MJPEG `atas`; jangan mengubah control deadman atau menyamakan jalur video dengan control.
 
-## 13. Open assumptions
+## 13. Assumptions
 
 - `ASV_ID` production tetap `default`, sehingga path contoh menggunakan `/ws/control/default`.
 - FastAPI bridge lokal tetap pada `127.0.0.1:8080`, dan Go2RTC existing tetap pada `127.0.0.1:1984`, sesuai topologi operasional repo.
-- Go2RTC sudah dikonfigurasi dengan source `atas` dan `bawah` serta menyediakan signaling/WebRTC/raw MJPEG pada path yang disebutkan.
+- Go2RTC sudah dikonfigurasi dengan source `atas` serta menyediakan signaling/WebRTC/raw MJPEG pada path yang disebutkan.
 - Tunnel remote yang dipakai adalah tunnel Cloudflare Pora Pora yang sama, dengan hostname `remote.monitor-kapal-pora-pora.web.id`; tidak ada tunnel baru.
-- Nama/domain final project Vercel remote belum diberikan pada brief. Kontrak sengaja tidak menebak nama itu: origin production yang benar harus dimasukkan sebagai nilai exact pada `ASV_CORS_ORIGINS` sebelum control diaktifkan.
+- Remote UI dideploy sebagai project/domain Vercel terpisah dari backend tunnel. Origin Vercel production yang benar dicatat sebagai nilai exact pada `ASV_CORS_ORIGINS` sebelum control diaktifkan.
 - Browser operator mendukung WebSocket, WebRTC, dan `<img>` raw MJPEG; fallback tidak memerlukan model atau overlay.
 - ArduPilot Rover Boat pada Pixhawk V2.4.8 tetap dikendalikan oleh satu reader backend dan observed flight mode `MANUAL` saat direct PWM dipakai.
 - Tidak ada autentikasi aplikasi pada release pertama; hostname remote diperlakukan sebagai endpoint control publik dan operator menerima tradeoff tersebut.
