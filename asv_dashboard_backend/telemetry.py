@@ -278,15 +278,26 @@ class PixhawkTelemetryReader:
                 self._release_actuator_override_locked()
                 return
 
+            steering_pwm = getattr(command, "steering_pwm", None)
+            throttle_pwm = getattr(command, "throttle_pwm", None)
+            if (
+                type(steering_pwm) is not int
+                or type(throttle_pwm) is not int
+                or not 1000 <= steering_pwm <= 2000
+                or not 1000 <= throttle_pwm <= 2000
+            ):
+                self._release_actuator_override_locked()
+                return
+
             try:
                 target_sys = getattr(connection, "target_system", 1) or 1
                 target_comp = getattr(connection, "target_component", 1) or 1
                 connection.mav.rc_channels_override_send(
                     target_sys,
                     target_comp,
-                    command.steering_pwm,
+                    steering_pwm,
                     65535,
-                    command.throttle_pwm,
+                    throttle_pwm,
                     65535,
                     65535,
                     65535,
