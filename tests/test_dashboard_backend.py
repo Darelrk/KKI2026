@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import time
 from datetime import datetime, timezone
 
 import pytest
@@ -16,6 +17,7 @@ from asv_dashboard_backend.state import (
     ControlModePayload,
     VisionMetadata,
 )
+from asv_dashboard_backend.telemetry import PixhawkTelemetryReader
 
 SMALL_JPEG = base64.b64decode(
     "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAAJABADASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAj/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFAEBAAAAAAAAAAAAAAAAAAAABf/EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhEDEQA/AJpAIAn/2Q=="
@@ -268,6 +270,96 @@ def test_actuator_endpoint_requires_token_and_queues_command() -> None:
     assert len(reader.commands) == 1
     assert reader.commands[0].steering_pwm == 1490
     assert reader.commands[0].throttle_pwm == 1540
+
+def test_control_websocket_delegates_to_real_pixhawk_reader(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class FakeMav:
+        def __init__(self) -> None:
+            self.sent: list[tuple[object, ...]] = []
+
+        def rc_channels_override_send(self, *values: object) -> None:
+            self.sent.append(values)
+
+    class FakeConnection:
+        target_system = 7
+        target_component = 9
+        flightmode = "MANUAL"
+
+        def __init__(self) -> None:
+            self.mav = FakeMav()
+            self.closed = False
+
+        def recv_match(self, **_kwargs: object) -> None:
+            return None
+
+        def close(self) -> None:
+            self.closed = True
+
+    settings_with_remote = BridgeSettings(
+        asv_id="default",
+        cors_origins=("https://dashboard.example.test",),
+        pixhawk_enabled=True,
+        pixhawk_heartbeat_timeout=30.0,
+        remote_control_enabled=True,
+    )
+    reader = PixhawkTelemetryReader(settings_with_remote)
+    connection = FakeConnection()
+    reader._connection = connection
+    reader._mode = "MANUAL"
+    now = time.monotonic()
+    reader._last_heartbeat_monotonic = now
+    reader._last_pilot_input_monotonic = now - 2.0
+
+    connection_attempts: list[tuple[tuple[object, ...], dict[str, object]]] = []
+
+    def fail_if_connection_created(
+        *args: object, **kwargs: object
+    ) -> None:
+        connection_attempts.append((args, kwargs))
+        raise AssertionError("WebSocket must reuse the reader's Pixhawk link")
+
+    monkeypatch.setattr(
+        "pymavlink.mavutil.mavlink_connection",
+        fail_if_connection_created,
+    )
+    app = create_app(settings=settings_with_remote, telemetry_reader=reader)
+
+    with TestClient(app) as client:
+        with client.websocket_connect(
+            "/ws/control/default",
+            headers={"origin": "https://dashboard.example.test"},
+        ) as socket:
+            socket.send_json(
+                {
+                    "type": "control",
+                    "seq": 1,
+                    "client_sent_at_ms": 100,
+                    "steering_pwm": 1475,
+                    "throttle_pwm": 1585,
+                    "enabled": True,
+                }
+            )
+            ack = socket.receive_json()
+            reader._apply_actuator_command()
+
+            assert ack["type"] == "ack"
+            assert ack["accepted"] is True
+            assert ack["reason"] is None
+            assert connection.mav.sent[-1] == (
+                7,
+                9,
+                1475,
+                65535,
+                1585,
+                65535,
+                65535,
+                65535,
+                65535,
+                65535,
+            )
+
+    assert connection_attempts == []
 
 
 def test_read_endpoints_allow_configured_dashboard_origin() -> None:

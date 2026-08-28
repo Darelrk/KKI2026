@@ -401,6 +401,32 @@ def test_remote_control_applies_fresh_pwm_on_existing_safe_link(
     ]
 
 
+def test_remote_control_invalid_mutation_releases_without_sending_bad_pwm(
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr("asv_dashboard_backend.telemetry.time.monotonic", lambda: 10.0)
+    reader, connection = make_remote_ready_reader()
+    command = make_remote_command(steering_pwm=1475, throttle_pwm=1585)
+
+    reader.submit_remote_control(command, "session-a", 10.0)
+    reader._apply_actuator_command()
+    assert connection.mav.sent[-1][2:5] == (1475, 65535, 1585)
+
+    command.steering_pwm = 1475.5  # type: ignore[assignment]
+    reader._apply_actuator_command()
+    assert connection.mav.sent[-1] == (7, 9, 0, 0, 0, 0, 0, 0, 0, 0)
+
+    reader.submit_remote_control(make_remote_command(seq=2), "session-a", 11.0)
+    reader._apply_actuator_command()
+    command = reader._remote_command
+    assert command is not None
+    command.throttle_pwm = "1580"  # type: ignore[assignment]
+    reader._apply_actuator_command()
+
+    assert connection.mav.sent[-1] == (7, 9, 0, 0, 0, 0, 0, 0, 0, 0)
+    assert len(connection.mav.sent) == 4
+
+
 def test_remote_control_expiry_releases_channels_without_model_fallback(
     monkeypatch,
 ) -> None:
@@ -605,3 +631,18 @@ def test_reset_connection_clears_remote_releases_and_allows_reconnect(
     assert reader._connection is None
     assert connection.closed is True
     assert connection.mav.sent[-1] == (7, 9, 0, 0, 0, 0, 0, 0, 0, 0)
+
+    new_connection = FakeOverrideConnection()
+    connection_attempts: list[tuple[tuple[object, ...], dict[str, object]]] = []
+
+    def connect(*args: object, **kwargs: object) -> FakeOverrideConnection:
+        connection_attempts.append((args, kwargs))
+        return new_connection
+
+    monkeypatch.setattr("pymavlink.mavutil.mavlink_connection", connect)
+    reader._request_telemetry_streams = lambda: None  # type: ignore[method-assign]
+    reader._next_reconnect = 0.0
+    asyncio.run(reader._connect_if_due())
+
+    assert len(connection_attempts) == 1
+    assert reader._connection is new_connection
