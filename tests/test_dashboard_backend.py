@@ -5,12 +5,17 @@ from datetime import datetime, timezone
 
 import pytest
 from fastapi.testclient import TestClient
+from pydantic import ValidationError
 from starlette.websockets import WebSocketDisconnect
 
 from asv_dashboard_backend.config import BridgeSettings
 from asv_dashboard_backend.frames import FrameTooLargeError, build_underwater_payload
 from asv_dashboard_backend.main import create_app
-from asv_dashboard_backend.state import BridgeState, VisionMetadata
+from asv_dashboard_backend.state import (
+    BridgeState,
+    ControlModePayload,
+    VisionMetadata,
+)
 
 SMALL_JPEG = base64.b64decode(
     "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAAJABADASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAj/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFAEBAAAAAAAAAAAAAAAAAAAABf/EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhEDEQA/AJpAIAn/2Q=="
@@ -25,6 +30,24 @@ def settings() -> BridgeSettings:
         max_base64_length=180_000,
         max_fps=1.0,
     )
+
+
+def test_control_mode_defaults_to_manual_and_setter_transitions_both_directions() -> None:
+    state = BridgeState(settings())
+
+    assert state.control_mode == "MANUAL"
+    assert state.set_control_mode("AUTONOMOUS") == "AUTONOMOUS"
+    assert state.control_mode == "AUTONOMOUS"
+    assert state.set_control_mode("MANUAL") == "MANUAL"
+    assert state.control_mode == "MANUAL"
+
+
+def test_control_mode_payload_rejects_invalid_case_and_extra_fields() -> None:
+    with pytest.raises(ValidationError):
+        ControlModePayload.model_validate({"mode": "manual"})
+
+    with pytest.raises(ValidationError):
+        ControlModePayload.model_validate({"mode": "MANUAL", "extra": True})
 
 
 class CapturingTelemetryReader:

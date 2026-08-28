@@ -12,6 +12,15 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 from .config import BridgeSettings
 
 
+ControlMode = Literal["MANUAL", "AUTONOMOUS"]
+
+
+class ControlModePayload(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    mode: ControlMode
+
+
 class AsvLiveStatus(BaseModel):
     """Status row mirrored to the dashboard's ``asv_live`` table."""
 
@@ -83,6 +92,7 @@ class BridgeState:
 
     def __init__(self, settings: BridgeSettings) -> None:
         self.settings = settings
+        self.control_mode: ControlMode = "MANUAL"
         self.status = AsvLiveStatus(
             id=settings.asv_id,
             online=False,
@@ -98,6 +108,11 @@ class BridgeState:
         self._detection_subscribers: set[asyncio.Queue[VisionMetadata]] = set()
         self._latest_telemetry: dict[str, Any] | None = None
         self._telemetry_subscribers: set[asyncio.Queue[dict[str, Any]]] = set()
+
+    def set_control_mode(self, mode: str) -> ControlMode:
+        payload = ControlModePayload.model_validate({"mode": mode})
+        self.control_mode = payload.mode
+        return payload.mode
 
     def update_status(self, status: AsvLiveStatus) -> AsvLiveStatus:
         if status.id != self.settings.asv_id:
