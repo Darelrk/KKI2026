@@ -39,7 +39,7 @@ Keputusan arsitektur utama:
 - Pelepasan override segera ketika control WebSocket disconnect, superseded, expired, backend berhenti, atau guard Pixhawk gagal.
 - Pemeliharaan validasi PWM, expiry, heartbeat Pixhawk, observed flightmode `MANUAL`, pilot-input guard, dan actuator safety yang sudah ada.
 - CORS HTTP dan pemeriksaan `Origin` WebSocket yang membatasi browser remote tanpa menyebutnya sebagai autentikasi.
-- Routing hostname remote pada tunnel yang sama hanya untuk control WSS dan path Go2RTC yang diperlukan oleh source `atas`.
+- Routing hostname remote pada tunnel yang sama hanya untuk control WSS dan path Go2RTC yang diperlukan player; UI/player hanya meminta source `atas`, tetapi path routing tidak memfilter query.
 - Kontrak pengukuran latency internal, acceptance criteria, rollout, dan rollback.
 
 ### 2.2 Tidak termasuk
@@ -96,7 +96,7 @@ Host lama `monitor-kapal-pora-pora.web.id` tetap melayani dashboard lama sesuai 
 Video dan kontrol adalah dua jalur terpisah:
 
 - Control: browser → WSS → Cloudflare → FastAPI → latest command → `PixhawkTelemetryReader` → `RC_CHANNELS_OVERRIDE` bila semua guard lolos.
-- Video: browser → Go2RTC signaling WSS/HTTPS → Cloudflare → Go2RTC → satu stream source `atas`; jika WebRTC gagal, player yang sama beralih ke raw MJPEG. Jalur ini tidak mengirim command dan tidak menerima metadata vision.
+- Video: browser → Go2RTC signaling WSS/HTTPS → Cloudflare → Go2RTC; player hanya meminta satu stream source `atas`; jika WebRTC gagal, player yang sama beralih ke raw MJPEG. Jalur ini tidak mengirim command dan tidak menerima metadata vision.
 
 Endpoint status/telemetry FastAPI bukan bagian dari remote app dan tidak dirutekan pada host remote. Endpoint tersebut tetap boleh dipakai secara internal atau oleh host dashboard lama sesuai konfigurasi existing.
 
@@ -121,7 +121,7 @@ Endpoint status/telemetry FastAPI bukan bagian dari remote app dan tidak dirutek
 | File | Tanggung jawab pada desain ini |
 |---|---|
 | `deploy/raspberry-pi/asv-dashboard.env.example` | Mendokumentasikan `ASV_REMOTE_CONTROL_ENABLED=false` sebagai default aman, `ASV_REMOTE_COMMAND_TIMEOUT=0.5`, `ASV_PIXHAWK_ENABLED=true` hanya pada host yang memang akan dikendalikan, serta `ASV_CORS_ORIGINS` berisi origin Vercel remote yang sebenarnya dan origin development yang diperlukan saja. `ASV_CONTROL_TOKEN` tetap rahasia di Pi untuk jalur model dan tidak pernah disalin ke Vercel. |
-| `deploy/raspberry-pi/cloudflared-config.example.yml` | Menambahkan route host `remote.monitor-kapal-pora-pora.web.id` hanya ke FastAPI untuk `/ws/control/.*` dan ke Go2RTC untuk `/api/ws`, `/api/webrtc`, `/api/stream.mp4`, serta `/api/stream.mjpeg?src=atas`. Route lain berakhir 404 pada host remote. Upgrade WebSocket harus diteruskan. Ingress host lama tetap ada. |
+| `deploy/raspberry-pi/cloudflared-config.example.yml` | Menambahkan route host `remote.monitor-kapal-pora-pora.web.id` hanya ke FastAPI untuk `/ws/control/.*` dan ke Go2RTC untuk path `/api/ws`, `/api/webrtc`, `/api/stream.mp4`, serta `/api/stream.mjpeg`; player menambahkan `?src=atas` pada request yang relevan. Path matcher tidak memfilter query, sehingga konfigurasi ini tidak menegakkan isolasi source; route lain berakhir 404 pada host remote. Upgrade WebSocket harus diteruskan. Ingress host lama tetap ada. |
 | `deploy/raspberry-pi/asv-dashboard.service` | Tetap menjalankan satu `uvicorn asv_dashboard_backend.main:app` pada port 8080. Tidak ada unit service baru untuk remote control dan tidak ada service Pixhawk kedua. |
 | service Go2RTC existing | Tetap menjadi pemilik media pada port lokal 1984. Konfigurasi source `atas` harus sudah menghasilkan raw Go2RTC/WebRTC/MJPEG sebelum remote UI diaktifkan. |
 
@@ -148,7 +148,7 @@ Tidak ada `live-data.ts` atau `remote-status-strip.ts` pada remote workspace. Ko
 
 ### 6.1 Path media remote
 
-Remote app tidak memanggil endpoint FastAPI status/telemetry/health. Ia hanya memakai path Go2RTC yang diperlukan untuk satu source surface `atas` melalui `https://remote.monitor-kapal-pora-pora.web.id`:
+Remote app tidak memanggil endpoint FastAPI status/telemetry/health. Ia hanya meminta path Go2RTC yang diperlukan untuk satu source surface `atas` melalui `https://remote.monitor-kapal-pora-pora.web.id`; `?src=atas` adalah request UI/player, bukan filter yang ditegakkan oleh path routing.
 
 | Method/path | Pemilik | Fungsi |
 |---|---|---|
@@ -329,11 +329,12 @@ Aturan host remote pada tunnel yang sama secara konseptual adalah:
 | Host/path | Service lokal | Alasan |
 |---|---|---|
 | `remote.monitor-kapal-pora-pora.web.id/ws/control/.*` | `http://127.0.0.1:8080` | Persistent control WSS dan upgrade. |
-| `remote.monitor-kapal-pora-pora.web.id/api/ws` | `http://127.0.0.1:1984` | Go2RTC signaling; `src=atas` wajib. |
+| `remote.monitor-kapal-pora-pora.web.id/api/ws` | `http://127.0.0.1:1984` | Go2RTC signaling; player request menggunakan `src=atas`, tetapi tunnel path matching tidak memeriksa query. |
 | `remote.monitor-kapal-pora-pora.web.id/api/webrtc` | `http://127.0.0.1:1984` | Go2RTC HTTP negotiation untuk surface bila diperlukan. |
 | `remote.monitor-kapal-pora-pora.web.id/api/stream.mp4` | `http://127.0.0.1:1984` | Go2RTC compatibility path untuk surface bila diperlukan. |
-| `remote.monitor-kapal-pora-pora.web.id/api/stream.mjpeg?src=atas` | `http://127.0.0.1:1984` | Satu-satunya raw MJPEG fallback surface. |
+| `remote.monitor-kapal-pora-pora.web.id/api/stream.mjpeg` | `http://127.0.0.1:1984` | Raw MJPEG fallback path; player request menambahkan `?src=atas`, tetapi tunnel path matching tidak memeriksa query. |
 | route lain | `http_status:404` | Tidak dipublikasikan pada host remote. |
+Path matcher cloudflared hanya mencocokkan path, bukan query string. Karena itu, konfigurasi ini meneruskan `/api/ws?src=...` dan `/api/stream.mjpeg?src=...` ke Go2RTC tanpa memvalidasi nilai query. UI/player hanya meminta `src=atas`; dengan tradeoff publik tanpa autentikasi aplikasi, caller yang mengetahui hostname tetap dapat meminta source lain jika Go2RTC mengeksposnya. Isolasi source yang ketat memerlukan konfigurasi proxy/Go2RTC yang terpisah dan di-scope secara eksplisit, di luar desain ini.
 
 Tidak ada route remote untuk `/healthz`, `/api/status`, `/api/telemetry`, endpoint vision, metadata, frame upload, actuator POST, atau control-mode mutation. Status/telemetry tetap internal atau berada pada ingress host lama sesuai konfigurasi existing dan tidak pernah dipanggil remote app.
 
@@ -347,7 +348,7 @@ Mitigasi yang tetap diwajibkan tanpa menyelundupkan token ke frontend:
 
 - default feature flag remote `false`, lalu aktifkan hanya pada Pi yang benar;
 - TLS/WSS/HTTPS dan hostname khusus remote;
-- route tunnel allowlist hanya untuk control WSS dan raw Go2RTC surface `atas`;
+- route tunnel allowlist hanya untuk control WSS dan path Go2RTC yang diperlukan player; UI/player hanya meminta `src=atas`, tetapi query source tidak difilter oleh konfigurasi ini;
 - CORS exact origin dan pemeriksaan Origin WSS untuk mengurangi cross-site misuse, sambil tetap menganggapnya bukan auth;
 - satu sesi control aktif per ASV agar dua tab tidak mengirim override bersamaan; sesi baru tetap dapat mengambil alih karena auth memang tidak ada;
 - expiry server 500 ms, immediate release disconnect, heartbeat guard, observed `MANUAL`, pilot-input guard, dan validasi PWM 1000..2000;
@@ -419,7 +420,7 @@ Implementasi dianggap memenuhi desain jika test berikut tersedia dan lulus:
 Sebelum enable di air:
 
 1. Deploy remote project Vercel terpisah dan catat origin production yang sebenarnya.
-2. Isi CORS exact origin pada Pi dan konfigurasi ingress hostname remote pada tunnel Pora Pora yang sama, hanya untuk control WSS dan path Go2RTC surface.
+2. Isi CORS exact origin pada Pi dan konfigurasi ingress hostname remote pada tunnel Pora Pora yang sama, hanya untuk control WSS dan path Go2RTC yang diperlukan player. Pastikan `src=atas` diperlakukan sebagai request UI/player, bukan query filter tunnel; konfigurasi ini tidak menyediakan isolasi source yang ketat tanpa proxy/Go2RTC terpisah di luar desain.
 3. Verifikasi dari browser production bahwa satu stream raw surface `atas` dapat memakai WebRTC dan fallback MJPEG; pastikan tidak ada request status/telemetry dari remote app.
 4. Uji control di bangku dengan propulsi aman/disconnected dan transmitter tersedia sebagai override fisik.
 5. Verifikasi secara internal browser menerima ack, backend hanya memiliki satu Pixhawk reader, observed mode `MANUAL`, dan command release saat slider dilepas; tidak perlu merender hasil tersebut.

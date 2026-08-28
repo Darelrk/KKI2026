@@ -23,7 +23,7 @@
 ### Deployment
 
 - Modify `deploy/raspberry-pi/asv-dashboard.env.example`: safe defaults, timeout `0.5`, exact CORS origin guidance, dan token tetap Pi-only.
-- Modify `deploy/raspberry-pi/cloudflared-config.example.yml`: host remote pada tunnel existing hanya untuk control WSS dan surface Go2RTC; host lama tetap.
+- Modify `deploy/raspberry-pi/cloudflared-config.example.yml`: host remote pada tunnel existing hanya untuk control WSS dan Go2RTC media paths yang diperlukan player; UI/player hanya meminta source `atas`, sementara path routing tidak memfilter query; host lama tetap.
 - Keep `deploy/raspberry-pi/asv-dashboard.service` unchanged: satu Uvicorn `:8080`; Go2RTC existing tetap `127.0.0.1:1984`.
 
 ### Workspace baru
@@ -46,7 +46,7 @@
 - `ASV_REMOTE_CONTROL_ENABLED` default `false`; enabling membutuhkan `ASV_PIXHAWK_ENABLED=true`. `ASV_REMOTE_COMMAND_TIMEOUT` default/deployment `0.5`, dan konfigurasi menolak nilai `>0.5`.
 - Deadman memakai `time.monotonic()` server sejak command diterima. Reader hanya mengirim latest remote command yang masih owner, berumur `<=0.5` detik, dan lolos feature flag, `BridgeState.control_mode == MANUAL`, connection/heartbeat, observed `_mode == MANUAL`, pilot-input guard, serta validasi actuator.
 - `POST /api/control/actuator` dan `ASV_CONTROL_TOKEN` tetap untuk publisher/model Pi-only; remote channel tidak memakai endpoint tersebut. CORS HTTP dan Origin WebSocket exact allowlist tanpa wildcard, `allow_credentials=false`; allowlist bukan autentikasi.
-- Camera hanya Go2RTC `wss://remote.monitor-kapal-pora-pora.web.id/api/ws?src=atas`, `/api/webrtc`, `/api/stream.mp4`, dan raw fallback `https://remote.monitor-kapal-pora-pora.web.id/api/stream.mjpeg?src=atas`. Tidak ada `bawah`, `/ws/vision`, vision metadata, model, YOLO, canvas, atau overlay.
+- UI/player hanya memakai satu kamera Go2RTC surface dengan request `wss://remote.monitor-kapal-pora-pora.web.id/api/ws?src=atas`, `/api/webrtc`, `/api/stream.mp4`, dan raw fallback `https://remote.monitor-kapal-pora-pora.web.id/api/stream.mjpeg?src=atas`. Tidak ada `bawah`, `/ws/vision`, vision metadata, model, YOLO, canvas, atau overlay. UI/player hanya meminta `src=atas`; query tersebut bukan filter yang ditegakkan oleh path routing tunnel dalam deployment tanpa auth. Isolasi source ketat memerlukan konfigurasi proxy/Go2RTC yang terpisah dan di-scope eksplisit, di luar implementasi ini.
 
 ---
 
@@ -180,10 +180,10 @@ git commit -m "feat: enforce remote PWM deadman in Pixhawk reader"
 - [ ] **Step 1: Tulis failing config check.**
 
 ```bash
-python -c "from pathlib import Path; p=Path('deploy/raspberry-pi/cloudflared-config.example.yml').read_text(); required=['remote.monitor-kapal-pora-pora.web.id','^/ws/control/','^/api/ws$','^/api/stream\\.mjpeg$']; assert all(x in p for x in required)"
+python -c "from pathlib import Path; p=Path('deploy/raspberry-pi/cloudflared-config.example.yml').read_text(); required=['remote.monitor-kapal-pora-pora.web.id','^/ws/control/','^/api/ws$','^/api/stream\\.mjpeg$','?src=atas','path routing cannot filter query','strict source isolation','outside this implementation']; assert all(x in p for x in required)"
 ```
 
-Expected sebelum edit: `AssertionError` karena route minimal remote belum ada.
+Expected sebelum edit: `AssertionError` karena dokumentasi boundary query source belum ada, meskipun route remote mungkin sudah tersedia.
 
 - [ ] **Step 2: Implementasikan env dan ingress.** Tambahkan `ASV_REMOTE_CONTROL_ENABLED=false` dan `ASV_REMOTE_COMMAND_TIMEOUT=0.5`; pertahankan `ASV_PIXHAWK_ENABLED=false` pada contoh umum. Runtime Pi pengendali mengubah Pixhawk menjadi `true` dan mengisi `ASV_CORS_ORIGINS` dengan exact HTTPS origin Vercel serta origin development `http://localhost:3000` untuk dashboard lama dan `http://localhost:3001` untuk remote workspace bila diperlukan; tidak ada wildcard, token, atau secret frontend.
 
@@ -209,6 +209,7 @@ Tambahkan sebelum catch-all Cloudflare route berikut, tanpa mengganti host lama:
     path: ^/.*$
     service: http_status:404
 ```
+Path rules hanya mencocokkan URL path dan tidak memeriksa query string. Remote UI/player meminta `/api/ws?src=atas` dan `/api/stream.mjpeg?src=atas`, tetapi konfigurasi tunnel ini tidak menegakkan isolasi source berbasis query; pada tradeoff publik tanpa auth, caller tetap dapat meminta `src` lain bila Go2RTC mengeksposnya. Isolasi source yang ketat memerlukan konfigurasi proxy/Go2RTC yang terpisah dan di-scope secara eksplisit, di luar implementasi ini. Jangan menambahkan filter, proxy/worker, atau instance Go2RTC pada task ini.
 
 Cloudflared meneruskan upgrade WebSocket tanpa buffering/proxy Vercel. Host remote tidak merutekan `/api/status`, `/api/telemetry`, `/ws/vision`, vision metadata, actuator POST, mode mutation, frame upload, atau underwater stream. Existing systemd tetap satu Uvicorn `:8080`; Go2RTC tetap local `:1984`.
 
@@ -352,9 +353,9 @@ cloudflared tunnel ingress validate --config deploy/raspberry-pi/cloudflared-con
 curl -i "https://remote.monitor-kapal-pora-pora.web.id/api/stream.mjpeg?src=atas"
 ```
 
-Expected: ingress `OK`, raw surface response `200` dengan MJPEG content type; control socket production close `1008` karena feature disabled.
+Expected: ingress `OK`, raw surface response `200` dengan MJPEG content type; ini hanya memverifikasi request UI/player `src=atas`, bukan enforcement query source oleh tunnel.
 
-- [ ] **Step 3: DevTools smoke minimal.** Di halaman production pastikan hanya dua slider dan satu surface camera; tidak ada status, telemetry, latency, ack, mode, autonomy, underwater, atau data lain. Network hanya melihat Go2RTC `/api/ws?src=atas` atau fallback `/api/stream.mjpeg?src=atas`; tidak ada `/api/ws?src=bawah`, `/ws/vision`, vision metadata, model/YOLO, canvas, atau POST actuator. WS control tepat `wss://remote.monitor-kapal-pora-pora.web.id/ws/control/default`; slider mengirim direct integer PWM dan release internal `enabled=false`; ack tidak dirender. WebRTC timeout tiga detik membersihkan resource dan menampilkan raw MJPEG tanpa memengaruhi control channel.
+- [ ] **Step 3: DevTools smoke minimal.** Di halaman production pastikan hanya dua slider dan satu surface camera; tidak ada status, telemetry, latency, ack, mode, autonomy, underwater, atau data lain. Network hanya melihat Go2RTC `/api/ws?src=atas` atau fallback `/api/stream.mjpeg?src=atas`; tidak ada `/api/ws?src=bawah`, `/ws/vision`, vision metadata, model/YOLO, canvas, atau POST actuator. WS control tepat `wss://remote.monitor-kapal-pora-pora.web.id/ws/control/default`; slider mengirim direct integer PWM dan release internal `enabled=false`; ack tidak dirender. WebRTC timeout tiga detik membersihkan resource dan menampilkan raw MJPEG tanpa memengaruhi control channel. Network check ini adalah kontrak UI/player, bukan bukti tunnel menolak query source lain.
 
 - [ ] **Step 4: Bench enable dan safety verification.** Dengan propeller aman/disconnected, transmitter tersedia, observed Pixhawk mode `MANUAL`, heartbeat sehat, pilot neutral, dan satu reader terbukti, ubah `ASV_REMOTE_CONTROL_ENABLED=true` tanpa menaikkan timeout, lalu restart service. Uji Origin/ASV/feature rejection, second-tab supersede `4001`, slider release, close tab/network, frame stop `>500 ms`, autonomous mode, heartbeat loss, flightmode change, dan pilot input; setiap kasus harus release tanpa synthetic success/neutral command.
 
@@ -366,10 +367,11 @@ Expected: ingress `OK`, raw surface response `200` dengan MJPEG content type; co
 
 ## Non-goals
 
-Tidak mengganti dashboard lama; tidak menampilkan telemetry/status/latency/ack/error atau data lain pada remote UI; tidak ada underwater camera; tidak ada backend cloud, Vercel Function/proxy, database realtime, Supabase, application auth, Cloudflare Access, token frontend, browser MAVLink, Pixhawk connection kedua, arm/disarm, mode/parameter/mission mutation, autonomous runner, firmware/mekanik/navigation change, YOLO/model/inference, vision metadata, canvas/overlay/tracking, sensor fusion, atau synthetic fallback command. P95 ≤100 ms adalah pengukuran operasional input→backend latest slot setelah clock correction, bukan SLA Internet atau jaminan actuator fisik; deadman server 500 ms tidak dapat dinaikkan.
+Tidak mengganti dashboard lama; tidak menampilkan telemetry/status/latency/ack/error atau data lain pada remote UI; tidak ada underwater camera; tidak ada backend cloud, Vercel Function/proxy, database realtime, Supabase, application auth, Cloudflare Access, token frontend, browser MAVLink, Pixhawk connection kedua, arm/disarm, mode/parameter/mission mutation, autonomous runner, firmware/mekanik/navigation change, YOLO/model/inference, vision metadata, canvas/overlay/tracking, sensor fusion, atau synthetic fallback command. UI/player hanya meminta `src=atas`, tetapi tunnel path matcher tidak memfilter query; isolasi source ketat memerlukan konfigurasi proxy/Go2RTC terpisah yang di-scope eksplisit dan berada di luar implementasi ini. P95 ≤100 ms adalah pengukuran operasional input→backend latest slot setelah clock correction, bukan SLA Internet atau jaminan actuator fisik; deadman server 500 ms tidak dapat dinaikkan.
 
 ## Self-review singkat
 
 - Enam task mencakup protocol/config/route, single-reader deadman/guards, tunnel/Pi, workspace satu surface + dua slider, safety regression, serta Vercel/DevTools/measurement/rollback.
 - Kontrak konsisten pada `default`, PWM `1000..2000`, WSS path, exact Origin, sequence/ack internal, refresh `200 ms`, timeout `0.5`, dan satu Pixhawk owner.
 - Tidak ada live-data/status/telemetry/latency panel, underwater/model/YOLO/overlay, atau perubahan `simulation/`, `model/`, `worlds/`; hanya plan ini yang menjadi target commit.
+- Scope media membedakan request UI/player `src=atas` dari batas tunnel: query tidak difilter; tradeoff publik tanpa application auth dan isolasi source ketat di luar implementasi terdokumentasi.
