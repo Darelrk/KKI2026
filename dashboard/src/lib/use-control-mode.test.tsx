@@ -13,14 +13,14 @@ vi.mock('./direct-live', () => ({
 
 const bridgeUrl = 'https://monitor-kapal-pora-pora.web.id'
 
-function createWrapper() {
-  const queryClient = new QueryClient({
+function createWrapper(
+  queryClient = new QueryClient({
     defaultOptions: {
       mutations: { retry: false },
       queries: { retry: false },
     },
-  })
-
+  }),
+) {
   return function QueryWrapper({ children }: PropsWithChildren) {
     return (
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
@@ -48,6 +48,82 @@ describe('useControlMode', () => {
     expect(result.current.canEdit).toBe(true)
     expect(result.current.readOnly).toBe(false)
   })
+
+  it('isolates direct and fixture caches for the same ASV', async () => {
+    vi.mocked(fetchControlMode).mockResolvedValue('MANUAL')
+
+    const queryClient = new QueryClient({
+      defaultOptions: {
+        mutations: { retry: false },
+        queries: { retry: false },
+      },
+    })
+    const { result, rerender } = renderHook(
+      ({ dataMode }: { dataMode: 'direct' | 'fixture' }) =>
+        useControlMode('shared-asv', dataMode),
+      {
+        initialProps: { dataMode: 'direct' },
+        wrapper: createWrapper(queryClient),
+      },
+    )
+
+    await waitFor(() => {
+      expect(result.current.mode).toBe('MANUAL')
+    })
+
+    rerender({ dataMode: 'fixture' })
+    await waitFor(() => {
+      expect(result.current.mode).toBe('AUTONOMOUS')
+    })
+    expect(result.current.readOnly).toBe(true)
+
+    rerender({ dataMode: 'direct' })
+    await waitFor(() => {
+      expect(result.current.mode).toBe('MANUAL')
+    })
+    expect(fetchControlMode).toHaveBeenCalledTimes(2)
+  })
+
+  it('cancels an in-flight read before caching a successful mode update', async () => {
+    let resolveStaleFetch!: (mode: 'MANUAL' | 'AUTONOMOUS') => void
+    const staleFetch = new Promise<'MANUAL' | 'AUTONOMOUS'>((resolve) => {
+      resolveStaleFetch = resolve
+    })
+    vi.mocked(fetchControlMode).mockReturnValue(staleFetch)
+    vi.mocked(putControlMode).mockResolvedValue('AUTONOMOUS')
+
+    const queryClient = new QueryClient({
+      defaultOptions: {
+        mutations: { retry: false },
+        queries: { retry: false },
+      },
+    })
+    const cancelQueries = vi.spyOn(queryClient, 'cancelQueries')
+    const { result } = renderHook(() => useControlMode('default', 'direct'), {
+      wrapper: createWrapper(queryClient),
+    })
+
+    await waitFor(() => {
+      expect(fetchControlMode).toHaveBeenCalled()
+    })
+
+    act(() => {
+      result.current.updateMode('AUTONOMOUS')
+    })
+    await waitFor(() => {
+      expect(result.current.mode).toBe('AUTONOMOUS')
+    })
+
+    resolveStaleFetch('MANUAL')
+    await staleFetch
+    await waitFor(() => {
+      expect(result.current.mode).toBe('AUTONOMOUS')
+    })
+    expect(cancelQueries).toHaveBeenCalledWith({
+      queryKey: ['asv-control-mode', 'default', 'direct'],
+    })
+  })
+
 
   it('transitions between MANUAL and AUTONOMOUS', async () => {
     vi.mocked(fetchControlMode).mockResolvedValue('MANUAL')
@@ -100,7 +176,7 @@ describe('useControlMode', () => {
     })
 
     expect(result.current.mode).toBe('MANUAL')
-    expect(result.current.isError).toBe(false)
+    expect(result.current.isError).toBe(true)
   })
 
   it('uses fixture AUTONOMOUS mode without HTTP access', async () => {

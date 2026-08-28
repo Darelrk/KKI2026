@@ -11,7 +11,7 @@ export function useControlMode(
   dataMode: AsvDataMode = getAsvDataMode(import.meta.env.VITE_ASV_DATA_MODE),
 ) {
   const queryClient = useQueryClient()
-  const queryKey = ['asv-control-mode', asvId] as const
+  const queryKey = ['asv-control-mode', asvId, dataMode] as const
   const query = useQuery({
     queryKey,
     queryFn: ({ signal }) =>
@@ -23,6 +23,9 @@ export function useControlMode(
   })
   const mutation = useMutation({
     mutationFn: (nextMode: ControlMode) => putControlMode(asvBridgeUrl, nextMode),
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey })
+    },
     onSuccess: (nextMode) => {
       queryClient.setQueryData(queryKey, nextMode)
     },
@@ -33,7 +36,7 @@ export function useControlMode(
   return {
     mode: query.data ?? null,
     isLoading: query.isPending,
-    isError: query.isError,
+    isError: query.isError || mutation.isError,
     error: mutation.error ?? query.error ?? null,
     isUpdating: mutation.isPending,
     canEdit: dataMode === 'direct' && query.isSuccess,
