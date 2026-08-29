@@ -2,8 +2,7 @@
   "name": "kki2026-asv-monorepo",
   "private": true,
   "workspaces": [
-    "dashboard",
-    "remote-dashboard"
+    "dashboard"
   ],
   "scripts": {
     "dev": "npm run dev --workspace dashboard",
@@ -12,13 +11,9 @@
     "lint": "npm run lint --workspace dashboard",
     "typecheck": "npm run typecheck --workspace dashboard",
     "frontend:check": "npm run check --workspace dashboard",
-    "remote:dev": "npm run dev --workspace remote-dashboard",
-    "remote:build": "npm run build --workspace remote-dashboard",
-    "remote:test": "npm run test --workspace remote-dashboard",
-    "remote:typecheck": "npm run typecheck --workspace remote-dashboard",
     "backend:dev": "python -m uvicorn asv_dashboard_backend.main:app --host 127.0.0.1 --port 8080",
     "backend:test": "python -m pytest -q",
     "backend:compile": "python -m compileall -q asv_dashboard_backend vision_route.py vision_test.py tests",
-    "check": "npm run lint && npm run typecheck && npm run test && npm run backend:test && npm run backend:compile && npm run check --workspace remote-dashboard"
+    "check": "npm run lint && npm run typecheck && npm run test && npm run backend:test && npm run backend:compile"
   }
 }
