@@ -1,7 +1,7 @@
 # Remote Dashboard Low-Latency Control Design
 
-**Tanggal:** 2026-08-28  
-**Status:** Design spec  
+**Tanggal:** 2026-08-28
+**Status:** Design spec
 **Scope:** Dashboard remote baru, kontrak control WebSocket, dan routing deployment; belum mengubah source implementasi.
 
 ## 1. Problem dan tujuan
