@@ -338,6 +338,7 @@ def test_unified_worker_prioritizes_pilot_rc_stick_deflection() -> None:
             return "RC_CHANNELS"
         chan1_raw = 1750
         chan3_raw = 1500
+        chancount = 8
 
     class FakeConnection:
         target_system = 1
@@ -399,6 +400,74 @@ def test_remote_control_applies_fresh_pwm_on_existing_safe_link(
     assert connection.mav.sent == [
         (7, 9, 1475, 65535, 1585, 65535, 65535, 65535, 65535, 65535)
     ]
+def test_remote_override_feedback_does_not_trigger_pilot_gate(
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr("asv_dashboard_backend.telemetry.time.monotonic", lambda: 10.0)
+    reader, connection = make_remote_ready_reader()
+    command = make_remote_command(steering_pwm=1600, throttle_pwm=1500)
+
+    reader.submit_remote_control(command, "session-a", 10.0)
+    reader._apply_actuator_command()
+    reader._consume_message(
+        FakeMavlinkMessage(
+            "RC_CHANNELS",
+            chan1_raw=1600,
+            chan3_raw=1500,
+            chancount=8,
+        ),
+        10.1,
+    )
+
+    assert reader.remote_control_rejection_reason() is None
+    assert connection.mav.sent[-1][2:5] == (1600, 65535, 1500)
+def test_remote_override_feedback_still_detects_different_pilot_input(
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr("asv_dashboard_backend.telemetry.time.monotonic", lambda: 10.0)
+    reader, _ = make_remote_ready_reader()
+    command = make_remote_command(steering_pwm=1600, throttle_pwm=1500)
+
+    reader.submit_remote_control(command, "session-a", 10.0)
+    reader._apply_actuator_command()
+    reader._consume_message(
+        FakeMavlinkMessage(
+            "RC_CHANNELS",
+            chan1_raw=1700,
+            chancount=8,
+            chan3_raw=1500,
+        ),
+        10.1,
+    )
+
+    assert reader.remote_control_rejection_reason() == "pilot_input_active"
+def test_missing_rc_receiver_does_not_block_remote_control(
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr("asv_dashboard_backend.telemetry.time.monotonic", lambda: 10.0)
+    reader, connection = make_remote_ready_reader()
+    reader._consume_message(
+        FakeMavlinkMessage(
+            "RC_CHANNELS",
+            chan1_raw=1575,
+            chan3_raw=1500,
+            chancount=0,
+        ),
+        10.1,
+    )
+
+    assert reader.remote_control_rejection_reason() is None
+
+    reader.submit_remote_control(
+        make_remote_command(steering_pwm=1600, throttle_pwm=1500),
+        "session-a",
+        10.1,
+    )
+    reader._apply_actuator_command()
+
+    assert connection.mav.sent[-1][2:5] == (1600, 65535, 1500)
+
+
 
 
 def test_remote_control_invalid_mutation_releases_without_sending_bad_pwm(

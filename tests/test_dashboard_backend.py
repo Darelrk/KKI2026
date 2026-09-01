@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import logging
 import time
 from datetime import datetime, timezone
 
@@ -272,7 +273,8 @@ def test_actuator_endpoint_requires_token_and_queues_command() -> None:
     assert reader.commands[0].throttle_pwm == 1540
 
 def test_control_websocket_delegates_to_real_pixhawk_reader(
-    monkeypatch: pytest.MonkeyPatch,
+    monkeypatch,
+    caplog,
 ) -> None:
     class FakeMav:
         def __init__(self) -> None:
@@ -325,39 +327,51 @@ def test_control_websocket_delegates_to_real_pixhawk_reader(
     )
     app = create_app(settings=settings_with_remote, telemetry_reader=reader)
 
-    with TestClient(app) as client:
-        with client.websocket_connect(
-            "/ws/control/default",
-            headers={"origin": "https://dashboard.example.test"},
-        ) as socket:
-            socket.send_json(
-                {
-                    "type": "control",
-                    "seq": 1,
-                    "client_sent_at_ms": 100,
-                    "steering_pwm": 1475,
-                    "throttle_pwm": 1585,
-                    "enabled": True,
-                }
-            )
-            ack = socket.receive_json()
-            reader._apply_actuator_command()
+    with caplog.at_level(
+        logging.INFO,
+        logger="asv_dashboard_backend.main",
+    ):
+        with TestClient(app) as client:
+            with client.websocket_connect(
+                "/ws/control/default",
+                headers={"origin": "https://dashboard.example.test"},
+            ) as socket:
+                socket.send_json(
+                    {
+                        "type": "control",
+                        "seq": 1,
+                        "client_sent_at_ms": 100,
+                        "steering_pwm": 1475,
+                        "throttle_pwm": 1585,
+                        "enabled": True,
+                    }
+                )
+                ack = socket.receive_json()
+                reader._apply_actuator_command()
 
-            assert ack["type"] == "ack"
-            assert ack["accepted"] is True
-            assert ack["reason"] is None
-            assert connection.mav.sent[-1] == (
-                7,
-                9,
-                1475,
-                65535,
-                1585,
-                65535,
-                65535,
-                65535,
-                65535,
-                65535,
-            )
+                assert ack["type"] == "ack"
+                assert ack["accepted"] is True
+                assert ack["reason"] is None
+                assert connection.mav.sent[-1] == (
+                    7,
+                    9,
+                    1475,
+                    65535,
+                    1585,
+                    65535,
+                    65535,
+                    65535,
+                    65535,
+                    65535,
+                )
+
+    assert any(
+        "Remote input" in record.message
+        and "RC1=1475" in record.message
+        and "RC3=1585" in record.message
+        and "accepted=True" in record.message
+        for record in caplog.records
+    )
 
     assert connection_attempts == []
 

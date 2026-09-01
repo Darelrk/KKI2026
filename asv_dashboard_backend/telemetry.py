@@ -473,14 +473,35 @@ class PixhawkTelemetryReader:
         if message_type == "RC_CHANNELS":
             steering = _finite_number(getattr(message, "chan1_raw", None))
             throttle = _finite_number(getattr(message, "chan3_raw", None))
+            channel_count = _finite_number(getattr(message, "chancount", None))
+            # ArduPilot may retain the last raw values after receiver loss.
+            # A zero channel count means there is no valid pilot input.
             if (
-                steering is not None
+                channel_count is not None
+                and channel_count > 0
+                and steering is not None
                 and throttle is not None
                 and 900 <= steering <= 2200
                 and 900 <= throttle <= 2200
             ):
                 self._last_rc_monotonic = now
-                if abs(steering - 1500) > 60 or abs(throttle - 1500) > 60:
+                with self._actuator_lock:
+                    remote_command = self._remote_command
+                    is_remote_feedback = (
+                        self._override_active
+                        and remote_command is not None
+                        and remote_command.enabled
+                        and steering == remote_command.steering_pwm
+                        and throttle == remote_command.throttle_pwm
+                    )
+                # ArduPilot reports effective RC input, including our override.
+                if (
+                    not is_remote_feedback
+                    and (
+                        abs(steering - 1500) > 60
+                        or abs(throttle - 1500) > 60
+                    )
+                ):
                     self._last_pilot_input_monotonic = now
             return
 

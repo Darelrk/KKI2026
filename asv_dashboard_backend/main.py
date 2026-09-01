@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import secrets
 import time
 from contextlib import asynccontextmanager
@@ -24,6 +25,9 @@ from .control import (
 from .frames import FrameTooLargeError, build_underwater_payload
 from .state import AsvLiveStatus, BridgeState, ControlModePayload, VisionMetadata
 from .telemetry import ActuatorCommand, PixhawkTelemetry, PixhawkTelemetryReader
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 def create_app(
     *,
@@ -268,34 +272,39 @@ def create_app(
                 received_at = time.monotonic()
                 if not command.enabled:
                     clear_remote_control(session_id)
-                    await send_ack(
-                        command,
-                        accepted=True,
-                        reason=None,
-                        server_received_at_ms=server_received_at_ms,
-                    )
-                    continue
-
-                reason: str | None = None
-                if not resolved_settings.remote_control_enabled:
-                    reason = "remote_control_disabled"
-                elif resolved_state.control_mode != "MANUAL":
-                    reason = "runtime_mode_autonomous"
+                    reason: str | None = None
                 else:
-                    reason = reader_rejection_reason()
+                    reason = None
+                    if not resolved_settings.remote_control_enabled:
+                        reason = "remote_control_disabled"
+                    elif resolved_state.control_mode != "MANUAL":
+                        reason = "runtime_mode_autonomous"
+                    else:
+                        reason = reader_rejection_reason()
 
-                submit = getattr(resolved_telemetry, "submit_remote_control", None)
-                if reason is None and not callable(submit):
-                    reason = "pixhawk_unavailable"
-                if reason is None:
-                    try:
-                        submit(command, session_id, received_at)
-                    except Exception:
+                    submit = getattr(resolved_telemetry, "submit_remote_control", None)
+                    if reason is None and not callable(submit):
                         reason = "pixhawk_unavailable"
+                    if reason is None:
+                        try:
+                            submit(command, session_id, received_at)
+                        except Exception:
+                            reason = "pixhawk_unavailable"
 
+                accepted = reason is None
+                logger.warning(
+                    "Remote input: seq=%d RC1=%d RC3=%d enabled=%s "
+                    "accepted=%s reason=%s",
+                    command.seq,
+                    command.steering_pwm,
+                    command.throttle_pwm,
+                    command.enabled,
+                    accepted,
+                    reason or "-",
+                )
                 await send_ack(
                     command,
-                    accepted=reason is None,
+                    accepted=accepted,
                     reason=reason,
                     server_received_at_ms=server_received_at_ms,
                 )
