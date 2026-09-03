@@ -417,5 +417,5 @@ def test_remote_websocket_enabled_false_clears_owner_and_stale_does_not_submit()
     assert released["accepted"] is True
     assert released["reason"] is None
     assert len(reader.commands) == 1
-    assert reader.clears
+    assert reader.clears[0] is None
     assert reader.actuator_commands == []
