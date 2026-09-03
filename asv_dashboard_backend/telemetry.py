@@ -109,7 +109,6 @@ class PixhawkTelemetryReader:
         self._override_active = False
         self._throttle_priming_started_at: float | None = None
         self._last_override_pwm: tuple[int, int] | None = None
-        self._steering_hold_pwm: int | None = None
 
     def snapshot(self) -> PixhawkTelemetry:
         now = time.monotonic()
@@ -149,13 +148,8 @@ class PixhawkTelemetryReader:
                 self._remote_session_id = session_id
                 self._remote_command_at = received_at
 
-    def clear_remote_control(
-        self,
-        session_id: str | None = None,
-        *,
-        hold_steering: bool = False,
-    ) -> bool:
-        """Clear the owned command, optionally retaining its steering PWM."""
+    def clear_remote_control(self, session_id: str | None = None) -> bool:
+        """Clear the remote command only when the caller owns its session."""
         with self._actuator_lock:
             if (
                 session_id is not None
@@ -163,16 +157,13 @@ class PixhawkTelemetryReader:
             ):
                 return False
             existed = self._remote_command is not None
-            should_update_override = existed or self._override_active
+            should_release = existed or self._override_active
             self._remote_command = None
             self._remote_session_id = None
             self._remote_command_at = float("-inf")
-            if should_update_override:
-                if hold_steering:
-                    self._hold_steering_override_locked()
-                else:
-                    self._release_actuator_override_locked()
-            return existed
+        if should_release:
+            self._release_actuator_override()
+        return existed
 
     def remote_control_rejection_reason(self) -> str | None:
         """Return the first reader-level safety gate blocking remote control."""
@@ -251,6 +242,7 @@ class PixhawkTelemetryReader:
         with self._actuator_lock:
             connection = self._connection
             if connection is None:
+                self._release_actuator_override_locked()
                 return
 
             now = time.monotonic()
@@ -284,20 +276,15 @@ class PixhawkTelemetryReader:
                 else now - self._last_pilot_input_monotonic
             )
             if (
-                heartbeat_age > self.settings.pixhawk_heartbeat_timeout
+                not lane_enabled
+                or command is None
+                or not command.enabled
+                or command_expired
+                or heartbeat_age > self.settings.pixhawk_heartbeat_timeout
                 or self._mode != "MANUAL"
                 or pilot_input_age <= 1.5
             ):
                 self._release_actuator_override_locked()
-                return
-            if command is None:
-                self._hold_steering_override_locked()
-                return
-            if not lane_enabled or not command.enabled:
-                self._release_actuator_override_locked()
-                return
-            if command_expired:
-                self._hold_steering_override_locked()
                 return
 
             steering_pwm = getattr(command, "steering_pwm", None)
@@ -346,24 +333,11 @@ class PixhawkTelemetryReader:
             )
             self._override_active = True
             self._last_override_pwm = (steering_pwm, throttle_pwm)
-            self._steering_hold_pwm = steering_pwm
         except Exception as exc:  # pragma: no cover - hardware-specific
             self._override_active = False
             self._throttle_priming_started_at = None
             self._last_override_pwm = None
             logger.warning("Gagal mengirim RC override Pixhawk (%s)", exc)
-
-    def _hold_steering_override_locked(self) -> None:
-        """Refresh the last steering PWM while forcing throttle neutral."""
-        if self._steering_hold_pwm is None:
-            self._release_actuator_override_locked()
-            return
-        if (
-            self.settings.throttle_neutral_priming_seconds > 0
-            and self._throttle_priming_started_at is None
-        ):
-            self._throttle_priming_started_at = time.monotonic()
-        self._send_override_locked(self._steering_hold_pwm, 1500)
 
     def _release_actuator_override(self) -> None:
         """Release channels so the physical RC transmitter regains authority."""
@@ -375,7 +349,6 @@ class PixhawkTelemetryReader:
         connection = self._connection
         self._throttle_priming_started_at = None
         self._last_override_pwm = None
-        self._steering_hold_pwm = None
         if connection is None or not self._override_active:
             return
         target_sys = getattr(connection, "target_system", 1) or 1
@@ -475,7 +448,8 @@ class PixhawkTelemetryReader:
         """Close a broken serial link so the next cycle creates a fresh one."""
         self._record_connection_error(exc)
         connection = self._connection
-        self.clear_remote_control(hold_steering=True)
+        self.clear_remote_control()
+        self._release_actuator_override()
         self._last_pilot_input_monotonic = None
         self._mavlink_api = None
         self._connection_started_monotonic = None
@@ -486,7 +460,6 @@ class PixhawkTelemetryReader:
         self._last_rc_monotonic = None
         self._throttle_priming_started_at = None
         self._last_override_pwm = None
-        self._override_active = False
         if connection is not None:
             try:
                 await asyncio.to_thread(connection.close)

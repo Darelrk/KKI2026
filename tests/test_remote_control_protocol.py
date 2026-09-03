@@ -33,7 +33,6 @@ class FakeRemoteReader:
         self.commands: list[tuple[object, str, float]] = []
         self.clears: list[str | None] = []
         self.actuator_commands: list[object] = []
-        self.hold_clears: list[str | None] = []
         self.rejection: str | None = None
 
     async def run(self, _publish) -> None:
@@ -50,12 +49,8 @@ class FakeRemoteReader:
     ) -> None:
         self.commands.append((command, session_id, received_at))
 
-    def clear_remote_control(
-        self, session_id: str | None = None, *, hold_steering: bool = False
-    ) -> None:
+    def clear_remote_control(self, session_id: str | None = None) -> None:
         self.clears.append(session_id)
-        if hold_steering:
-            self.hold_clears.append(session_id)
 
     def remote_control_rejection_reason(self) -> str | None:
         return self.rejection
@@ -272,7 +267,6 @@ def test_remote_websocket_valid_frame_gets_internal_ack_and_reader_command() -> 
     assert isinstance(ack["server_received_at_ms"], int)
     assert len(reader.commands) == 1
     assert reader.actuator_commands == []
-    assert reader.hold_clears == [reader.commands[0][1]]
 
 
 def test_remote_websocket_malformed_json_gets_error_and_stays_alive() -> None:
@@ -417,5 +411,5 @@ def test_remote_websocket_enabled_false_clears_owner_and_stale_does_not_submit()
     assert released["accepted"] is True
     assert released["reason"] is None
     assert len(reader.commands) == 1
-    assert reader.clears[0] is None
+    assert reader.clears
     assert reader.actuator_commands == []

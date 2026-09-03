@@ -42,12 +42,10 @@ def create_app(
     control_registry = ControlSessionRegistry()
     control_sockets: dict[str, WebSocket] = {}
 
-    def clear_remote_control(
-        session_id: str | None = None, *, hold_steering: bool = False
-    ) -> None:
+    def clear_remote_control(session_id: str | None = None) -> None:
         clear = getattr(resolved_telemetry, "clear_remote_control", None)
         if callable(clear):
-            clear(session_id, hold_steering=hold_steering)
+            clear(session_id)
 
     @asynccontextmanager
     async def lifespan(_: FastAPI):
@@ -182,7 +180,7 @@ def create_app(
         _, previous_owner = control_registry.open(asv_id, session_id)
         control_sockets[session_id] = websocket
         if previous_owner is not None:
-            clear_remote_control(previous_owner, hold_steering=True)
+            clear_remote_control(previous_owner)
             previous_socket = control_sockets.get(previous_owner)
             if previous_socket is not None:
                 try:
@@ -273,7 +271,7 @@ def create_app(
 
                 received_at = time.monotonic()
                 if not command.enabled:
-                    clear_remote_control()
+                    clear_remote_control(session_id)
                     reason: str | None = None
                 else:
                     reason = None
@@ -312,7 +310,7 @@ def create_app(
                 )
         finally:
             if control_registry.is_owner(asv_id, session_id):
-                clear_remote_control(session_id, hold_steering=True)
+                clear_remote_control(session_id)
                 control_registry.release(asv_id, session_id)
             if control_sockets.get(session_id) is websocket:
                 del control_sockets[session_id]
