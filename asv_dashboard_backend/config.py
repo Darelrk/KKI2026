@@ -32,6 +32,7 @@ class BridgeSettings:
     pixhawk_reconnect_seconds: float = 0.5
     remote_control_enabled: bool = False
     remote_command_timeout: float = 0.5
+    pilot_input_deadband_pwm: int = 80
     model_actuators_enabled: bool = False
     actuator_control_token: str | None = None
     actuator_command_timeout: float = 2.5
@@ -69,6 +70,10 @@ class BridgeSettings:
         if self.throttle_neutral_priming_seconds < 0:
             raise ConfigError(
                 "ASV_THROTTLE_NEUTRAL_PRIMING_SECONDS must be zero or positive"
+            )
+        if not 0 <= self.pilot_input_deadband_pwm <= 250:
+            raise ConfigError(
+                "ASV_PILOT_INPUT_DEADBAND_PWM must be between 0 and 250"
             )
         if not 0 < self.remote_command_timeout <= 0.5:
             raise ConfigError(
@@ -116,6 +121,9 @@ class BridgeSettings:
             ),
             remote_command_timeout=_float_env(
                 "ASV_REMOTE_COMMAND_TIMEOUT", 0.5
+            ),
+            pilot_input_deadband_pwm=_int_env(
+                "ASV_PILOT_INPUT_DEADBAND_PWM", 80
             ),
             model_actuators_enabled=_bool_env(
                 "ASV_MODEL_ACTUATORS_ENABLED", False

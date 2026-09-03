@@ -524,12 +524,13 @@ class PixhawkTelemetryReader:
                         and steering == last_override_pwm[0]
                         and throttle == last_override_pwm[1]
                     )
+                pilot_deadband = self.settings.pilot_input_deadband_pwm
                 # ArduPilot reports effective RC input, including our override.
                 if (
                     not is_override_feedback
                     and (
-                        abs(steering - 1500) > 60
-                        or abs(throttle - 1500) > 60
+                        abs(steering - 1500) > pilot_deadband
+                        or abs(throttle - 1500) > pilot_deadband
                     )
                 ):
                     self._last_pilot_input_monotonic = now

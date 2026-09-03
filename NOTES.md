@@ -106,3 +106,8 @@ RC3=1500 saat mulai mengambil override, baru meneruskan target throttle.
 
 Backend menerapkan urutan tersebut untuk jalur remote dan autonomous melalui
 `ASV_THROTTLE_NEUTRAL_PRIMING_SECONDS=1.0`. Nilai `0.0` menonaktifkan primer.
+
+Diagnosis lanjutan menemukan receiver idle mengirim RC1=1501 dan RC3=1433 us.
+Deadband pilot 60 us salah menganggap offset RC3 tersebut sebagai input aktif.
+Backend memakai `ASV_PILOT_INPUT_DEADBAND_PWM=80`; gerakan di luar ±80 us tetap
+langsung mengambil alih kontrol sebagai input pilot.
