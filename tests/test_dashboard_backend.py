@@ -132,7 +132,9 @@ class CapturingTelemetryReader:
 
     def submit_actuator_command(self, command) -> None:
         self.commands.append(command)
-    def clear_remote_control(self, session_id=None) -> None:
+    def clear_remote_control(
+        self, session_id=None, *, hold_steering: bool = False
+    ) -> None:
         self.clears.append(session_id)
 
 

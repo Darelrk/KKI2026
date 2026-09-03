@@ -515,7 +515,7 @@ def test_remote_control_invalid_mutation_releases_without_sending_bad_pwm(
     assert len(connection.mav.sent) == 4
 
 
-def test_remote_control_expiry_at_exact_timeout_releases_without_sending_pwm(
+def test_remote_control_expiry_at_exact_timeout_holds_last_steering(
     monkeypatch,
 ) -> None:
     now = [10.0]
@@ -531,11 +531,11 @@ def test_remote_control_expiry_at_exact_timeout_releases_without_sending_pwm(
 
     assert connection.mav.sent == [
         (7, 9, 1490, 65535, 1560, 65535, 65535, 65535, 65535, 65535),
-        (7, 9, 0, 0, 0, 0, 0, 0, 0, 0),
+        (7, 9, 1490, 65535, 1500, 65535, 65535, 65535, 65535, 65535),
     ]
 
 
-def test_remote_control_expiry_after_timeout_releases_without_sending_again(
+def test_remote_control_expiry_refreshes_latched_steering(
     monkeypatch,
 ) -> None:
     now = [10.0]
@@ -553,9 +553,10 @@ def test_remote_control_expiry_after_timeout_releases_without_sending_again(
 
     assert connection.mav.sent == [
         (7, 9, 1490, 65535, 1560, 65535, 65535, 65535, 65535, 65535),
-        (7, 9, 0, 0, 0, 0, 0, 0, 0, 0),
+        (7, 9, 1490, 65535, 1500, 65535, 65535, 65535, 65535, 65535),
+        (7, 9, 1490, 65535, 1500, 65535, 65535, 65535, 65535, 65535),
     ]
-    assert sent_count == len(connection.mav.sent)
+    assert len(connection.mav.sent) == sent_count + 1
 
 def test_model_actuator_survives_exact_timeout_boundary(monkeypatch) -> None:
     now = [10.0]
@@ -613,6 +614,29 @@ def test_remote_control_owner_clear_releases_immediately_and_preserves_model(
 
     reader._apply_actuator_command()
     assert connection.mav.sent[-1][2:5] == (1510, 65535, 1540)
+
+
+def test_remote_disconnect_holds_steering_and_neutralizes_throttle(
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(
+        "asv_dashboard_backend.telemetry.time.monotonic", lambda: 10.0
+    )
+    reader, connection = make_remote_ready_reader()
+    reader.submit_remote_control(
+        make_remote_command(steering_pwm=1620, throttle_pwm=1700),
+        "session-a",
+        10.0,
+    )
+    reader._apply_actuator_command()
+
+    assert reader.clear_remote_control(
+        "session-a", hold_steering=True
+    ) is True
+    assert connection.mav.sent[-1] == (
+        7, 9, 1620, 65535, 1500, 65535, 65535, 65535, 65535, 65535
+    )
+    assert reader._remote_command is None
 
 
 def test_remote_control_rejection_reason_feature_disabled_blocks_apply() -> None:
@@ -932,7 +956,7 @@ def test_close_clears_remote_and_releases_override(monkeypatch) -> None:
     assert connection.mav.sent[-1] == (7, 9, 0, 0, 0, 0, 0, 0, 0, 0)
 
 
-def test_reset_connection_clears_remote_releases_and_allows_reconnect(
+def test_reset_connection_reapplies_steering_hold_after_reconnect(
     monkeypatch,
 ) -> None:
     monkeypatch.setattr("asv_dashboard_backend.telemetry.time.monotonic", lambda: 10.0)
@@ -947,7 +971,7 @@ def test_reset_connection_clears_remote_releases_and_allows_reconnect(
     assert reader._remote_command_at == float("-inf")
     assert reader._connection is None
     assert connection.closed is True
-    assert connection.mav.sent[-1] == (7, 9, 0, 0, 0, 0, 0, 0, 0, 0)
+    assert connection.mav.sent[-1][2:5] == (1490, 65535, 1500)
 
     new_connection = FakeOverrideConnection()
     connection_attempts: list[tuple[tuple[object, ...], dict[str, object]]] = []
@@ -963,3 +987,8 @@ def test_reset_connection_clears_remote_releases_and_allows_reconnect(
 
     assert len(connection_attempts) == 1
     assert reader._connection is new_connection
+
+    reader._mode = "MANUAL"
+    reader._last_heartbeat_monotonic = 10.0
+    reader._apply_actuator_command()
+    assert new_connection.mav.sent[-1][2:5] == (1490, 65535, 1500)
