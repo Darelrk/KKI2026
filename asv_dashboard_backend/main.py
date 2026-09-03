@@ -273,7 +273,7 @@ def create_app(
 
                 received_at = time.monotonic()
                 if not command.enabled:
-                    clear_remote_control(session_id)
+                    clear_remote_control()
                     reason: str | None = None
                 else:
                     reason = None
