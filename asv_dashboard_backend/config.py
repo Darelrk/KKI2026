@@ -35,6 +35,7 @@ class BridgeSettings:
     model_actuators_enabled: bool = False
     actuator_control_token: str | None = None
     actuator_command_timeout: float = 2.5
+    throttle_neutral_priming_seconds: float = 0.0
 
     def __post_init__(self) -> None:
         if not self.asv_id.strip():
@@ -65,6 +66,10 @@ class BridgeSettings:
             raise ConfigError("ASV_PIXHAWK_RECONNECT_SECONDS must be positive")
         if self.actuator_command_timeout <= 0:
             raise ConfigError("ASV_ACTUATOR_COMMAND_TIMEOUT must be positive")
+        if self.throttle_neutral_priming_seconds < 0:
+            raise ConfigError(
+                "ASV_THROTTLE_NEUTRAL_PRIMING_SECONDS must be zero or positive"
+            )
         if not 0 < self.remote_command_timeout <= 0.5:
             raise ConfigError(
                 "ASV_REMOTE_COMMAND_TIMEOUT must be greater than 0 and at most 0.5"
@@ -118,6 +123,9 @@ class BridgeSettings:
             actuator_control_token=_optional_env("ASV_CONTROL_TOKEN"),
             actuator_command_timeout=_float_env(
                 "ASV_ACTUATOR_COMMAND_TIMEOUT", 2.5
+            ),
+            throttle_neutral_priming_seconds=_float_env(
+                "ASV_THROTTLE_NEUTRAL_PRIMING_SECONDS", 0.0
             ),
         )
 

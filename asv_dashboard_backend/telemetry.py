@@ -107,6 +107,8 @@ class PixhawkTelemetryReader:
         self._remote_session_id: str | None = None
         self._remote_command_at = float("-inf")
         self._override_active = False
+        self._throttle_priming_started_at: float | None = None
+        self._last_override_pwm: tuple[int, int] | None = None
 
     def snapshot(self) -> PixhawkTelemetry:
         now = time.monotonic()
@@ -296,25 +298,46 @@ class PixhawkTelemetryReader:
                 self._release_actuator_override_locked()
                 return
 
-            try:
-                target_sys = getattr(connection, "target_system", 1) or 1
-                target_comp = getattr(connection, "target_component", 1) or 1
-                connection.mav.rc_channels_override_send(
-                    target_sys,
-                    target_comp,
-                    steering_pwm,
-                    65535,
-                    throttle_pwm,
-                    65535,
-                    65535,
-                    65535,
-                    65535,
-                    65535,
-                )
-                self._override_active = True
-            except Exception as exc:  # pragma: no cover - hardware-specific
-                self._override_active = False
-                logger.warning("Gagal mengirim RC override Pixhawk (%s)", exc)
+            priming_seconds = self.settings.throttle_neutral_priming_seconds
+            if priming_seconds > 0:
+                if self._throttle_priming_started_at is None:
+                    # ESC memerlukan fase netral stabil sebelum throttle aktif.
+                    self._throttle_priming_started_at = now
+                if (
+                    throttle_pwm != 1500
+                    and now - self._throttle_priming_started_at < priming_seconds
+                ):
+                    throttle_pwm = 1500
+
+            self._send_override_locked(steering_pwm, throttle_pwm)
+
+    def _send_override_locked(self, steering_pwm: int, throttle_pwm: int) -> None:
+        """Send one RC override frame; caller must hold ``_actuator_lock``."""
+        connection = self._connection
+        if connection is None:
+            return
+        try:
+            target_sys = getattr(connection, "target_system", 1) or 1
+            target_comp = getattr(connection, "target_component", 1) or 1
+            connection.mav.rc_channels_override_send(
+                target_sys,
+                target_comp,
+                steering_pwm,
+                65535,
+                throttle_pwm,
+                65535,
+                65535,
+                65535,
+                65535,
+                65535,
+            )
+            self._override_active = True
+            self._last_override_pwm = (steering_pwm, throttle_pwm)
+        except Exception as exc:  # pragma: no cover - hardware-specific
+            self._override_active = False
+            self._throttle_priming_started_at = None
+            self._last_override_pwm = None
+            logger.warning("Gagal mengirim RC override Pixhawk (%s)", exc)
 
     def _release_actuator_override(self) -> None:
         """Release channels so the physical RC transmitter regains authority."""
@@ -324,6 +347,8 @@ class PixhawkTelemetryReader:
     def _release_actuator_override_locked(self) -> None:
         """Release an active override; caller must hold ``_actuator_lock``."""
         connection = self._connection
+        self._throttle_priming_started_at = None
+        self._last_override_pwm = None
         if connection is None or not self._override_active:
             return
         target_sys = getattr(connection, "target_system", 1) or 1
@@ -351,12 +376,13 @@ class PixhawkTelemetryReader:
         self._release_actuator_override()
         connection = self._connection
         self._connection = None
+        self._throttle_priming_started_at = None
+        self._last_override_pwm = None
         if connection is not None:
             try:
                 await asyncio.to_thread(connection.close)
             except Exception:  # pragma: no cover - hardware-specific
                 logger.debug("Gagal menutup koneksi Pixhawk", exc_info=True)
-
 
     async def _connect_if_due(self) -> None:
         now = time.monotonic()
@@ -382,6 +408,8 @@ class PixhawkTelemetryReader:
             self._last_rc_monotonic = None
             self._mode = "UNKNOWN"
             self._override_active = False
+            self._throttle_priming_started_at = None
+            self._last_override_pwm = None
             self._last_stream_target = None
             self._request_telemetry_streams()
             self._last_error = None
@@ -392,6 +420,7 @@ class PixhawkTelemetryReader:
             self._connection_started_monotonic = None
             self._next_reconnect = time.monotonic() + 0.5
             self._record_connection_error(exc)
+
     def _request_telemetry_streams(self) -> None:
         """Ask ArduPilot for continuous read-only telemetry without QGroundControl."""
         if self._connection is None or self._mavlink_api is None:
@@ -429,6 +458,8 @@ class PixhawkTelemetryReader:
         self._mode = "UNKNOWN"
         self._next_reconnect = time.monotonic() + 0.5
         self._last_rc_monotonic = None
+        self._throttle_priming_started_at = None
+        self._last_override_pwm = None
         if connection is not None:
             try:
                 await asyncio.to_thread(connection.close)
@@ -486,17 +517,16 @@ class PixhawkTelemetryReader:
             ):
                 self._last_rc_monotonic = now
                 with self._actuator_lock:
-                    remote_command = self._remote_command
-                    is_remote_feedback = (
+                    last_override_pwm = self._last_override_pwm
+                    is_override_feedback = (
                         self._override_active
-                        and remote_command is not None
-                        and remote_command.enabled
-                        and steering == remote_command.steering_pwm
-                        and throttle == remote_command.throttle_pwm
+                        and last_override_pwm is not None
+                        and steering == last_override_pwm[0]
+                        and throttle == last_override_pwm[1]
                     )
                 # ArduPilot reports effective RC input, including our override.
                 if (
-                    not is_remote_feedback
+                    not is_override_feedback
                     and (
                         abs(steering - 1500) > 60
                         or abs(throttle - 1500) > 60

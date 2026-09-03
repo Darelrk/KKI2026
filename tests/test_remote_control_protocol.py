@@ -77,6 +77,17 @@ def test_remote_settings_default_to_disabled_and_half_second_timeout() -> None:
     assert settings.remote_command_timeout == 0.5
 
 
+def test_throttle_neutral_priming_parse_and_validate_environment(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("ASV_THROTTLE_NEUTRAL_PRIMING_SECONDS", "1.0")
+    assert BridgeSettings.from_env().throttle_neutral_priming_seconds == 1.0
+
+    monkeypatch.setenv("ASV_THROTTLE_NEUTRAL_PRIMING_SECONDS", "-0.1")
+    with pytest.raises(ConfigError, match="ASV_THROTTLE_NEUTRAL_PRIMING_SECONDS"):
+        BridgeSettings.from_env()
+
+
 def test_remote_settings_parse_and_validate_environment(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

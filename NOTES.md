@@ -83,3 +83,26 @@ Di Desktop Raspberry Pi 5 sudah tersedia **satu file shortcut utama**:
       elif msg.get_type()=='SERVO_OUTPUT_RAW': print(f'OUT S1:{msg.servo1_raw}us | S3:{msg.servo3_raw}us')
   "
   ```
+
+---
+
+## 🧪 5. HASIL DIAGNOSIS THROTTLE MAVLINK (3 September 2026)
+
+Pengujian fisik memastikan jalur throttle yang benar adalah `RC3` ke `MAIN OUT 3`:
+- `RCMAP_THROTTLE=3`, `SERVO3_FUNCTION=70` (Throttle), `SERVO3_MIN/TRIM/MAX=1100/1500/1900`
+- MAVLink `RC_CHANNELS_OVERRIDE` mengubah `RC_CHANNELS.chan3_raw` dan `SERVO_OUTPUT_RAW.servo3_raw` sesuai perintah.
+
+Hasil pembanding pada mode `MANUAL` dan kondisi armed:
+
+| Sumber | Urutan input | Output MAIN OUT 3 | Hasil fisik |
+|---|---|---:|---|
+| Radio | RC3 digerakkan melewati netral | 1380–1608 us | Motor bergerak |
+| MAVLink | RC3=1799 langsung | hingga 1728 us | Motor diam/terpancing sesaat |
+| MAVLink | RC3=1500 selama 1 detik, lalu RC3=1700 selama 2 detik | hingga 1644 us | Motor bergerak |
+
+Kesimpulan: kanal, packing MAVLink, dan pin output sudah benar. ESC memerlukan
+fase netral stabil sebelum throttle aktif. Kontrol software harus mengirim
+RC3=1500 saat mulai mengambil override, baru meneruskan target throttle.
+
+Backend menerapkan urutan tersebut untuk jalur remote dan autonomous melalui
+`ASV_THROTTLE_NEUTRAL_PRIMING_SECONDS=1.0`. Nilai `0.0` menonaktifkan primer.

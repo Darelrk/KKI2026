@@ -714,6 +714,189 @@ def test_remote_submit_does_not_open_second_mavlink_connection(monkeypatch) -> N
     assert connection.mav.sent
 
 
+def priming_reader(
+    now: float = 10.0,
+    *,
+    priming_seconds: float = 1.0,
+) -> tuple[PixhawkTelemetryReader, FakeOverrideConnection]:
+    reader = PixhawkTelemetryReader(
+        BridgeSettings(
+            pixhawk_enabled=True,
+            remote_control_enabled=True,
+            model_actuators_enabled=True,
+            actuator_control_token="secret-token",
+            throttle_neutral_priming_seconds=priming_seconds,
+        )
+    )
+    connection = FakeOverrideConnection()
+    reader._connection = connection
+    reader._mode = "MANUAL"
+    reader._last_heartbeat_monotonic = now
+    reader._last_pilot_input_monotonic = now - 2.0
+    return reader, connection
+
+
+def test_remote_takeover_primes_neutral_before_throttle(monkeypatch) -> None:
+    now = [10.0]
+    monkeypatch.setattr(
+        "asv_dashboard_backend.telemetry.time.monotonic", lambda: now[0]
+    )
+    reader, connection = priming_reader()
+    reader.submit_remote_control(
+        make_remote_command(steering_pwm=1600, throttle_pwm=1700),
+        "session-a",
+        now[0],
+    )
+
+    reader._apply_actuator_command()
+
+    assert connection.mav.sent == [
+        (7, 9, 1600, 65535, 1500, 65535, 65535, 65535, 65535, 65535)
+    ]
+    assert reader._throttle_priming_started_at == now[0]
+    # The priming frame echoed by ArduPilot is not physical pilot input.
+    reader._consume_message(
+        FakeMavlinkMessage(
+            "RC_CHANNELS", chan1_raw=1600, chan3_raw=1500, chancount=8
+        ),
+        now[0] + 0.1,
+    )
+    assert reader._last_pilot_input_monotonic == 8.0
+
+    now[0] = 10.5
+    reader._last_heartbeat_monotonic = now[0]
+    reader.submit_remote_control(
+        make_remote_command(seq=2, steering_pwm=1600, throttle_pwm=1700),
+        "session-a",
+        now[0],
+    )
+    reader._apply_actuator_command()
+    assert connection.mav.sent[-1][2:5] == (1600, 65535, 1500)
+
+    now[0] = 11.0
+    reader._last_heartbeat_monotonic = now[0]
+    reader.submit_remote_control(
+        make_remote_command(seq=3, steering_pwm=1600, throttle_pwm=1700),
+        "session-a",
+        now[0],
+    )
+    reader._apply_actuator_command()
+    assert connection.mav.sent[-1][2:5] == (1600, 65535, 1700)
+
+
+def test_neutral_command_starts_priming_without_delay(monkeypatch) -> None:
+    now = [10.0]
+    monkeypatch.setattr(
+        "asv_dashboard_backend.telemetry.time.monotonic", lambda: now[0]
+    )
+    reader, connection = priming_reader()
+    reader.submit_remote_control(
+        make_remote_command(steering_pwm=1600, throttle_pwm=1500),
+        "session-a",
+        now[0],
+    )
+
+    reader._apply_actuator_command()
+
+    assert connection.mav.sent == [
+        (7, 9, 1600, 65535, 1500, 65535, 65535, 65535, 65535, 65535)
+    ]
+    assert reader._throttle_priming_started_at == now[0]
+
+    now[0] = 11.0
+    reader._last_heartbeat_monotonic = now[0]
+    reader.submit_remote_control(
+        make_remote_command(seq=2, steering_pwm=1600, throttle_pwm=1700),
+        "session-a",
+        now[0],
+    )
+    reader._apply_actuator_command()
+    assert connection.mav.sent[-1][2:5] == (1600, 65535, 1700)
+
+
+def test_model_lane_uses_same_throttle_priming(monkeypatch) -> None:
+    now = [10.0]
+    monkeypatch.setattr(
+        "asv_dashboard_backend.telemetry.time.monotonic", lambda: now[0]
+    )
+    reader, connection = priming_reader()
+    reader.submit_actuator_command(
+        ActuatorCommand(steering_pwm=1600, throttle_pwm=1700, enabled=True)
+    )
+
+    reader._apply_actuator_command()
+
+    assert connection.mav.sent[-1][2:5] == (1600, 65535, 1500)
+    reader._consume_message(
+        FakeMavlinkMessage(
+            "RC_CHANNELS", chan1_raw=1600, chan3_raw=1500, chancount=8
+        ),
+        now[0] + 0.1,
+    )
+    assert reader._last_pilot_input_monotonic == 8.0
+
+    now[0] = 11.0
+    reader._last_heartbeat_monotonic = now[0]
+    reader._apply_actuator_command()
+    assert connection.mav.sent[-1][2:5] == (1600, 65535, 1700)
+
+
+def test_priming_disabled_sends_throttle_immediately(monkeypatch) -> None:
+    monkeypatch.setattr("asv_dashboard_backend.telemetry.time.monotonic", lambda: 10.0)
+    reader, connection = priming_reader(priming_seconds=0.0)
+    reader.submit_remote_control(
+        make_remote_command(steering_pwm=1490, throttle_pwm=1700),
+        "session-a",
+        10.0,
+    )
+
+    reader._apply_actuator_command()
+
+    assert connection.mav.sent == [
+        (7, 9, 1490, 65535, 1700, 65535, 65535, 65535, 65535, 65535)
+    ]
+    assert reader._throttle_priming_started_at is None
+
+
+def test_override_release_reprimes_on_next_takeover(monkeypatch) -> None:
+    now = [10.0]
+    monkeypatch.setattr(
+        "asv_dashboard_backend.telemetry.time.monotonic", lambda: now[0]
+    )
+    reader, connection = priming_reader()
+    reader.submit_remote_control(
+        make_remote_command(steering_pwm=1490, throttle_pwm=1700),
+        "session-a",
+        now[0],
+    )
+    reader._apply_actuator_command()
+    assert connection.mav.sent[-1][2:5] == (1490, 65535, 1500)
+
+    now[0] = 11.0
+    reader._last_heartbeat_monotonic = now[0]
+    reader.submit_remote_control(
+        make_remote_command(seq=2, steering_pwm=1490, throttle_pwm=1700),
+        "session-a",
+        now[0],
+    )
+    reader._apply_actuator_command()
+    assert connection.mav.sent[-1][2:5] == (1490, 65535, 1700)
+
+    now[0] = 12.0
+    reader.clear_remote_control("session-a")
+    assert connection.mav.sent[-1] == (7, 9, 0, 0, 0, 0, 0, 0, 0, 0)
+    assert reader._throttle_priming_started_at is None
+
+    reader._last_heartbeat_monotonic = now[0]
+    reader.submit_remote_control(
+        make_remote_command(seq=3, steering_pwm=1490, throttle_pwm=1700),
+        "session-a",
+        now[0],
+    )
+    reader._apply_actuator_command()
+    assert connection.mav.sent[-1][2:5] == (1490, 65535, 1500)
+
+
 def test_close_clears_remote_and_releases_override(monkeypatch) -> None:
     monkeypatch.setattr("asv_dashboard_backend.telemetry.time.monotonic", lambda: 10.0)
     reader, connection = make_remote_ready_reader()
