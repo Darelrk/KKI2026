@@ -489,8 +489,6 @@ def test_receiver_idle_throttle_offset_does_not_trigger_pilot_gate(
     assert reader.remote_control_rejection_reason() is None
 
 
-
-
 def test_remote_control_invalid_mutation_releases_without_sending_bad_pwm(
     monkeypatch,
 ) -> None:
