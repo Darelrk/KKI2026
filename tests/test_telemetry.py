@@ -561,6 +561,7 @@ def test_remote_control_expiry_refreshes_latched_steering(
     ]
     assert len(connection.mav.sent) == sent_count + 1
 
+
 def test_model_actuator_survives_exact_timeout_boundary(monkeypatch) -> None:
     now = [10.0]
     monkeypatch.setattr(

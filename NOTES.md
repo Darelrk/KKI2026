@@ -111,3 +111,9 @@ Diagnosis lanjutan menemukan receiver idle mengirim RC1=1501 dan RC3=1433 us.
 Deadband pilot 60 us salah menganggap offset RC3 tersebut sebagai input aktif.
 Backend memakai `ASV_PILOT_INPUT_DEADBAND_PWM=80`; gerakan di luar ±80 us tetap
 langsung mengambil alih kontrol sebagai input pilot.
+
+Saat command remote timeout atau WebSocket terputus, backend terus mengirim RC1
+pada PWM steering terakhir dan memaksa RC3=1500. Command `enabled=false`, pindah
+ke mode autonomous, atau input pilot tetap melepas latch. Saat link MAVLink
+benar-benar putus, frame baru tidak dapat dikirim; latch diterapkan kembali
+setelah reconnect, sedangkan penghentian service tetap melepas seluruh override.
