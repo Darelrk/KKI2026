@@ -88,6 +88,17 @@ def test_throttle_neutral_priming_parse_and_validate_environment(
         BridgeSettings.from_env()
 
 
+
+def test_pilot_input_deadband_parse_and_validate_environment(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("ASV_PILOT_INPUT_DEADBAND_PWM", "80")
+    assert BridgeSettings.from_env().pilot_input_deadband_pwm == 80
+
+    monkeypatch.setenv("ASV_PILOT_INPUT_DEADBAND_PWM", "251")
+    with pytest.raises(ConfigError, match="ASV_PILOT_INPUT_DEADBAND_PWM"):
+        BridgeSettings.from_env()
+
 def test_remote_settings_parse_and_validate_environment(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
