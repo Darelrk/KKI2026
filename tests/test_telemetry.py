@@ -425,7 +425,7 @@ def test_remote_override_feedback_still_detects_different_pilot_input(
     monkeypatch,
 ) -> None:
     monkeypatch.setattr("asv_dashboard_backend.telemetry.time.monotonic", lambda: 10.0)
-    reader, _ = make_remote_ready_reader()
+    reader, connection = make_remote_ready_reader()
     command = make_remote_command(steering_pwm=1600, throttle_pwm=1500)
 
     reader.submit_remote_control(command, "session-a", 10.0)
@@ -441,6 +441,9 @@ def test_remote_override_feedback_still_detects_different_pilot_input(
     )
 
     assert reader.remote_control_rejection_reason() == "pilot_input_active"
+    reader._apply_actuator_command()
+    assert connection.mav.sent[-1] == (7, 9, 0, 0, 0, 0, 0, 0, 0, 0)
+    assert reader._steering_hold_pwm is None
 def test_missing_rc_receiver_does_not_block_remote_control(
     monkeypatch,
 ) -> None:
