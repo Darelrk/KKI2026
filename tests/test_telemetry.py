@@ -468,6 +468,27 @@ def test_missing_rc_receiver_does_not_block_remote_control(
     assert connection.mav.sent[-1][2:5] == (1600, 65535, 1500)
 
 
+def test_receiver_idle_throttle_offset_does_not_trigger_pilot_gate(
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(
+        "asv_dashboard_backend.telemetry.time.monotonic", lambda: 10.2
+    )
+    reader, _ = make_remote_ready_reader()
+
+    reader._consume_message(
+        FakeMavlinkMessage(
+            "RC_CHANNELS",
+            chan1_raw=1501,
+            chan3_raw=1433,
+            chancount=8,
+        ),
+        10.1,
+    )
+
+    assert reader.remote_control_rejection_reason() is None
+
+
 
 
 def test_remote_control_invalid_mutation_releases_without_sending_bad_pwm(
