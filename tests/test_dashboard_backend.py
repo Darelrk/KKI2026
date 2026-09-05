@@ -35,19 +35,12 @@ def settings() -> BridgeSettings:
     )
 
 
-def test_control_mode_defaults_to_manual_and_setter_transitions_both_directions() -> None:
+def test_control_mode_is_permanently_manual() -> None:
     state = BridgeState(settings())
 
     assert state.control_mode == "MANUAL"
-    assert state.set_control_mode("AUTONOMOUS") == "AUTONOMOUS"
-    assert state.control_mode == "AUTONOMOUS"
-    assert state.set_control_mode("MANUAL") == "MANUAL"
-    assert state.control_mode == "MANUAL"
-
-
-def test_control_mode_setter_rejects_lowercase_mode() -> None:
-    with pytest.raises(ValidationError):
-        BridgeState(settings()).set_control_mode("manual")
+    with pytest.raises(AttributeError):
+        state.set_control_mode("AUTONOMOUS")
 
 
 def test_control_mode_payload_rejects_invalid_case_and_extra_fields() -> None:
