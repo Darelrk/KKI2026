@@ -25,7 +25,11 @@ sudo systemctl status asv-stack.target
 sudo systemctl stop asv-stack.target
 ```
 
-`asv-vision.service` tidak termasuk stack dan harus diaktifkan manual setelah safety check.
+`asv-vision.service` tidak termasuk `asv-stack.target`, tetapi launcher all-in-one
+`/usr/local/bin/asv-start` (ikon Desktop START ASV) otomatis menyalakannya setelah
+backend dan stream siap. Model berjalan **detection-only**: bounding box, metadata,
+dan frame dikirim ke backend, tanpa `--actuator-control`, sehingga tidak mengirim
+perintah servo/throttle. Safety check tetap wajib sebelum arena.
 
 ## Testing perubahan
 
