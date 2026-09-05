@@ -98,14 +98,18 @@ Hasil pembanding pada mode `MANUAL` dan kondisi armed:
 |---|---|---:|---|
 | Radio | RC3 digerakkan melewati netral | 1380–1608 us | Motor bergerak |
 | MAVLink | RC3=1799 langsung | hingga 1728 us | Motor diam/terpancing sesaat |
-| MAVLink | RC3=1500 selama 1 detik, lalu RC3=1700 selama 2 detik | hingga 1644 us | Motor bergerak |
+| MAVLink, ESC sudah aktif | RC3=1500 selama 1 detik, lalu RC3=1700 selama 2 detik | hingga 1644 us | Motor bergerak |
+| MAVLink, cold start tanpa radio | RC3=1350 selama 2 detik, 1500 selama 1 detik, 1650 selama 2 detik, lalu 1500 selama 1 detik | 1400–1600 us | ESC aktif |
 
-Kesimpulan: kanal, packing MAVLink, dan pin output sudah benar. ESC memerlukan
-fase netral stabil sebelum throttle aktif. Kontrol software harus mengirim
-RC3=1500 saat mulai mengambil override, baru meneruskan target throttle.
+Kesimpulan: cold start ESC memerlukan urutan rendah-netral-maju-netral yang
+meniru radio; primer netral saja tidak cukup. Backend menyediakan
+`POST /api/control/esc-prime` tanpa body. Request menunggu sekitar 6 detik
+dan hanya berjalan ketika remote control aktif, Pixhawk armed, flight mode
+MANUAL, heartbeat masih segar, dan tidak ada input pilot. Override selalu
+dilepas setelah urutan selesai atau ketika salah satu gate gagal.
 
-Backend menerapkan urutan tersebut untuk jalur remote dan autonomous melalui
-`ASV_THROTTLE_NEUTRAL_PRIMING_SECONDS=1.0`. Nilai `0.0` menonaktifkan primer.
+Primer netral biasa untuk takeover remote/autonomous tetap dikendalikan oleh
+`ASV_THROTTLE_NEUTRAL_PRIMING_SECONDS=1.0`. Nilai `0.0` menonaktifkannya.
 
 Diagnosis lanjutan menemukan receiver idle mengirim RC1=1501 dan RC3=1433 us.
 Deadband pilot 60 us salah menganggap offset RC3 tersebut sebagai input aktif.

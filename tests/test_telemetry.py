@@ -382,6 +382,7 @@ def make_remote_ready_reader(
     connection = FakeOverrideConnection()
     reader._connection = connection
     reader._mode = "MANUAL"
+    reader._armed = True
     reader._last_heartbeat_monotonic = now
     reader._last_pilot_input_monotonic = now - 2.0
     return reader, connection
@@ -753,6 +754,50 @@ def priming_reader(
     reader._last_heartbeat_monotonic = now
     reader._last_pilot_input_monotonic = now - 2.0
     return reader, connection
+
+
+def test_esc_prime_replays_working_radio_sequence(monkeypatch) -> None:
+    now = [10.0]
+    monkeypatch.setattr(
+        "asv_dashboard_backend.telemetry.time.monotonic", lambda: now[0]
+    )
+    reader, connection = make_remote_ready_reader(now[0])
+
+    async def run_prime() -> None:
+        prime = asyncio.create_task(reader.prime_esc())
+        await asyncio.sleep(0)
+
+        for current_time, expected_pwm in (
+            (10.0, 1350),
+            (12.0, 1500),
+            (13.0, 1650),
+            (15.0, 1500),
+        ):
+            now[0] = current_time
+            reader._last_heartbeat_monotonic = current_time
+            reader._apply_actuator_command()
+            assert connection.mav.sent[-1][2:5] == (
+                1500,
+                65535,
+                expected_pwm,
+            )
+
+        now[0] = 16.0
+        reader._last_heartbeat_monotonic = now[0]
+        reader._apply_actuator_command()
+
+        assert await prime is True
+        assert connection.mav.sent[-1] == (7, 9, 0, 0, 0, 0, 0, 0, 0, 0)
+
+    asyncio.run(run_prime())
+
+
+def test_esc_prime_rejects_disarmed_pixhawk() -> None:
+    reader, connection = make_remote_ready_reader()
+    reader._armed = False
+
+    assert asyncio.run(reader.prime_esc()) is False
+    assert connection.mav.sent == []
 
 
 def test_remote_takeover_primes_neutral_before_throttle(monkeypatch) -> None:

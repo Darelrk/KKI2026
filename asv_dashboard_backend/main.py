@@ -76,7 +76,7 @@ def create_app(
         CORSMiddleware,
         allow_origins=list(resolved_settings.cors_origins),
         allow_credentials=False,
-        allow_methods=["GET", "PUT"],
+        allow_methods=["GET", "POST", "PUT"],
         allow_headers=["Accept", "Content-Type"],
     )
     app.state.settings = resolved_settings
@@ -93,6 +93,24 @@ def create_app(
     @app.get("/api/control/mode", response_model=ControlModePayload)
     async def get_control_mode() -> ControlModePayload:
         return ControlModePayload(mode=resolved_state.control_mode)
+
+    @app.post("/api/control/esc-prime")
+    async def post_esc_prime() -> dict[str, object]:
+        if not resolved_settings.remote_control_enabled:
+            raise HTTPException(status_code=503, detail="remote control disabled")
+        if resolved_state.control_mode != "MANUAL":
+            raise HTTPException(status_code=409, detail="runtime mode is not MANUAL")
+
+        check = getattr(resolved_telemetry, "remote_control_rejection_reason", None)
+        prime = getattr(resolved_telemetry, "prime_esc", None)
+        if not callable(check) or not callable(prime):
+            raise HTTPException(status_code=503, detail="Pixhawk unavailable")
+        reason = check()
+        if reason is not None:
+            raise HTTPException(status_code=409, detail=reason)
+        if not await prime():
+            raise HTTPException(status_code=409, detail="ESC priming interrupted")
+        return {"ok": True, "accepted": True}
 
 
     @app.get("/api/telemetry", response_model=PixhawkTelemetry)

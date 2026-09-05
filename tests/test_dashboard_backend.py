@@ -108,6 +108,44 @@ class CapturingTelemetryReader:
         self.clears.append(session_id)
 
 
+class PrimeTelemetryReader(CapturingTelemetryReader):
+    def __init__(self) -> None:
+        super().__init__()
+        self.prime_calls = 0
+
+    def remote_control_rejection_reason(self) -> None:
+        return None
+
+    async def prime_esc(self) -> bool:
+        self.prime_calls += 1
+        return True
+
+
+def test_esc_prime_endpoint_runs_sequence_and_allows_dashboard_origin() -> None:
+    reader = PrimeTelemetryReader()
+    configured = BridgeSettings(
+        asv_id="default",
+        cors_origins=("https://dashboard.example.test",),
+        pixhawk_enabled=True,
+        remote_control_enabled=True,
+    )
+    app = create_app(settings=configured, telemetry_reader=reader)
+
+    with TestClient(app) as client:
+        preflight = client.options(
+            "/api/control/esc-prime",
+            headers={
+                "Origin": "https://dashboard.example.test",
+                "Access-Control-Request-Method": "POST",
+            },
+        )
+        response = client.post("/api/control/esc-prime")
+
+    assert preflight.status_code == 200
+    assert "POST" in preflight.headers["access-control-allow-methods"]
+    assert response.status_code == 200
+    assert response.json() == {"ok": True, "accepted": True}
+    assert reader.prime_calls == 1
 
 
 def actuator_settings() -> BridgeSettings:

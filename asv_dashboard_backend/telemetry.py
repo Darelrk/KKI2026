@@ -79,6 +79,12 @@ class PixhawkTelemetryReader:
         "VFR_HUD",
         "RC_CHANNELS",
     ]
+    _ESC_PRIME_STAGES = (
+        (2.0, 1350),
+        (3.0, 1500),
+        (5.0, 1650),
+        (6.0, 1500),
+    )
 
     def __init__(self, settings: BridgeSettings) -> None:
         self.settings = settings
@@ -99,6 +105,7 @@ class PixhawkTelemetryReader:
         self._last_stream_target: tuple[int, int] | None = None
         self._last_rc_monotonic: float | None = None
         self._mode = "UNKNOWN"
+        self._armed = False
         self._last_pilot_input_monotonic: float | None = None
         self._actuator_lock = Lock()
         self._actuator_command: ActuatorCommand | None = None
@@ -109,6 +116,8 @@ class PixhawkTelemetryReader:
         self._override_active = False
         self._throttle_priming_started_at: float | None = None
         self._last_override_pwm: tuple[int, int] | None = None
+        self._esc_prime_started_at: float | None = None
+        self._esc_prime_completion: asyncio.Future[bool] | None = None
 
     def snapshot(self) -> PixhawkTelemetry:
         now = time.monotonic()
@@ -147,6 +156,17 @@ class PixhawkTelemetryReader:
                 self._remote_command = command
                 self._remote_session_id = session_id
                 self._remote_command_at = received_at
+
+    async def prime_esc(self) -> bool:
+        """Run the measured low-neutral-forward-neutral ESC wake-up sequence."""
+        completion = asyncio.get_running_loop().create_future()
+        with self._actuator_lock:
+            if self._esc_prime_started_at is not None or not self._armed:
+                return False
+            self._throttle_priming_started_at = None
+            self._esc_prime_started_at = time.monotonic()
+            self._esc_prime_completion = completion
+        return await asyncio.shield(completion)
 
     def clear_remote_control(self, session_id: str | None = None) -> bool:
         """Clear the remote command only when the caller owns its session."""
@@ -246,6 +266,10 @@ class PixhawkTelemetryReader:
                 return
 
             now = time.monotonic()
+            if self._esc_prime_started_at is not None:
+                self._apply_esc_prime_locked(now)
+                return
+
             remote_command = self._remote_command
             remote_command_selected = remote_command is not None
             if remote_command_selected:
@@ -311,6 +335,45 @@ class PixhawkTelemetryReader:
 
             self._send_override_locked(steering_pwm, throttle_pwm)
 
+    def _apply_esc_prime_locked(self, now: float) -> None:
+        """Advance one fail-closed step of the proven physical ESC sequence."""
+        heartbeat_age = (
+            float("inf")
+            if self._last_heartbeat_monotonic is None
+            else now - self._last_heartbeat_monotonic
+        )
+        pilot_input_age = (
+            float("inf")
+            if self._last_pilot_input_monotonic is None
+            else now - self._last_pilot_input_monotonic
+        )
+        if (
+            not self._armed
+            or not self.settings.remote_control_enabled
+            or heartbeat_age > self.settings.pixhawk_heartbeat_timeout
+            or self._mode != "MANUAL"
+            or pilot_input_age <= 1.5
+        ):
+            self._finish_esc_prime_locked(False)
+            self._release_actuator_override_locked()
+            return
+
+        elapsed = now - self._esc_prime_started_at
+        for stage_end, throttle_pwm in self._ESC_PRIME_STAGES:
+            if elapsed < stage_end:
+                self._send_override_locked(1500, throttle_pwm)
+                return
+
+        self._finish_esc_prime_locked(True)
+        self._release_actuator_override_locked()
+
+    def _finish_esc_prime_locked(self, succeeded: bool) -> None:
+        completion = self._esc_prime_completion
+        self._esc_prime_started_at = None
+        self._esc_prime_completion = None
+        if completion is not None and not completion.done():
+            completion.set_result(succeeded)
+
     def _send_override_locked(self, steering_pwm: int, throttle_pwm: int) -> None:
         """Send one RC override frame; caller must hold ``_actuator_lock``."""
         connection = self._connection
@@ -336,6 +399,7 @@ class PixhawkTelemetryReader:
         except Exception as exc:  # pragma: no cover - hardware-specific
             self._override_active = False
             self._throttle_priming_started_at = None
+            self._finish_esc_prime_locked(False)
             self._last_override_pwm = None
             logger.warning("Gagal mengirim RC override Pixhawk (%s)", exc)
 
@@ -347,6 +411,8 @@ class PixhawkTelemetryReader:
     def _release_actuator_override_locked(self) -> None:
         """Release an active override; caller must hold ``_actuator_lock``."""
         connection = self._connection
+        if self._esc_prime_started_at is not None:
+            self._finish_esc_prime_locked(False)
         self._throttle_priming_started_at = None
         self._last_override_pwm = None
         if connection is None or not self._override_active:
@@ -376,6 +442,7 @@ class PixhawkTelemetryReader:
         self._release_actuator_override()
         connection = self._connection
         self._connection = None
+        self._armed = False
         self._throttle_priming_started_at = None
         self._last_override_pwm = None
         if connection is not None:
@@ -407,6 +474,7 @@ class PixhawkTelemetryReader:
             self._last_heartbeat_monotonic = None
             self._last_rc_monotonic = None
             self._mode = "UNKNOWN"
+            self._armed = False
             self._override_active = False
             self._throttle_priming_started_at = None
             self._last_override_pwm = None
@@ -456,6 +524,7 @@ class PixhawkTelemetryReader:
         self._last_stream_target = None
         self._last_heartbeat_monotonic = None
         self._mode = "UNKNOWN"
+        self._armed = False
         self._next_reconnect = time.monotonic() + 0.5
         self._last_rc_monotonic = None
         self._throttle_priming_started_at = None
@@ -483,6 +552,7 @@ class PixhawkTelemetryReader:
         if message_type == "HEARTBEAT":
             self._last_heartbeat_monotonic = now
             self._heartbeat_at = datetime.now(timezone.utc)
+            self._armed = bool(getattr(message, "base_mode", 0) & 128)
             mode_str = str(
                 getattr(self._connection, "flightmode", "UNKNOWN") or "UNKNOWN"
             ).upper()
