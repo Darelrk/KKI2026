@@ -94,12 +94,6 @@ def create_app(
     async def get_control_mode() -> ControlModePayload:
         return ControlModePayload(mode=resolved_state.control_mode)
 
-    @app.put("/api/control/mode", response_model=ControlModePayload)
-    async def put_control_mode(update: ControlModePayload) -> ControlModePayload:
-        mode = resolved_state.set_control_mode(update.mode)
-        if mode == "AUTONOMOUS":
-            clear_remote_control()
-        return ControlModePayload(mode=mode)
 
     @app.get("/api/telemetry", response_model=PixhawkTelemetry)
     async def get_telemetry() -> PixhawkTelemetry:

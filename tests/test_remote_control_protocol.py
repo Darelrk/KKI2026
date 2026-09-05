@@ -330,29 +330,6 @@ def test_remote_websocket_rejects_wrong_asv_origin_and_disabled_feature() -> Non
         assert error.value.code == 1008
 
 
-def test_remote_websocket_rejects_autonomous_runtime_mode_without_submit() -> None:
-    reader = FakeRemoteReader()
-    settings = remote_settings()
-    state = BridgeState(settings)
-    state.set_control_mode("AUTONOMOUS")
-    app = create_app(
-        settings=settings,
-        state=state,
-        telemetry_reader=reader,
-    )
-
-    with TestClient(app) as client:
-        with client.websocket_connect(
-            "/ws/control/default",
-            headers={"origin": "https://remote.example.test"},
-        ) as socket:
-            socket.send_json(VALID)
-            ack = socket.receive_json()
-
-    assert ack["accepted"] is False
-    assert ack["reason"] == "runtime_mode_autonomous"
-    assert reader.commands == []
-
 
 def test_remote_websocket_new_session_supersedes_old_with_4001() -> None:
     reader = FakeRemoteReader()

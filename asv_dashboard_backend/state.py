@@ -109,10 +109,7 @@ class BridgeState:
         self._latest_telemetry: dict[str, Any] | None = None
         self._telemetry_subscribers: set[asyncio.Queue[dict[str, Any]]] = set()
 
-    def set_control_mode(self, mode: str) -> ControlMode:
-        payload = ControlModePayload.model_validate({"mode": mode})
-        self.control_mode = payload.mode
-        return payload.mode
+
 
     def update_status(self, status: AsvLiveStatus) -> AsvLiveStatus:
         if status.id != self.settings.asv_id:
