@@ -1,3 +1,10 @@
+> **DOKUMEN HISTORIS (2026-07-20)** — ditulis saat backend masih sepenuhnya
+> read-only terhadap Pixhawk. Sejak itu backend memiliki jalur remote control
+> (KKI Remote) yang memang mengirim `RC_CHANNELS_OVERRIDE` ke Pixhawk dengan gate
+> MANUAL/heartbeat/pilot-input, serta jalur model `asv-vision` detection-only tanpa
+> perintah servo/throttle. Kalimat "read-only" di bawah berlaku untuk kontrak
+> `GET /api/telemetry` dan dashboard live track era itu, bukan kondisi backend kini.
+
 # Handover: Live Boat Track Dashboard
 
 Tanggal: 2026-07-20  
