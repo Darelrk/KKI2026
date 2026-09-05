@@ -39,7 +39,10 @@ QGroundControl. Backend secara otomatis:
    tanpa mengganggu fungsi kamera dan backend.
 
 Transmitter RC tetap langsung terhubung ke receiver/Pixhawk untuk mengendalikan servo dan throttle.
-Backend tidak pernah mengirimkan perintah arming, disarm, mode change, atau RC override.
+Backend mengirim `RC_CHANNELS_OVERRIDE` hanya melalui jalur remote control operator
+(KKI Remote, `ASV_REMOTE_CONTROL_ENABLED=true`) dengan gate mode MANUAL, heartbeat,
+dan deteksi input pilot; backend tidak pernah mengirim perintah arming, disarm,
+atau mode change.
 
 ## Dashboard live direct via tunnel
 
