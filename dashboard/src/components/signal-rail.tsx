@@ -1,36 +1,20 @@
 import { CheckCircle, WarningCircle } from '@phosphor-icons/react'
 
-import { ControlModeToggle } from './control-mode-toggle'
 import { formatSiteTime } from '../lib/format-site-time'
 
 import type { AsvLive } from '../lib/asv-types'
-import type { ControlMode } from '../lib/control-mode'
 import type { ConnectionStatus } from './connection-bar'
 
 type SignalRailProps = {
   live: AsvLive | null
   telemetryConnected: boolean | null
   telemetryStatus: ConnectionStatus
-  controlMode?: ControlMode | null
-  controlModeCanEdit?: boolean
-  controlModeLoading?: boolean
-  controlModeReadOnly?: boolean
-  controlModeUpdating?: boolean
-  controlModeError?: Error | null
-  onControlModeChange?: (mode: ControlMode) => void
 }
 
 export function SignalRail({
   live,
   telemetryConnected,
   telemetryStatus,
-  controlMode = null,
-  controlModeCanEdit = false,
-  controlModeLoading = false,
-  controlModeReadOnly = false,
-  controlModeUpdating = false,
-  controlModeError = null,
-  onControlModeChange = () => undefined,
 }: SignalRailProps) {
   const modelStatus = live?.model_status ?? 'offline'
   const isRunning = live?.online && modelStatus === 'running'
@@ -75,8 +59,8 @@ export function SignalRail({
           </div>
         ) : null}
         <div>
-          <dt>Autonomy target</dt>
-          <dd>{controlMode ?? 'Unavailable'}</dd>
+          <dt>Control mode</dt>
+          <dd>MANUAL</dd>
         </div>
         {telemetryConnected ? (
           <div>
@@ -85,16 +69,6 @@ export function SignalRail({
           </div>
         ) : null}
       </dl>
-
-      <ControlModeToggle
-        mode={controlMode}
-        canEdit={controlModeCanEdit}
-        isLoading={controlModeLoading}
-        readOnly={controlModeReadOnly}
-        isUpdating={controlModeUpdating}
-        updateError={controlModeError}
-        onChange={onControlModeChange}
-      />
     </aside>
   )
 }

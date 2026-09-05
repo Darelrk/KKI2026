@@ -25,16 +25,12 @@ describe('DashboardClient', () => {
 
     expect(await screen.findByText('MODEL RUNNING')).toBeInTheDocument()
     expect(screen.getByText('MODEL MONITORING')).toBeInTheDocument()
-    expect(screen.getByText('Autonomy target')).toBeInTheDocument()
+    expect(screen.getByText('Control mode')).toBeInTheDocument()
+    expect(screen.getByText('MANUAL', { selector: 'dd' })).toBeInTheDocument()
     expect(screen.queryByText('AUTO / ONBOARD')).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'AUTONOMOUS' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    )
-    expect(screen.getByRole('button', { name: 'MANUAL' })).toBeDisabled()
-    expect(screen.getByRole('note')).toHaveTextContent(
-      'Fixture mode is read-only.',
-    )
+    expect(screen.queryByRole('button', { name: 'AUTONOMOUS' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'MANUAL' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('note')).not.toBeInTheDocument()
     expect(screen.queryByText(/RC MANUAL|MAVLink/i)).not.toBeInTheDocument()
     expect(
       screen.getByRole('img', { name: 'Live surface camera' }),

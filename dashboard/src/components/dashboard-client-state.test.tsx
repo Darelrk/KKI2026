@@ -6,7 +6,6 @@ import { useAsvLive } from '../lib/use-asv-live'
 import { useUnderwaterBroadcast } from '../lib/use-underwater-broadcast'
 import { useTelemetryBroadcast } from '../lib/use-telemetry-broadcast'
 import { useVisionMetadata } from '../lib/use-vision-metadata'
-import { useControlMode } from '../lib/use-control-mode'
 
 vi.mock('../lib/use-asv-live', () => ({ useAsvLive: vi.fn() }))
 vi.mock('../lib/use-underwater-broadcast', () => ({
@@ -17,9 +16,6 @@ vi.mock('../lib/use-telemetry-broadcast', () => ({
 }))
 vi.mock('../lib/use-vision-metadata', () => ({
   useVisionMetadata: vi.fn(),
-}))
-vi.mock('../lib/use-control-mode', () => ({
-  useControlMode: vi.fn(),
 }))
 
 afterEach(() => {
@@ -47,18 +43,6 @@ describe('DashboardClient states', () => {
       cache: null,
       realtimeStatus: 'error',
     })
-    vi.mocked(useControlMode).mockReturnValue({
-      mode: null,
-      isLoading: true,
-      isError: false,
-      error: null,
-      isUpdating: false,
-      canEdit: false,
-      readOnly: false,
-      updateMode: vi.fn(),
-    })
-
-
     render(<DashboardClient asvId="default" mode="direct" />)
 
     expect(screen.getByRole('main')).not.toHaveAttribute('aria-busy', 'true')
@@ -66,7 +50,7 @@ describe('DashboardClient states', () => {
       screen.getByRole('heading', { name: 'Mission route' }),
     ).toBeInTheDocument()
     expect(screen.queryByText('Telemetry unavailable')).not.toBeInTheDocument()
-    expect(screen.getByText('Loading control mode…')).toBeInTheDocument()
+    expect(screen.getByText('MANUAL', { selector: 'dd' })).toBeInTheDocument()
     expect(screen.queryByRole('note')).not.toBeInTheDocument()
   })
 
@@ -89,18 +73,6 @@ describe('DashboardClient states', () => {
       cache: null,
       realtimeStatus: 'error',
     })
-    vi.mocked(useControlMode).mockReturnValue({
-      mode: 'MANUAL',
-      isLoading: false,
-      isError: true,
-      error: new Error('control mode unavailable'),
-      isUpdating: false,
-      canEdit: false,
-      readOnly: false,
-      updateMode: vi.fn(),
-    })
-
-
     render(<DashboardClient asvId="default" mode="direct" />)
 
     expect(
