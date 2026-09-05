@@ -55,5 +55,6 @@ curl -fsS http://127.0.0.1:8080/api/status
 curl -fsS http://127.0.0.1:8080/api/telemetry
 ```
 
-Telemetry tetap read-only: tidak ada arm/disarm, perubahan mode, navigasi, RC override, atau
-perintah MAVLink.
+`asv-vision`/model detection-only: tidak ada arm/disarm, perubahan mode, navigasi,
+atau perintah servo/throttle dari model. Jalur remote control (KKI Remote) terpisah
+dan memang mengirim RC override ke Pixhawk saat diaktifkan operator.
