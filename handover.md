@@ -45,7 +45,8 @@ dan deteksi input pilot; backend tidak pernah mengirim perintah arming, disarm,
 atau mode change.
 
 KKI Remote dapat memancing cold-start ESC melalui
-`POST /api/control/esc-prime` tanpa request body. Endpoint menunggu urutan
+`POST https://remote.monitor-kapal-pora-pora.web.id/api/control/esc-prime`
+tanpa request body. Endpoint menunggu urutan
 1350 us (2 detik), 1500 us (1 detik), 1650 us (2 detik), dan 1500 us
 (1 detik), lalu melepas override. Respons sukses:
 `{"ok":true,"accepted":true}`. Tombol frontend wajib memperingatkan bahwa

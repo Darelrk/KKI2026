@@ -15,7 +15,10 @@ ingress:
   - hostname: camera.example.com
     path: ^/stream\.mjpg$
     service: http://127.0.0.1:8080
-  # Approved remote control/video ingress; no status, telemetry, vision, or actuator POST routes.
+  # Approved remote control/video ingress; all other HTTP routes stay blocked.
+  - hostname: remote.monitor-kapal-pora-pora.web.id
+    path: ^/api/control/esc-prime$
+    service: http://127.0.0.1:8080
   - hostname: remote.monitor-kapal-pora-pora.web.id
     path: ^/ws/control/[^/]+$
     service: http://127.0.0.1:8080
