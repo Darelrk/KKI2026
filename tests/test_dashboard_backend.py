@@ -319,7 +319,7 @@ def test_control_websocket_delegates_to_real_pixhawk_reader(
     app = create_app(settings=settings_with_remote, telemetry_reader=reader)
 
     with caplog.at_level(
-        logging.WARNING,
+        logging.INFO,
         logger="asv_dashboard_backend.main",
     ):
         with TestClient(app) as client:
@@ -356,7 +356,13 @@ def test_control_websocket_delegates_to_real_pixhawk_reader(
                     65535,
                 )
 
-    assert not any("Remote input" in record.message for record in caplog.records)
+    assert any(
+        "Remote input" in record.message
+        and "RC1=1475" in record.message
+        and "RC3=1585" in record.message
+        and "accepted=True" in record.message
+        for record in caplog.records
+    )
 
     assert connection_attempts == []
 
