@@ -111,7 +111,34 @@ def create_app(
         if not await prime():
             raise HTTPException(status_code=409, detail="ESC priming interrupted")
         return {"ok": True, "accepted": True}
+    @app.post("/api/control/force-takeover")
+    async def post_force_takeover() -> dict[str, object]:
+        if not resolved_settings.remote_control_enabled:
+            raise HTTPException(status_code=503, detail="remote control disabled")
+        if resolved_state.control_mode != "MANUAL":
+            raise HTTPException(status_code=409, detail="runtime mode is not MANUAL")
 
+        session_id = control_registry.owner(resolved_settings.asv_id)
+        if session_id is None:
+            raise HTTPException(
+                status_code=409,
+                detail="remote control session is not connected",
+            )
+        check = getattr(resolved_telemetry, "remote_control_rejection_reason", None)
+        takeover = getattr(resolved_telemetry, "force_remote_takeover", None)
+        if not callable(check) or not callable(takeover):
+            raise HTTPException(status_code=503, detail="Pixhawk unavailable")
+        reason = check()
+        if reason not in (None, "pilot_input_active"):
+            raise HTTPException(status_code=409, detail=reason)
+        try:
+            accepted = takeover(session_id)
+        except Exception:
+            logger.exception("Gagal mengaktifkan takeover remote")
+            accepted = False
+        if not accepted:
+            raise HTTPException(status_code=409, detail="remote takeover unavailable")
+        return {"ok": True, "accepted": True}
 
     @app.get("/api/telemetry", response_model=PixhawkTelemetry)
     async def get_telemetry() -> PixhawkTelemetry:

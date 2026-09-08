@@ -115,3 +115,14 @@ Diagnosis lanjutan menemukan receiver idle mengirim RC1=1501 dan RC3=1433 us.
 Deadband pilot 60 us salah menganggap offset RC3 tersebut sebagai input aktif.
 Backend memakai `ASV_PILOT_INPUT_DEADBAND_PWM=80`; gerakan di luar ±80 us tetap
 langsung mengambil alih kontrol sebagai input pilot.
+
+## 6. TAKEOVER REMOTE SETELAH FLYSKY OFF
+
+Jika radio FlySky sudah mati tetapi ArduPilot masih mengulang RC_CHANNELS terakhir,
+frame KKI Remote dapat ditolak sebagai `pilot_input_active`. Setelah memastikan
+transmitter benar-benar mati dan area baling-baling aman, tekan tombol frontend
+**Radio OFF / Ambil alih remote**. Frontend memanggil
+`POST /api/control/force-takeover` tanpa body ketika WebSocket kontrol masih
+tersambung. Latch hanya berlaku untuk sesi remote itu dan hilang saat tombol
+release atau WebSocket putus; mode MANUAL, heartbeat, dan kontrol keselamatan lain
+tetap aktif.

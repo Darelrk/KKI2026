@@ -53,6 +53,18 @@ tanpa request body. Endpoint menunggu urutan
 motor akan bergerak. Request ditolak jika remote control mati, Pixhawk belum
 armed/tidak terhubung, flight mode bukan MANUAL, atau input pilot aktif.
 
+Jika FlySky sudah dimatikan tetapi RC_CHANNELS masih mengulang nilai terakhir,
+gunakan tombol frontend **Radio OFF / Ambil alih remote** setelah memastikan
+radio benar-benar mati dan area baling-baling aman. Tombol memanggil
+`POST https://remote.monitor-kapal-pora-pora.web.id/api/control/force-takeover`
+tanpa body, saat WebSocket kontrol KKI Remote masih tersambung. Respons sukses
+`{"ok":true,"accepted":true}`; setelah itu nilai RC stale tidak lagi menolak
+sesi remote tersebut. Latch otomatis hilang saat remote release atau WebSocket
+putus. Endpoint tidak mengubah mode, arming, disarming, atau heartbeat gate.
+
+Perubahan arah slider steering/throttle tetap menjadi tanggung jawab frontend;
+backend menerima nilai PWM mentah dari frame kontrol.
+
 ## Dashboard live direct via tunnel
 
 Set the Vercel environment to:
