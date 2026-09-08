@@ -32,6 +32,7 @@ class FakeRemoteReader:
     def __init__(self) -> None:
         self.commands: list[tuple[object, str, float]] = []
         self.clears: list[str | None] = []
+        self.refreshes: list[str] = []
         self.actuator_commands: list[object] = []
         self.rejection: str | None = None
 
@@ -54,6 +55,11 @@ class FakeRemoteReader:
 
     def remote_control_rejection_reason(self) -> str | None:
         return self.rejection
+
+    def refresh_stale_pilot_input(self, session_id: str) -> bool:
+        self.refreshes.append(session_id)
+        self.rejection = None
+        return True
 
     def submit_actuator_command(self, command: object) -> None:
         self.actuator_commands.append(command)
@@ -409,3 +415,27 @@ def test_remote_websocket_enabled_false_clears_owner_and_stale_does_not_submit()
     assert len(reader.commands) == 1
     assert reader.clears
     assert reader.actuator_commands == []
+
+
+def test_stale_pilot_refresh_endpoint_requires_owner_and_pilot_rejection() -> None:
+    reader = FakeRemoteReader()
+    app = create_app(settings=remote_settings(), telemetry_reader=reader)
+
+    with TestClient(app) as client:
+        disconnected = client.post("/api/control/force-takeover")
+        assert disconnected.status_code == 409
+
+        with client.websocket_connect(
+            "/ws/control/default",
+            headers={"origin": "https://remote.example.test"},
+        ):
+            reader.rejection = "pixhawk_unavailable"
+            unsafe = client.post("/api/control/force-takeover")
+            assert unsafe.status_code == 409
+
+            reader.rejection = "pilot_input_active"
+            refreshed = client.post("/api/control/force-takeover")
+
+    assert refreshed.status_code == 200
+    assert refreshed.json() == {"ok": True, "accepted": True}
+    assert len(reader.refreshes) == 1

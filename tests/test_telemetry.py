@@ -1008,3 +1008,91 @@ def test_reset_connection_clears_remote_releases_and_allows_reconnect(
 
     assert len(connection_attempts) == 1
     assert reader._connection is new_connection
+
+
+def test_stale_pilot_refresh_ignores_only_frozen_rc(monkeypatch) -> None:
+    now = [10.0]
+    monkeypatch.setattr(
+        "asv_dashboard_backend.telemetry.time.monotonic", lambda: now[0]
+    )
+    reader, connection = make_remote_ready_reader(now[0])
+    stale_rc = FakeMavlinkMessage(
+        "RC_CHANNELS", chan1_raw=1750, chan3_raw=1500, chancount=8
+    )
+
+    reader._consume_message(stale_rc, now[0])
+    assert reader.remote_control_rejection_reason() == "pilot_input_active"
+    assert reader.refresh_stale_pilot_input("session-a") is True
+    assert reader.remote_control_rejection_reason() is None
+    assert asyncio.run(reader.prime_esc()) is False
+
+    now[0] = 10.1
+    reader._consume_message(stale_rc, now[0])
+    assert reader.remote_control_rejection_reason() is None
+
+    reader.submit_remote_control(
+        make_remote_command(steering_pwm=1600, throttle_pwm=1500),
+        "session-a",
+        now[0],
+    )
+    reader._apply_actuator_command()
+    assert connection.mav.sent[-1][2:5] == (1600, 65535, 1500)
+
+    reader._consume_message(
+        FakeMavlinkMessage(
+            "RC_CHANNELS", chan1_raw=1600, chan3_raw=1500, chancount=8
+        ),
+        now[0],
+    )
+    assert reader.remote_control_rejection_reason() is None
+
+    now[0] = 10.2
+    reader._consume_message(
+        FakeMavlinkMessage(
+            "RC_CHANNELS", chan1_raw=1700, chan3_raw=1500, chancount=8
+        ),
+        now[0],
+    )
+    assert reader.remote_control_rejection_reason() == "pilot_input_active"
+    reader._apply_actuator_command()
+    assert connection.mav.sent[-1] == (7, 9, 0, 0, 0, 0, 0, 0, 0, 0)
+
+
+def test_stale_pilot_refresh_is_cleared_only_by_owning_session(monkeypatch) -> None:
+    now = [10.0]
+    monkeypatch.setattr(
+        "asv_dashboard_backend.telemetry.time.monotonic", lambda: now[0]
+    )
+    reader, _ = make_remote_ready_reader(now[0])
+    stale_rc = FakeMavlinkMessage(
+        "RC_CHANNELS", chan1_raw=1750, chan3_raw=1500, chancount=8
+    )
+
+    reader._consume_message(stale_rc, now[0])
+    assert reader.refresh_stale_pilot_input("session-a") is True
+    assert reader.clear_remote_control("session-b") is False
+
+    now[0] = 10.1
+    reader._consume_message(stale_rc, now[0])
+    assert reader.remote_control_rejection_reason() is None
+    assert reader.clear_remote_control("session-a") is True
+    assert reader.remote_control_rejection_reason() == "pilot_input_active"
+
+
+def test_stale_pilot_refresh_does_not_enable_model_lane(monkeypatch) -> None:
+    monkeypatch.setattr("asv_dashboard_backend.telemetry.time.monotonic", lambda: 10.0)
+    reader, connection = make_remote_ready_reader(model_actuators_enabled=True)
+    reader._consume_message(
+        FakeMavlinkMessage(
+            "RC_CHANNELS", chan1_raw=1750, chan3_raw=1500, chancount=8
+        ),
+        10.0,
+    )
+
+    assert reader.refresh_stale_pilot_input("session-a") is True
+    reader.submit_actuator_command(
+        ActuatorCommand(steering_pwm=1600, throttle_pwm=1600, enabled=True)
+    )
+    reader._apply_actuator_command()
+
+    assert connection.mav.sent == []

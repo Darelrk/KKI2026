@@ -94,6 +94,33 @@ def create_app(
     async def get_control_mode() -> ControlModePayload:
         return ControlModePayload(mode=resolved_state.control_mode)
 
+    @app.post("/api/control/force-takeover")
+    async def post_stale_pilot_refresh() -> dict[str, object]:
+        if not resolved_settings.remote_control_enabled:
+            raise HTTPException(status_code=503, detail="remote control disabled")
+        if resolved_state.control_mode != "MANUAL":
+            raise HTTPException(status_code=409, detail="runtime mode is not MANUAL")
+
+        session_id = control_registry.owner(resolved_settings.asv_id)
+        if session_id is None:
+            raise HTTPException(
+                status_code=409,
+                detail="remote control session is not connected",
+            )
+        check = getattr(resolved_telemetry, "remote_control_rejection_reason", None)
+        refresh = getattr(resolved_telemetry, "refresh_stale_pilot_input", None)
+        if not callable(check) or not callable(refresh):
+            raise HTTPException(status_code=503, detail="Pixhawk unavailable")
+        reason = check()
+        if reason != "pilot_input_active":
+            raise HTTPException(
+                status_code=409,
+                detail=reason or "pilot input is not active",
+            )
+        if not refresh(session_id):
+            raise HTTPException(status_code=409, detail="pilot RC sample is unavailable")
+        return {"ok": True, "accepted": True}
+
     @app.post("/api/control/esc-prime")
     async def post_esc_prime() -> dict[str, object]:
         if not resolved_settings.remote_control_enabled:

@@ -20,6 +20,9 @@ ingress:
     path: ^/api/control/esc-prime$
     service: http://127.0.0.1:8080
   - hostname: remote.monitor-kapal-pora-pora.web.id
+    path: ^/api/control/force-takeover$
+    service: http://127.0.0.1:8080
+  - hostname: remote.monitor-kapal-pora-pora.web.id
     path: ^/ws/control/[^/]+$
     service: http://127.0.0.1:8080
   - hostname: remote.monitor-kapal-pora-pora.web.id
