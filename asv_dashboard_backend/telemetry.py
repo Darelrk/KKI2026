@@ -110,7 +110,6 @@ class PixhawkTelemetryReader:
         self._last_pilot_input_monotonic: float | None = None
         self._last_rc_pwm: tuple[float, float] | None = None
         self._stale_rc_baseline: tuple[float, float] | None = None
-        self._stale_rc_session_id: str | None = None
         self._actuator_lock = Lock()
         self._actuator_command: ActuatorCommand | None = None
         self._actuator_command_at = float("-inf")
@@ -170,7 +169,7 @@ class PixhawkTelemetryReader:
             ):
                 return False
             self._stale_rc_baseline = self._last_rc_pwm
-            self._stale_rc_session_id = session_id
+            self._remote_session_id = session_id
             self._last_pilot_input_monotonic = None
             return True
 
@@ -181,7 +180,7 @@ class PixhawkTelemetryReader:
             if (
                 self._esc_prime_started_at is not None
                 or not self._armed
-                or self._stale_rc_session_id is not None
+                or self._stale_rc_baseline is not None
             ):
                 return False
             self._throttle_priming_started_at = None
@@ -190,36 +189,25 @@ class PixhawkTelemetryReader:
         return await asyncio.shield(completion)
 
     def clear_remote_control(self, session_id: str | None = None) -> bool:
-        """Clear only remote state owned by the requested session."""
+        """Clear the remote command only when the caller owns its session."""
         with self._actuator_lock:
-            owns_remote = (
-                session_id is None or self._remote_session_id == session_id
-            )
-            owns_refresh = (
-                session_id is None or self._stale_rc_session_id == session_id
-            )
-            if not owns_remote and not owns_refresh:
+            if (
+                session_id is not None
+                and self._remote_session_id != session_id
+            ):
                 return False
-
-            remote_existed = owns_remote and self._remote_command is not None
-            refresh_existed = (
-                owns_refresh and self._stale_rc_session_id is not None
-            )
-            should_release = owns_remote and (
-                remote_existed or self._override_active
-            )
-            if owns_remote:
-                self._remote_command = None
-                self._remote_session_id = None
-                self._remote_command_at = float("-inf")
-            if owns_refresh:
-                self._stale_rc_baseline = None
-                self._stale_rc_session_id = None
-                if refresh_existed:
-                    self._last_pilot_input_monotonic = time.monotonic()
+            existed = self._remote_command is not None
+            refresh_existed = self._stale_rc_baseline is not None
+            should_release = existed or self._override_active
+            self._remote_command = None
+            self._remote_session_id = None
+            self._remote_command_at = float("-inf")
+            self._stale_rc_baseline = None
+            if refresh_existed:
+                self._last_pilot_input_monotonic = time.monotonic()
         if should_release:
             self._release_actuator_override()
-        return remote_existed or refresh_existed
+        return existed or refresh_existed
 
     def remote_control_rejection_reason(self) -> str | None:
         """Return the first reader-level safety gate blocking remote control."""
@@ -344,7 +332,7 @@ class PixhawkTelemetryReader:
                 or self._mode != "MANUAL"
                 or pilot_input_age <= 1.5
                 or (
-                    self._stale_rc_session_id is not None
+                    self._stale_rc_baseline is not None
                     and not remote_command_selected
                 )
             ):
@@ -515,7 +503,6 @@ class PixhawkTelemetryReader:
             self._last_rc_monotonic = None
             self._last_rc_pwm = None
             self._stale_rc_baseline = None
-            self._stale_rc_session_id = None
             self._mode = "UNKNOWN"
             self._armed = False
             self._override_active = False
@@ -652,7 +639,6 @@ class PixhawkTelemetryReader:
                     if not is_override_feedback:
                         if baseline is not None and not matches_stale_baseline:
                             self._stale_rc_baseline = None
-                            self._stale_rc_session_id = None
                         if not matches_stale_baseline and (
                             abs(steering - 1500) > pilot_deadband
                             or abs(throttle - 1500) > pilot_deadband
