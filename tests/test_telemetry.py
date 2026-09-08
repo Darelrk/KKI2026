@@ -615,50 +615,6 @@ def test_remote_control_owner_clear_releases_immediately_and_preserves_model(
     reader._apply_actuator_command()
     assert connection.mav.sent[-1][2:5] == (1510, 65535, 1540)
 
-def test_force_remote_takeover_clears_stale_pilot_lock_until_remote_release(
-    monkeypatch,
-) -> None:
-    monkeypatch.setattr("asv_dashboard_backend.telemetry.time.monotonic", lambda: 10.0)
-    reader, connection = make_remote_ready_reader()
-    reader._last_pilot_input_monotonic = 9.0
-
-    assert reader.remote_control_rejection_reason() == "pilot_input_active"
-    assert reader.force_remote_takeover("session-a") is True
-    reader.submit_remote_control(
-        make_remote_command(steering_pwm=1600, throttle_pwm=1500),
-        "session-a",
-        10.0,
-    )
-
-    reader._consume_message(
-        FakeMavlinkMessage(
-            "RC_CHANNELS",
-            chan1_raw=1700,
-            chan3_raw=1500,
-            chancount=8,
-        ),
-        10.1,
-    )
-    assert reader.remote_control_rejection_reason() is None
-    reader._apply_actuator_command()
-    assert connection.mav.sent[-1][2:5] == (1600, 65535, 1500)
-
-    assert reader.clear_remote_control("session-b") is False
-    assert reader.clear_remote_control("session-a") is True
-
-    reader._consume_message(
-        FakeMavlinkMessage(
-            "RC_CHANNELS",
-            chan1_raw=1700,
-            chan3_raw=1500,
-            chancount=8,
-        ),
-        10.2,
-    )
-    assert reader.remote_control_rejection_reason() == "pilot_input_active"
-
-
-
 
 def test_remote_control_rejection_reason_feature_disabled_blocks_apply() -> None:
     reader = PixhawkTelemetryReader(
@@ -839,13 +795,6 @@ def test_esc_prime_replays_working_radio_sequence(monkeypatch) -> None:
 def test_esc_prime_rejects_disarmed_pixhawk() -> None:
     reader, connection = make_remote_ready_reader()
     reader._armed = False
-
-    assert asyncio.run(reader.prime_esc()) is False
-    assert connection.mav.sent == []
-
-def test_esc_prime_rejects_active_remote_takeover_latch() -> None:
-    reader, connection = make_remote_ready_reader()
-    assert reader.force_remote_takeover("session-a") is True
 
     assert asyncio.run(reader.prime_esc()) is False
     assert connection.mav.sent == []

@@ -32,7 +32,6 @@ class FakeRemoteReader:
     def __init__(self) -> None:
         self.commands: list[tuple[object, str, float]] = []
         self.clears: list[str | None] = []
-        self.takeovers: list[str] = []
         self.actuator_commands: list[object] = []
         self.rejection: str | None = None
 
@@ -52,10 +51,6 @@ class FakeRemoteReader:
 
     def clear_remote_control(self, session_id: str | None = None) -> None:
         self.clears.append(session_id)
-
-    def force_remote_takeover(self, session_id: str) -> bool:
-        self.takeovers.append(session_id)
-        return True
 
     def remote_control_rejection_reason(self) -> str | None:
         return self.rejection
@@ -389,26 +384,6 @@ def test_remote_websocket_new_session_supersedes_old_with_4001() -> None:
                 assert reader.clears == [first_session_id]
                 assert len(reader.commands) == 2
                 assert reader.commands[1][1] == second_session_id
-
-
-def test_remote_takeover_endpoint_requires_session_and_clears_pilot_rejection() -> None:
-    reader = FakeRemoteReader()
-    app = create_app(settings=remote_settings(), telemetry_reader=reader)
-
-    with TestClient(app) as client:
-        disconnected = client.post("/api/control/force-takeover")
-        assert disconnected.status_code == 409
-
-        with client.websocket_connect(
-            "/ws/control/default",
-            headers={"origin": "https://remote.example.test"},
-        ):
-            reader.rejection = "pilot_input_active"
-            response = client.post("/api/control/force-takeover")
-
-    assert response.status_code == 200
-    assert response.json() == {"ok": True, "accepted": True}
-    assert len(reader.takeovers) == 1
 
 
 def test_remote_websocket_enabled_false_clears_owner_and_stale_does_not_submit() -> None:

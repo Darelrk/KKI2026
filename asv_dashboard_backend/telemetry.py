@@ -107,7 +107,6 @@ class PixhawkTelemetryReader:
         self._mode = "UNKNOWN"
         self._armed = False
         self._last_pilot_input_monotonic: float | None = None
-        self._pilot_takeover_session_id: str | None = None
         self._actuator_lock = Lock()
         self._actuator_command: ActuatorCommand | None = None
         self._actuator_command_at = float("-inf")
@@ -162,11 +161,7 @@ class PixhawkTelemetryReader:
         """Run the measured low-neutral-forward-neutral ESC wake-up sequence."""
         completion = asyncio.get_running_loop().create_future()
         with self._actuator_lock:
-            if (
-                self._esc_prime_started_at is not None
-                or not self._armed
-                or self._pilot_takeover_session_id is not None
-            ):
+            if self._esc_prime_started_at is not None or not self._armed:
                 return False
             self._throttle_priming_started_at = None
             self._esc_prime_started_at = time.monotonic()
@@ -174,12 +169,11 @@ class PixhawkTelemetryReader:
         return await asyncio.shield(completion)
 
     def clear_remote_control(self, session_id: str | None = None) -> bool:
-        """Clear the remote command and any takeover latch it owns."""
+        """Clear the remote command only when the caller owns its session."""
         with self._actuator_lock:
             if (
                 session_id is not None
-                and session_id
-                not in {self._remote_session_id, self._pilot_takeover_session_id}
+                and self._remote_session_id != session_id
             ):
                 return False
             existed = self._remote_command is not None
@@ -187,27 +181,9 @@ class PixhawkTelemetryReader:
             self._remote_command = None
             self._remote_session_id = None
             self._remote_command_at = float("-inf")
-            self._pilot_takeover_session_id = None
-            self._last_pilot_input_monotonic = None
         if should_release:
             self._release_actuator_override()
         return existed
-
-    def force_remote_takeover(self, session_id: str) -> bool:
-        """Acknowledge that the physical RC transmitter is off for one session."""
-        if not session_id.strip() or not self.settings.remote_control_enabled:
-            return False
-        with self._actuator_lock:
-            if self._connection is None:
-                return False
-            if (
-                self._remote_session_id is not None
-                and self._remote_session_id != session_id
-            ):
-                return False
-            self._pilot_takeover_session_id = session_id
-            self._last_pilot_input_monotonic = None
-        return True
 
     def remote_control_rejection_reason(self) -> str | None:
         """Return the first reader-level safety gate blocking remote control."""
@@ -230,10 +206,7 @@ class PixhawkTelemetryReader:
             if self._last_pilot_input_monotonic is None
             else now - self._last_pilot_input_monotonic
         )
-        if (
-            self._pilot_takeover_session_id is None
-            and pilot_input_age <= 1.5
-        ):
+        if pilot_input_age <= 1.5:
             return "pilot_input_active"
         return None
 
@@ -326,10 +299,6 @@ class PixhawkTelemetryReader:
                 if self._last_pilot_input_monotonic is None
                 else now - self._last_pilot_input_monotonic
             )
-            pilot_input_active = (
-                self._pilot_takeover_session_id is None
-                and pilot_input_age <= 1.5
-            )
             if (
                 not lane_enabled
                 or command is None
@@ -337,7 +306,7 @@ class PixhawkTelemetryReader:
                 or command_expired
                 or heartbeat_age > self.settings.pixhawk_heartbeat_timeout
                 or self._mode != "MANUAL"
-                or pilot_input_active
+                or pilot_input_age <= 1.5
             ):
                 self._release_actuator_override_locked()
                 return
@@ -383,7 +352,6 @@ class PixhawkTelemetryReader:
             or not self.settings.remote_control_enabled
             or heartbeat_age > self.settings.pixhawk_heartbeat_timeout
             or self._mode != "MANUAL"
-            or self._pilot_takeover_session_id is not None
             or pilot_input_age <= 1.5
         ):
             self._finish_esc_prime_locked(False)
@@ -501,7 +469,6 @@ class PixhawkTelemetryReader:
                 source_component=190,
             )
             self._last_pilot_input_monotonic = None
-            self._pilot_takeover_session_id = None
             self._mavlink_api = mavutil.mavlink
             self._connection_started_monotonic = time.monotonic()
             self._last_heartbeat_monotonic = None
@@ -627,12 +594,10 @@ class PixhawkTelemetryReader:
                         and steering == last_override_pwm[0]
                         and throttle == last_override_pwm[1]
                     )
-                    pilot_takeover_active = self._pilot_takeover_session_id is not None
                 pilot_deadband = self.settings.pilot_input_deadband_pwm
                 # ArduPilot reports effective RC input, including our override.
                 if (
-                    not pilot_takeover_active
-                    and not is_override_feedback
+                    not is_override_feedback
                     and (
                         abs(steering - 1500) > pilot_deadband
                         or abs(throttle - 1500) > pilot_deadband
