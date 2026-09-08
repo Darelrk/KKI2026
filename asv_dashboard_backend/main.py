@@ -331,22 +331,22 @@ def create_app(
                             reason = "pixhawk_unavailable"
 
                 accepted = reason is None
-                logger.warning(
-                    "Remote input: seq=%d RC1=%d RC3=%d enabled=%s "
-                    "accepted=%s reason=%s",
-                    command.seq,
-                    command.steering_pwm,
-                    command.throttle_pwm,
-                    command.enabled,
-                    accepted,
-                    reason or "-",
-                )
                 await send_ack(
                     command,
                     accepted=accepted,
                     reason=reason,
                     server_received_at_ms=server_received_at_ms,
                 )
+                if not accepted:
+                    logger.warning(
+                        "Remote input rejected: seq=%d RC1=%d RC3=%d "
+                        "enabled=%s reason=%s",
+                        command.seq,
+                        command.steering_pwm,
+                        command.throttle_pwm,
+                        command.enabled,
+                        reason,
+                    )
         finally:
             if control_registry.is_owner(asv_id, session_id):
                 clear_remote_control(session_id)

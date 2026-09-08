@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import replace
+import logging
 
 import pytest
 from fastapi.testclient import TestClient
@@ -434,3 +435,22 @@ def test_remote_websocket_enabled_false_clears_owner_and_stale_does_not_submit()
     assert len(reader.commands) == 1
     assert reader.clears
     assert reader.actuator_commands == []
+
+
+def test_remote_release_burst_is_acknowledged_without_warning(caplog) -> None:
+    reader = FakeRemoteReader()
+    app = create_app(settings=remote_settings(), telemetry_reader=reader)
+
+    with caplog.at_level(logging.WARNING, logger="asv_dashboard_backend.main"):
+        with TestClient(app) as client:
+            with client.websocket_connect(
+                "/ws/control/default",
+                headers={"origin": "https://remote.example.test"},
+            ) as socket:
+                for sequence in range(1, 121):
+                    socket.send_json({**VALID, "seq": sequence, "enabled": False})
+                acknowledgements = [socket.receive_json() for _ in range(120)]
+
+    assert [ack["seq"] for ack in acknowledgements] == list(range(1, 121))
+    assert all(ack["accepted"] is True for ack in acknowledgements)
+    assert not any("Remote input" in record.message for record in caplog.records)
