@@ -161,8 +161,6 @@ class PixhawkTelemetryReader:
     def refresh_stale_pilot_input(self, session_id: str) -> bool:
         """Ignore pilot telemetry until this remote session is released."""
         with self._actuator_lock:
-            if self._last_pilot_input_monotonic is None:
-                return False
             self._pilot_refresh_active = True
             self._remote_session_id = session_id
             self._last_pilot_input_monotonic = None

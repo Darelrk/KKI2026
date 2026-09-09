@@ -417,7 +417,7 @@ def test_remote_websocket_enabled_false_clears_owner_and_stale_does_not_submit()
     assert reader.actuator_commands == []
 
 
-def test_stale_pilot_refresh_endpoint_requires_owner_and_pilot_rejection() -> None:
+def test_stale_pilot_refresh_endpoint_requires_owner_and_safe_state() -> None:
     reader = FakeRemoteReader()
     app = create_app(settings=remote_settings(), telemetry_reader=reader)
 
@@ -433,9 +433,14 @@ def test_stale_pilot_refresh_endpoint_requires_owner_and_pilot_rejection() -> No
             unsafe = client.post("/api/control/force-takeover")
             assert unsafe.status_code == 409
 
+            reader.rejection = None
+            proactive = client.post("/api/control/force-takeover")
+            assert proactive.status_code == 200
+            assert proactive.json() == {"ok": True, "accepted": True}
+
             reader.rejection = "pilot_input_active"
             refreshed = client.post("/api/control/force-takeover")
 
     assert refreshed.status_code == 200
     assert refreshed.json() == {"ok": True, "accepted": True}
-    assert len(reader.refreshes) == 1
+    assert len(reader.refreshes) == 2

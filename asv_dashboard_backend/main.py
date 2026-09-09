@@ -112,11 +112,8 @@ def create_app(
         if not callable(check) or not callable(refresh):
             raise HTTPException(status_code=503, detail="Pixhawk unavailable")
         reason = check()
-        if reason != "pilot_input_active":
-            raise HTTPException(
-                status_code=409,
-                detail=reason or "pilot input is not active",
-            )
+        if reason not in (None, "pilot_input_active"):
+            raise HTTPException(status_code=409, detail=reason)
         if not refresh(session_id):
             raise HTTPException(status_code=409, detail="pilot RC sample is unavailable")
         return {"ok": True, "accepted": True}

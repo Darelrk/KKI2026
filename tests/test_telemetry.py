@@ -1052,6 +1052,29 @@ def test_stale_pilot_refresh_ignores_rc_until_session_release(monkeypatch) -> No
     assert connection.mav.sent[-1] == (7, 9, 0, 0, 0, 0, 0, 0, 0, 0)
 
 
+def test_stale_pilot_refresh_can_arm_before_pilot_input(monkeypatch) -> None:
+    now = [10.0]
+    monkeypatch.setattr(
+        "asv_dashboard_backend.telemetry.time.monotonic", lambda: now[0]
+    )
+    reader, _ = make_remote_ready_reader(now[0])
+    reader._last_pilot_input_monotonic = None
+
+    assert reader.refresh_stale_pilot_input("session-a") is True
+    assert reader.refresh_stale_pilot_input("session-a") is True
+
+    reader._consume_message(
+        FakeMavlinkMessage(
+            "RC_CHANNELS", chan1_raw=1750, chan3_raw=1500, chancount=8
+        ),
+        now[0],
+    )
+    assert reader.remote_control_rejection_reason() is None
+
+    assert reader.clear_remote_control("session-a") is True
+    assert reader.remote_control_rejection_reason() == "pilot_input_active"
+
+
 def test_stale_pilot_refresh_is_cleared_only_by_owning_session(monkeypatch) -> None:
     now = [10.0]
     monkeypatch.setattr(
