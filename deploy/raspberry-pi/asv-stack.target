@@ -1,5 +1,8 @@
 [Unit]
-Description=ASV backend and dual-camera runtime stack
+Description=ASV backend, camera stream, YOLO vision, and WebRTC runtime stack
 Wants=network-online.target
 After=network-online.target
-Requires=asv-dashboard.service asv-stream.service
+Requires=asv-dashboard.service asv-stream.service asv-vision.service go2rtc.service cloudflared.service
+
+[Install]
+WantedBy=multi-user.target
