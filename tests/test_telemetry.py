@@ -1010,7 +1010,7 @@ def test_reset_connection_clears_remote_releases_and_allows_reconnect(
     assert reader._connection is new_connection
 
 
-def test_stale_pilot_refresh_ignores_only_frozen_rc(monkeypatch) -> None:
+def test_stale_pilot_refresh_ignores_rc_until_session_release(monkeypatch) -> None:
     now = [10.0]
     monkeypatch.setattr(
         "asv_dashboard_backend.telemetry.time.monotonic", lambda: now[0]
@@ -1038,14 +1038,6 @@ def test_stale_pilot_refresh_ignores_only_frozen_rc(monkeypatch) -> None:
     reader._apply_actuator_command()
     assert connection.mav.sent[-1][2:5] == (1600, 65535, 1500)
 
-    reader._consume_message(
-        FakeMavlinkMessage(
-            "RC_CHANNELS", chan1_raw=1600, chan3_raw=1500, chancount=8
-        ),
-        now[0],
-    )
-    assert reader.remote_control_rejection_reason() is None
-
     now[0] = 10.2
     reader._consume_message(
         FakeMavlinkMessage(
@@ -1053,8 +1045,10 @@ def test_stale_pilot_refresh_ignores_only_frozen_rc(monkeypatch) -> None:
         ),
         now[0],
     )
+    assert reader.remote_control_rejection_reason() is None
+
+    assert reader.clear_remote_control("session-a") is True
     assert reader.remote_control_rejection_reason() == "pilot_input_active"
-    reader._apply_actuator_command()
     assert connection.mav.sent[-1] == (7, 9, 0, 0, 0, 0, 0, 0, 0, 0)
 
 

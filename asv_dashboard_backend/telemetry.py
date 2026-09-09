@@ -85,7 +85,6 @@ class PixhawkTelemetryReader:
         (5.0, 1650),
         (6.0, 1500),
     )
-    _STALE_RC_JITTER_PWM = 10
 
     def __init__(self, settings: BridgeSettings) -> None:
         self.settings = settings
@@ -108,8 +107,7 @@ class PixhawkTelemetryReader:
         self._mode = "UNKNOWN"
         self._armed = False
         self._last_pilot_input_monotonic: float | None = None
-        self._last_rc_pwm: tuple[float, float] | None = None
-        self._stale_rc_baseline: tuple[float, float] | None = None
+        self._pilot_refresh_active = False
         self._actuator_lock = Lock()
         self._actuator_command: ActuatorCommand | None = None
         self._actuator_command_at = float("-inf")
@@ -161,14 +159,11 @@ class PixhawkTelemetryReader:
                 self._remote_command_at = received_at
 
     def refresh_stale_pilot_input(self, session_id: str) -> bool:
-        """Ignore only the frozen RC sample confirmed stale by this session."""
+        """Ignore pilot telemetry until this remote session is released."""
         with self._actuator_lock:
-            if (
-                self._last_rc_pwm is None
-                or self._last_pilot_input_monotonic is None
-            ):
+            if self._last_pilot_input_monotonic is None:
                 return False
-            self._stale_rc_baseline = self._last_rc_pwm
+            self._pilot_refresh_active = True
             self._remote_session_id = session_id
             self._last_pilot_input_monotonic = None
             return True
@@ -180,7 +175,7 @@ class PixhawkTelemetryReader:
             if (
                 self._esc_prime_started_at is not None
                 or not self._armed
-                or self._stale_rc_baseline is not None
+                or self._pilot_refresh_active
             ):
                 return False
             self._throttle_priming_started_at = None
@@ -197,12 +192,12 @@ class PixhawkTelemetryReader:
             ):
                 return False
             existed = self._remote_command is not None
-            refresh_existed = self._stale_rc_baseline is not None
+            refresh_existed = self._pilot_refresh_active
             should_release = existed or self._override_active
             self._remote_command = None
             self._remote_session_id = None
             self._remote_command_at = float("-inf")
-            self._stale_rc_baseline = None
+            self._pilot_refresh_active = False
             if refresh_existed:
                 self._last_pilot_input_monotonic = time.monotonic()
         if should_release:
@@ -332,7 +327,7 @@ class PixhawkTelemetryReader:
                 or self._mode != "MANUAL"
                 or pilot_input_age <= 1.5
                 or (
-                    self._stale_rc_baseline is not None
+                    self._pilot_refresh_active
                     and not remote_command_selected
                 )
             ):
@@ -501,8 +496,7 @@ class PixhawkTelemetryReader:
             self._connection_started_monotonic = time.monotonic()
             self._last_heartbeat_monotonic = None
             self._last_rc_monotonic = None
-            self._last_rc_pwm = None
-            self._stale_rc_baseline = None
+            self._pilot_refresh_active = False
             self._mode = "UNKNOWN"
             self._armed = False
             self._override_active = False
@@ -557,7 +551,6 @@ class PixhawkTelemetryReader:
         self._armed = False
         self._next_reconnect = time.monotonic() + 0.5
         self._last_rc_monotonic = None
-        self._last_rc_pwm = None
         self._throttle_priming_started_at = None
         self._last_override_pwm = None
         if connection is not None:
@@ -619,7 +612,6 @@ class PixhawkTelemetryReader:
                 self._last_rc_monotonic = now
                 pilot_deadband = self.settings.pilot_input_deadband_pwm
                 with self._actuator_lock:
-                    self._last_rc_pwm = (steering, throttle)
                     last_override_pwm = self._last_override_pwm
                     is_override_feedback = (
                         self._override_active
@@ -627,23 +619,16 @@ class PixhawkTelemetryReader:
                         and steering == last_override_pwm[0]
                         and throttle == last_override_pwm[1]
                     )
-                    baseline = self._stale_rc_baseline
-                    matches_stale_baseline = (
-                        baseline is not None
-                        and abs(steering - baseline[0])
-                        <= self._STALE_RC_JITTER_PWM
-                        and abs(throttle - baseline[1])
-                        <= self._STALE_RC_JITTER_PWM
-                    )
                     # ArduPilot reports effective RC input, including our override.
-                    if not is_override_feedback:
-                        if baseline is not None and not matches_stale_baseline:
-                            self._stale_rc_baseline = None
-                        if not matches_stale_baseline and (
+                    if (
+                        not self._pilot_refresh_active
+                        and not is_override_feedback
+                        and (
                             abs(steering - 1500) > pilot_deadband
                             or abs(throttle - 1500) > pilot_deadband
-                        ):
-                            self._last_pilot_input_monotonic = now
+                        )
+                    ):
+                        self._last_pilot_input_monotonic = now
             return
 
         if message_type == "GLOBAL_POSITION_INT":
