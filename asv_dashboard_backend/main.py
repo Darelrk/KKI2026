@@ -41,6 +41,7 @@ def create_app(
     resolved_telemetry = telemetry_reader or PixhawkTelemetryReader(resolved_settings)
     control_registry = ControlSessionRegistry()
     control_sockets: dict[str, WebSocket] = {}
+    capture_sockets: set[WebSocket] = set()
 
     def clear_remote_control(session_id: str | None = None) -> None:
         clear = getattr(resolved_telemetry, "clear_remote_control", None)
@@ -135,11 +136,48 @@ def create_app(
         if not await prime():
             raise HTTPException(status_code=409, detail="ESC priming interrupted")
         return {"ok": True, "accepted": True}
+    @app.post("/api/capture/request")
+    async def post_capture_request(request: Request) -> dict[str, object]:
+        origin = request.headers.get("origin")
+        if origin not in resolved_settings.cors_origins:
+            raise HTTPException(status_code=403, detail="origin not allowed")
 
+        delivered = 0
+        for socket in tuple(capture_sockets):
+            try:
+                await socket.send_json({"type": "capture_request"})
+            except (RuntimeError, WebSocketDisconnect):
+                capture_sockets.discard(socket)
+            else:
+                delivered += 1
+        return {"ok": True, "dashboards": delivered}
 
     @app.get("/api/telemetry", response_model=PixhawkTelemetry)
     async def get_telemetry() -> PixhawkTelemetry:
         return resolved_telemetry.snapshot()
+
+    @app.websocket("/ws/capture/{asv_id}")
+    async def capture_websocket(websocket: WebSocket, asv_id: str) -> None:
+        origin = websocket.headers.get("origin")
+        if (
+            asv_id != resolved_settings.asv_id
+            or origin not in resolved_settings.cors_origins
+        ):
+            await websocket.close(code=1008)
+            return
+
+        await websocket.accept()
+        capture_sockets.add(websocket)
+        try:
+            while True:
+                try:
+                    incoming = await websocket.receive()
+                except WebSocketDisconnect:
+                    break
+                if incoming.get("type") == "websocket.disconnect":
+                    break
+        finally:
+            capture_sockets.discard(websocket)
 
     @app.post("/api/control/actuator")
     async def post_actuator_command(
