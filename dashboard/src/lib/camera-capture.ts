@@ -31,37 +31,11 @@ export function captureMediaFrame(
   return canvas
 }
 
-export function combineCameraFrames(
-  surface: HTMLCanvasElement,
-  underwater: HTMLCanvasElement,
-): HTMLCanvasElement {
-  if (
-    surface.width <= 0 ||
-    surface.height <= 0 ||
-    underwater.width <= 0 ||
-    underwater.height <= 0
-  ) {
-    throw new Error('Camera frame is not ready')
-  }
-
-  const height = Math.min(1080, Math.max(surface.height, underwater.height))
-  const surfaceWidth = Math.round((surface.width / surface.height) * height)
-  const underwaterWidth = Math.round(
-    (underwater.width / underwater.height) * height,
-  )
-  const canvas = document.createElement('canvas')
-  canvas.width = surfaceWidth + underwaterWidth
-  canvas.height = height
-  const context = requiredContext(canvas)
-  context.fillStyle = '#050b0e'
-  context.fillRect(0, 0, canvas.width, canvas.height)
-  context.drawImage(surface, 0, 0, surfaceWidth, height)
-  context.drawImage(underwater, surfaceWidth, 0, underwaterWidth, height)
-  return canvas
-}
+export type CameraCaptureSource = 'surface' | 'underwater'
 
 export function downloadCameraCapture(
   canvas: HTMLCanvasElement,
+  source: CameraCaptureSource,
   capturedAt = new Date(),
 ): string {
   const timestamp = [
@@ -73,7 +47,7 @@ export function downloadCameraCapture(
     twoDigits(capturedAt.getUTCMinutes()),
     twoDigits(capturedAt.getUTCSeconds()),
   ].join('')
-  const filename = `asv-capture-${timestamp}.jpg`
+  const filename = `asv-${source}-${timestamp}.jpg`
   const link = document.createElement('a')
   link.href = canvas.toDataURL('image/jpeg', 0.92)
   link.download = filename

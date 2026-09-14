@@ -65,7 +65,7 @@ describe('TelemetryPanel', () => {
         telemetry={emptyNavigationTelemetry}
         updatedAt={null}
         captureState="saved"
-        captureFilename="asv-capture-20260809-123456.jpg"
+        captureFilename="asv-surface-20260809-123456.jpg, asv-underwater-20260809-123456.jpg"
       />,
     )
 
@@ -73,7 +73,7 @@ describe('TelemetryPanel', () => {
       screen.queryByRole('button', { name: /capture/i }),
     ).not.toBeInTheDocument()
     expect(screen.getByRole('status')).toHaveTextContent(
-      'Capture saved: asv-capture-20260809-123456.jpg',
+      'Capture saved: asv-surface-20260809-123456.jpg, asv-underwater-20260809-123456.jpg',
     )
   })
 })

@@ -12,10 +12,7 @@ import { emptyNavigationTelemetry } from '../lib/navigation-types'
 import { missionTelemetryAt } from '../lib/mission-site'
 import { asvStreamUrls } from '../lib/stream-urls'
 import { useMissionSimulation } from '../lib/use-mission-simulation'
-import {
-  combineCameraFrames,
-  downloadCameraCapture,
-} from '../lib/camera-capture'
+import { downloadCameraCapture } from '../lib/camera-capture'
 
 import type { AsvLive, UnderwaterFrame } from '../lib/asv-types'
 import type { AsvDataMode } from '../lib/asv-data-mode'
@@ -93,11 +90,19 @@ export function DashboardShell({
         if (!surface || !underwater) {
           throw new Error('Camera frame is not ready')
         }
-        const filename = downloadCameraCapture(
-          combineCameraFrames(surface, underwater),
+        const capturedAt = new Date()
+        const surfaceFilename = downloadCameraCapture(
+          surface,
+          'surface',
+          capturedAt,
+        )
+        const underwaterFilename = downloadCameraCapture(
+          underwater,
+          'underwater',
+          capturedAt,
         )
         setTimeout(() => {
-          setCaptureFilename(filename)
+          setCaptureFilename(`${surfaceFilename}, ${underwaterFilename}`)
           setCaptureState('saved')
         }, 320)
       } catch {

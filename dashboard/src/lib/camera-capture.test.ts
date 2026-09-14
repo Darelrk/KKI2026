@@ -1,10 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import {
-  captureMediaFrame,
-  combineCameraFrames,
-  downloadCameraCapture,
-} from './camera-capture'
+import { captureMediaFrame, downloadCameraCapture } from './camera-capture'
 
 const context = {
   fillStyle: '',
@@ -51,37 +47,7 @@ describe('camera capture', () => {
     expect(context.rotate).toHaveBeenCalledWith(Math.PI)
   })
 
-  it('combines both cameras side by side at one bounded height', () => {
-    const surface = document.createElement('canvas')
-    surface.width = 1280
-    surface.height = 720
-    const underwater = document.createElement('canvas')
-    underwater.width = 640
-    underwater.height = 360
-
-    const combined = combineCameraFrames(surface, underwater)
-
-    expect(combined.width).toBe(2560)
-    expect(combined.height).toBe(720)
-    expect(context.drawImage).toHaveBeenNthCalledWith(
-      1,
-      surface,
-      0,
-      0,
-      1280,
-      720,
-    )
-    expect(context.drawImage).toHaveBeenNthCalledWith(
-      2,
-      underwater,
-      1280,
-      0,
-      1280,
-      720,
-    )
-  })
-
-  it('downloads one timestamped jpeg', () => {
+  it('downloads source-specific jpegs with one timestamp', () => {
     const canvas = document.createElement('canvas')
     const toDataUrl = vi
       .spyOn(canvas, 'toDataURL')
@@ -89,15 +55,20 @@ describe('camera capture', () => {
     const click = vi
       .spyOn(HTMLAnchorElement.prototype, 'click')
       .mockImplementation(() => undefined)
+    const capturedAt = new Date('2026-08-09T12:34:56Z')
 
-    const filename = downloadCameraCapture(
+    const surfaceFilename = downloadCameraCapture(canvas, 'surface', capturedAt)
+    const underwaterFilename = downloadCameraCapture(
       canvas,
-      new Date('2026-08-09T12:34:56Z'),
+      'underwater',
+      capturedAt,
     )
 
-    expect(filename).toBe('asv-capture-20260809-123456.jpg')
+    expect(surfaceFilename).toBe('asv-surface-20260809-123456.jpg')
+    expect(underwaterFilename).toBe('asv-underwater-20260809-123456.jpg')
+    expect(toDataUrl).toHaveBeenCalledTimes(2)
     expect(toDataUrl).toHaveBeenCalledWith('image/jpeg', 0.92)
-    expect(click).toHaveBeenCalledOnce()
+    expect(click).toHaveBeenCalledTimes(2)
   })
 
   it('rejects media without a decoded frame', () => {
