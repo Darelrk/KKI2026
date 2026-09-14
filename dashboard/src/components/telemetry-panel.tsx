@@ -1,4 +1,4 @@
-import { Camera, Compass, Crosshair, Gauge, Timer } from '@phosphor-icons/react'
+import { Compass, Crosshair, Gauge, Timer } from '@phosphor-icons/react'
 
 import { formatSiteTime } from '../lib/format-site-time'
 
@@ -9,7 +9,6 @@ type TelemetryPanelProps = {
   updatedAt: string | null
   captureState?: 'idle' | 'capturing' | 'saved' | 'error'
   captureFilename?: string
-  onCapture?: () => void
 }
 
 const metersPerSecondToKnots = 1.943844492
@@ -20,7 +19,6 @@ export function TelemetryPanel({
   updatedAt,
   captureState = 'idle',
   captureFilename = '',
-  onCapture,
 }: TelemetryPanelProps) {
   return (
     <section className="telemetry-panel" aria-labelledby="telemetry-title">
@@ -77,19 +75,8 @@ export function TelemetryPanel({
           <dd>{updatedAt ? formatSiteTime(updatedAt) : 'Unavailable'}</dd>
         </div>
       </dl>
-      {onCapture ? (
+      {captureState !== 'idle' ? (
         <div className="telemetry-panel__capture">
-          <button
-            type="button"
-            className={`telemetry-panel__capture-button telemetry-panel__capture-button--${captureState}`}
-            aria-label="Capture both cameras"
-            title="Capture both cameras"
-            onClick={onCapture}
-            disabled={captureState === 'capturing'}
-          >
-            <Camera aria-hidden="true" size={15} weight="bold" />
-            <span>Capture cameras</span>
-          </button>
           {captureState === 'capturing' ? (
             <span className="telemetry-panel__capture-status" role="status">
               Capturing both camera feeds.
@@ -98,14 +85,14 @@ export function TelemetryPanel({
             <span className="telemetry-panel__capture-status" role="status">
               Capture saved: {captureFilename}
             </span>
-          ) : captureState === 'error' ? (
+          ) : (
             <span
               className="telemetry-panel__capture-status telemetry-panel__capture-status--error"
               role="alert"
             >
               Capture failed. Verify both camera feeds.
             </span>
-          ) : null}
+          )}
         </div>
       ) : null}
     </section>

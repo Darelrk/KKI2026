@@ -2,6 +2,7 @@ import { DashboardShell } from './dashboard-shell'
 
 import type { AsvDataMode } from '../lib/asv-data-mode'
 import { useAsvLive } from '../lib/use-asv-live'
+import { useCaptureRequests } from '../lib/use-capture-requests'
 import { useUnderwaterBroadcast } from '../lib/use-underwater-broadcast'
 import { useTelemetryBroadcast } from '../lib/use-telemetry-broadcast'
 import { useVisionMetadata } from '../lib/use-vision-metadata'
@@ -15,6 +16,7 @@ export function DashboardClient({ asvId, mode }: DashboardClientProps) {
   const underwater = useUnderwaterBroadcast(asvId, mode)
   const telemetry = useTelemetryBroadcast(asvId, mode)
   const vision = useVisionMetadata(asvId, mode)
+  const captureRequestCount = useCaptureRequests(asvId, mode)
 
   return (
     <DashboardShell
@@ -25,6 +27,7 @@ export function DashboardClient({ asvId, mode }: DashboardClientProps) {
       visionMetadataStatus={vision.realtimeStatus}
       telemetry={telemetry.telemetry}
       telemetryRealtimeStatus={telemetry.realtimeStatus}
+      captureRequestCount={captureRequestCount}
     />
   )
 }

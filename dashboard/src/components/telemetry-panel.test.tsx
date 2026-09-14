@@ -58,4 +58,22 @@ describe('TelemetryPanel', () => {
       Node.DOCUMENT_POSITION_FOLLOWING,
     )
   })
+
+  it('shows saved capture status without a capture button', () => {
+    render(
+      <TelemetryPanel
+        telemetry={emptyNavigationTelemetry}
+        updatedAt={null}
+        captureState="saved"
+        captureFilename="asv-capture-20260809-123456.jpg"
+      />,
+    )
+
+    expect(
+      screen.queryByRole('button', { name: /capture/i }),
+    ).not.toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'Capture saved: asv-capture-20260809-123456.jpg',
+    )
+  })
 })
