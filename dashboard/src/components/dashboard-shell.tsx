@@ -12,7 +12,10 @@ import { emptyNavigationTelemetry } from '../lib/navigation-types'
 import { missionTelemetryAt } from '../lib/mission-site'
 import { asvStreamUrls } from '../lib/stream-urls'
 import { useMissionSimulation } from '../lib/use-mission-simulation'
-import { downloadCameraCapture } from '../lib/camera-capture'
+import {
+  downloadCameraCapture,
+  refreshUnderwaterCaptureCache,
+} from '../lib/camera-capture'
 
 import type { AsvLive, UnderwaterFrame } from '../lib/asv-types'
 import type { AsvDataMode } from '../lib/asv-data-mode'
@@ -76,28 +79,47 @@ export function DashboardShell({
       ? { ...underwaterFrame, captured_at: displayTelemetry.captured_at }
       : underwaterFrame
 
+  useEffect(() => {
+    if (!underwaterStreamUrl) return
+
+    let stopped = false
+    let timer = 0
+    const refresh = async () => {
+      await refreshUnderwaterCaptureCache().catch(() => false)
+      if (!stopped) timer = window.setTimeout(refresh, 5_000)
+    }
+
+    void refresh()
+    return () => {
+      stopped = true
+      window.clearTimeout(timer)
+    }
+  }, [underwaterStreamUrl])
   const captureBothCameras = () => {
     if (captureState === 'capturing') return
     setCaptureState('capturing')
     setCaptureFilename('')
     const capturedAt = new Date()
+    const filenames: { surface?: string; underwater?: string } = {}
+    let failures = 0
 
-    void Promise.allSettled([
-      downloadCameraCapture('surface', capturedAt),
-      downloadCameraCapture('underwater', capturedAt),
-    ]).then((results) => {
-      const filenames = results.flatMap((result) =>
-        result.status === 'fulfilled' ? [result.value] : [],
-      )
-      setTimeout(() => {
-        if (filenames.length === 0) {
-          setCaptureState('error')
-          return
-        }
-        setCaptureFilename(filenames.join(', '))
+    const capture = async (source: 'surface' | 'underwater') => {
+      try {
+        filenames[source] = await downloadCameraCapture(source, capturedAt)
+        setCaptureFilename(
+          [filenames.surface, filenames.underwater].filter(Boolean).join(', '),
+        )
         setCaptureState('saved')
-      }, 320)
-    })
+      } catch {
+        failures += 1
+        if (failures === 2 && !filenames.surface && !filenames.underwater) {
+          setCaptureState('error')
+        }
+      }
+    }
+
+    void capture('surface')
+    void capture('underwater')
   }
 
   const latestCaptureRef = useRef(captureBothCameras)

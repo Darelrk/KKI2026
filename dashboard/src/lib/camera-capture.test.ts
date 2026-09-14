@@ -1,6 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { captureMediaFrame, downloadCameraCapture } from './camera-capture'
+import {
+  captureMediaFrame,
+  downloadCameraCapture,
+  refreshUnderwaterCaptureCache,
+} from './camera-capture'
 
 const context = {
   fillStyle: '',
@@ -53,13 +57,11 @@ describe('camera capture', () => {
   })
 
   it('downloads a source-specific jpeg from the same-origin snapshot route', async () => {
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValue(
-        new Response(new Blob(['jpeg'], { type: 'image/jpeg' }), {
-          status: 200,
-        }),
-      )
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(new Blob(['jpeg'], { type: 'image/jpeg' }), {
+        status: 200,
+      }),
+    )
     const createObjectURL = vi.fn().mockReturnValue('blob:capture')
     const revokeObjectURL = vi.fn()
     const click = vi
@@ -83,6 +85,54 @@ describe('camera capture', () => {
     expect(revokeObjectURL).toHaveBeenCalledWith('blob:capture')
   })
 
+  it('downloads the last real underwater frame without waiting for the stream', async () => {
+    const cached = new Response(
+      new Blob(['underwater'], { type: 'image/jpeg' }),
+      { status: 200 },
+    )
+    const match = vi.fn().mockResolvedValue(cached)
+    const fetchMock = vi
+      .fn()
+      .mockRejectedValue(new Error('Stream disconnected'))
+    const createObjectURL = vi.fn().mockReturnValue('blob:underwater')
+    const revokeObjectURL = vi.fn()
+    const click = vi
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(() => undefined)
+    vi.stubGlobal('caches', {
+      open: vi.fn().mockResolvedValue({ match, put: vi.fn() }),
+    })
+    vi.stubGlobal('fetch', fetchMock)
+    vi.stubGlobal('URL', { createObjectURL, revokeObjectURL })
+
+    const filename = await downloadCameraCapture(
+      'underwater',
+      new Date('2026-08-09T12:34:56Z'),
+    )
+
+    expect(filename).toBe('asv-underwater-20260809-123456.jpg')
+    expect(match).toHaveBeenCalledWith('/api/camera-frame/underwater')
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(click).toHaveBeenCalledOnce()
+  })
+
+  it('persists the latest real underwater frame', async () => {
+    const response = new Response(
+      new Blob(['underwater'], { type: 'image/jpeg' }),
+      { status: 200 },
+    )
+    const put = vi.fn()
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response))
+    vi.stubGlobal('caches', {
+      open: vi.fn().mockResolvedValue({ match: vi.fn(), put }),
+    })
+
+    await expect(refreshUnderwaterCaptureCache()).resolves.toBe(true)
+    expect(put).toHaveBeenCalledWith(
+      '/api/camera-frame/underwater',
+      expect.any(Response),
+    )
+  })
   it('rejects media without a decoded frame', () => {
     expect(() => captureMediaFrame(document.createElement('video'))).toThrow(
       'Camera frame is not ready',

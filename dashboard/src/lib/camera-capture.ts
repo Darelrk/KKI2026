@@ -33,13 +33,30 @@ export function captureMediaFrame(
 
 export type CameraCaptureSource = 'surface' | 'underwater'
 
+const CAMERA_CAPTURE_CACHE = 'asv-camera-captures-v1'
+const UNDERWATER_CAPTURE_URL = '/api/camera-frame/underwater'
+
+export async function refreshUnderwaterCaptureCache(): Promise<boolean> {
+  const response = await fetch(UNDERWATER_CAPTURE_URL, { cache: 'no-store' })
+  if (!response.ok) return false
+
+  const cache = await openCaptureCache()
+  if (!cache) return false
+  await cache.put(UNDERWATER_CAPTURE_URL, response.clone())
+  return true
+}
+
 export async function downloadCameraCapture(
   source: CameraCaptureSource,
   capturedAt = new Date(),
 ): Promise<string> {
-  const response = await fetch(`/api/camera-frame/${source}`, {
-    cache: 'no-store',
-  })
+  const captureUrl = `/api/camera-frame/${source}`
+  const cache = source === 'underwater' ? await openCaptureCache() : null
+  let response = await cache?.match(captureUrl)
+  if (!response) {
+    response = await fetch(captureUrl, { cache: 'no-store' })
+    if (response.ok && cache) await cache.put(captureUrl, response.clone())
+  }
   if (!response.ok) throw new Error('Camera frame is unavailable')
 
   const timestamp = [
@@ -61,6 +78,10 @@ export async function downloadCameraCapture(
   return filename
 }
 
+async function openCaptureCache(): Promise<Cache | null> {
+  if (typeof caches === 'undefined') return null
+  return caches.open(CAMERA_CAPTURE_CACHE)
+}
 function requiredContext(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
   const context = canvas.getContext('2d')
   if (!context) throw new Error('Canvas capture is unavailable')

@@ -94,6 +94,30 @@ describe('Dashboard camera capture', () => {
     expect(downloadCameraCapture).toHaveBeenCalledTimes(2)
   })
 
+  it('saves surface without waiting for underwater to settle', async () => {
+    let finishUnderwater: (filename: string) => void = () => undefined
+    vi.mocked(downloadCameraCapture).mockImplementation((source) => {
+      if (source === 'surface') {
+        return Promise.resolve('asv-surface-20260809-123456.jpg')
+      }
+      return new Promise((resolve) => {
+        finishUnderwater = resolve
+      })
+    })
+
+    requestCapture()
+
+    expect(
+      await screen.findByText('Capture saved: asv-surface-20260809-123456.jpg'),
+    ).toBeInTheDocument()
+
+    finishUnderwater('asv-underwater-20260809-123456.jpg')
+    expect(
+      await screen.findByText(
+        'Capture saved: asv-surface-20260809-123456.jpg, asv-underwater-20260809-123456.jpg',
+      ),
+    ).toBeInTheDocument()
+  })
   it('saves the surface capture when the underwater feed is unavailable', async () => {
     vi.mocked(downloadCameraCapture).mockImplementation(async (source) => {
       if (source === 'underwater') throw new Error('Underwater feed offline')
