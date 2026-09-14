@@ -10,6 +10,9 @@ credentials-file: /etc/cloudflared/replace-with-tunnel-id.json
 
 ingress:
   - hostname: camera.example.com
+    path: ^/ws/capture/[^/]+$
+    service: http://127.0.0.1:8080
+  - hostname: camera.example.com
     path: ^/ws/vision/.*$
     service: http://127.0.0.1:8080
   - hostname: camera.example.com
@@ -21,6 +24,9 @@ ingress:
     service: http://127.0.0.1:8080
   - hostname: remote.monitor-kapal-pora-pora.web.id
     path: ^/api/control/force-takeover$
+    service: http://127.0.0.1:8080
+  - hostname: remote.monitor-kapal-pora-pora.web.id
+    path: ^/api/capture/request$
     service: http://127.0.0.1:8080
   - hostname: remote.monitor-kapal-pora-pora.web.id
     path: ^/ws/control/[^/]+$
