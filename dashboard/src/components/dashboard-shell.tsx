@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { MissionStage } from './mission-stage'
 import { NavigationMap } from './navigation-map'
@@ -25,7 +25,6 @@ import type { VisionRealtimeStatus } from '../lib/use-vision-metadata'
 import type { ConnectionStatus } from './connection-bar'
 import type { CameraCaptureHandle } from '../lib/camera-capture'
 
-
 type DashboardShellProps = {
   mode?: AsvDataMode
   live: AsvLive | null | undefined
@@ -36,6 +35,7 @@ type DashboardShellProps = {
   visionMetadataStatus?: VisionRealtimeStatus
   surfaceStreamUrl?: string | null
   underwaterStreamUrl?: string | null
+  captureRequestCount?: number
 }
 
 export function DashboardShell({
@@ -48,6 +48,7 @@ export function DashboardShell({
   visionMetadataStatus = 'error',
   surfaceStreamUrl = asvStreamUrls.surface,
   underwaterStreamUrl = asvStreamUrls.underwater,
+  captureRequestCount = 0,
 }: DashboardShellProps) {
   const surfaceCaptureRef = useRef<CameraCaptureHandle>(null)
   const underwaterCaptureRef = useRef<CameraCaptureHandle>(null)
@@ -105,6 +106,16 @@ export function DashboardShell({
     })
   }
 
+  const latestCaptureRef = useRef(captureBothCameras)
+  latestCaptureRef.current = captureBothCameras
+  const lastRequestCount = useRef(captureRequestCount)
+
+  useEffect(() => {
+    if (captureRequestCount === lastRequestCount.current) return
+    lastRequestCount.current = captureRequestCount
+    latestCaptureRef.current()
+  }, [captureRequestCount])
+
   return (
     <main className="dashboard-shell">
       <ConnectionBar
@@ -142,7 +153,6 @@ export function DashboardShell({
             updatedAt={displayTelemetry?.captured_at ?? null}
             captureState={captureState}
             captureFilename={captureFilename}
-            onCapture={captureBothCameras}
           />
         </div>
       </section>
@@ -153,7 +163,6 @@ export function DashboardShell({
         previewMode={mode === 'fixture'}
       />
       <MissionStage simulation={simulation} />
-
     </main>
   )
 }

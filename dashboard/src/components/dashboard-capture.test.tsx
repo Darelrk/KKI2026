@@ -1,11 +1,4 @@
-import {
-  cleanup,
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-  within,
-} from '@testing-library/react'
+import { cleanup, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { DashboardShell } from './dashboard-shell'
@@ -54,33 +47,33 @@ afterEach(() => {
 })
 
 describe('Dashboard camera capture', () => {
-  it('downloads one combined capture from both camera feeds', async () => {
+  it('downloads one combined capture from both camera feeds per request', async () => {
     const surface = document.createElement('canvas')
     const underwater = document.createElement('canvas')
     const combined = document.createElement('canvas')
     vi.mocked(captureMediaFrame)
       .mockReturnValueOnce(surface)
       .mockReturnValueOnce(underwater)
+      .mockReturnValueOnce(surface)
+      .mockReturnValueOnce(underwater)
     vi.mocked(combineCameraFrames).mockReturnValue(combined)
-    vi.mocked(downloadCameraCapture).mockReturnValue(
-      'asv-capture-20260809-123456.jpg',
-    )
+    vi.mocked(downloadCameraCapture)
+      .mockReturnValueOnce('asv-capture-20260809-123456.jpg')
+      .mockReturnValueOnce('asv-capture-20260809-123457.jpg')
 
-    render(<DashboardShell live={null} underwaterFrame={null} />)
-    const telemetryPanel = screen.getByRole('region', {
-      name: 'Attitude telemetry',
-    })
-    const lastUpdateCard = within(telemetryPanel)
-      .getByText('Last update')
-      .closest('div')
-    const captureButton = within(telemetryPanel).getByRole('button', {
-      name: 'Capture both cameras',
-    })
-    expect(lastUpdateCard).not.toBeNull()
-    expect(lastUpdateCard).not.toContainElement(captureButton)
-    expect(telemetryPanel.lastElementChild).toContainElement(captureButton)
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Capture both cameras' }),
+    const view = render(
+      <DashboardShell
+        live={null}
+        underwaterFrame={null}
+        captureRequestCount={0}
+      />,
+    )
+    view.rerender(
+      <DashboardShell
+        live={null}
+        underwaterFrame={null}
+        captureRequestCount={1}
+      />,
     )
 
     await waitFor(() => {
@@ -90,9 +83,27 @@ describe('Dashboard camera capture', () => {
     })
     expect(downloadCameraCapture).toHaveBeenCalledOnce()
     expect(combineCameraFrames).toHaveBeenCalledWith(surface, underwater)
-    expect(
-      screen.getByRole('button', { name: 'Capture both cameras' }),
-    ).toBeEnabled()
+    expect(screen.queryByRole('button', { name: /capture/i })).toBeNull()
+
+    view.rerender(
+      <DashboardShell
+        live={null}
+        underwaterFrame={null}
+        captureRequestCount={1}
+      />,
+    )
+    expect(downloadCameraCapture).toHaveBeenCalledOnce()
+
+    view.rerender(
+      <DashboardShell
+        live={null}
+        underwaterFrame={null}
+        captureRequestCount={2}
+      />,
+    )
+    await waitFor(() => {
+      expect(downloadCameraCapture).toHaveBeenCalledTimes(2)
+    })
   })
 
   it('does not download a partial capture when either feed fails', async () => {
@@ -100,14 +111,24 @@ describe('Dashboard camera capture', () => {
       throw new Error('Surface camera frame is not ready')
     })
 
-    render(<DashboardShell live={null} underwaterFrame={null} />)
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Capture both cameras' }),
+    const view = render(
+      <DashboardShell
+        live={null}
+        underwaterFrame={null}
+        captureRequestCount={0}
+      />,
+    )
+    view.rerender(
+      <DashboardShell
+        live={null}
+        underwaterFrame={null}
+        captureRequestCount={1}
+      />,
     )
 
-    expect(
-      await screen.findByRole('alert'),
-    ).toHaveTextContent('Capture failed. Verify both camera feeds.')
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Capture failed. Verify both camera feeds.',
+    )
     expect(combineCameraFrames).not.toHaveBeenCalled()
     expect(downloadCameraCapture).not.toHaveBeenCalled()
   })
