@@ -33,11 +33,15 @@ export function captureMediaFrame(
 
 export type CameraCaptureSource = 'surface' | 'underwater'
 
-export function downloadCameraCapture(
-  canvas: HTMLCanvasElement,
+export async function downloadCameraCapture(
   source: CameraCaptureSource,
   capturedAt = new Date(),
-): string {
+): Promise<string> {
+  const response = await fetch(`/api/camera-frame/${source}`, {
+    cache: 'no-store',
+  })
+  if (!response.ok) throw new Error('Camera frame is unavailable')
+
   const timestamp = [
     capturedAt.getUTCFullYear(),
     twoDigits(capturedAt.getUTCMonth() + 1),
@@ -48,10 +52,12 @@ export function downloadCameraCapture(
     twoDigits(capturedAt.getUTCSeconds()),
   ].join('')
   const filename = `asv-${source}-${timestamp}.jpg`
+  const objectUrl = URL.createObjectURL(await response.blob())
   const link = document.createElement('a')
-  link.href = canvas.toDataURL('image/jpeg', 0.92)
+  link.href = objectUrl
   link.download = filename
   link.click()
+  setTimeout(() => URL.revokeObjectURL(objectUrl), 0)
   return filename
 }
 

@@ -17,6 +17,7 @@ const config = defineConfig({
   plugins: [
     devtools(),
     nitro({
+      serverDir: './server',
       preset: nitroPreset,
       rollupConfig: { external: [/^@sentry\//] },
     }),

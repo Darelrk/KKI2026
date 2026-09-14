@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { captureMediaFrame, downloadCameraCapture } from './camera-capture'
 
@@ -17,6 +17,11 @@ beforeEach(() => {
   vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(
     context as unknown as CanvasRenderingContext2D,
   )
+})
+
+afterEach(() => {
+  vi.restoreAllMocks()
+  vi.unstubAllGlobals()
 })
 
 describe('camera capture', () => {
@@ -47,28 +52,35 @@ describe('camera capture', () => {
     expect(context.rotate).toHaveBeenCalledWith(Math.PI)
   })
 
-  it('downloads source-specific jpegs with one timestamp', () => {
-    const canvas = document.createElement('canvas')
-    const toDataUrl = vi
-      .spyOn(canvas, 'toDataURL')
-      .mockReturnValue('data:image/jpeg;base64,capture')
+  it('downloads a source-specific jpeg from the same-origin snapshot route', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(new Blob(['jpeg'], { type: 'image/jpeg' }), {
+          status: 200,
+        }),
+      )
+    const createObjectURL = vi.fn().mockReturnValue('blob:capture')
+    const revokeObjectURL = vi.fn()
     const click = vi
       .spyOn(HTMLAnchorElement.prototype, 'click')
       .mockImplementation(() => undefined)
-    const capturedAt = new Date('2026-08-09T12:34:56Z')
+    vi.stubGlobal('fetch', fetchMock)
+    vi.stubGlobal('URL', { createObjectURL, revokeObjectURL })
 
-    const surfaceFilename = downloadCameraCapture(canvas, 'surface', capturedAt)
-    const underwaterFilename = downloadCameraCapture(
-      canvas,
-      'underwater',
-      capturedAt,
+    const filename = await downloadCameraCapture(
+      'surface',
+      new Date('2026-08-09T12:34:56Z'),
     )
+    await new Promise((resolve) => setTimeout(resolve, 0))
 
-    expect(surfaceFilename).toBe('asv-surface-20260809-123456.jpg')
-    expect(underwaterFilename).toBe('asv-underwater-20260809-123456.jpg')
-    expect(toDataUrl).toHaveBeenCalledTimes(2)
-    expect(toDataUrl).toHaveBeenCalledWith('image/jpeg', 0.92)
-    expect(click).toHaveBeenCalledTimes(2)
+    expect(filename).toBe('asv-surface-20260809-123456.jpg')
+    expect(fetchMock).toHaveBeenCalledWith('/api/camera-frame/surface', {
+      cache: 'no-store',
+    })
+    expect(createObjectURL).toHaveBeenCalledOnce()
+    expect(click).toHaveBeenCalledOnce()
+    expect(revokeObjectURL).toHaveBeenCalledWith('blob:capture')
   })
 
   it('rejects media without a decoded frame', () => {

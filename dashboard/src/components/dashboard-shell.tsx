@@ -20,7 +20,6 @@ import type { AsvTelemetry } from '../lib/asv-telemetry'
 import type { VisionMetadataCache } from '../lib/vision-metadata'
 import type { VisionRealtimeStatus } from '../lib/use-vision-metadata'
 import type { ConnectionStatus } from './connection-bar'
-import type { CameraCaptureHandle } from '../lib/camera-capture'
 
 type DashboardShellProps = {
   mode?: AsvDataMode
@@ -47,8 +46,6 @@ export function DashboardShell({
   underwaterStreamUrl = asvStreamUrls.underwater,
   captureRequestCount = 0,
 }: DashboardShellProps) {
-  const surfaceCaptureRef = useRef<CameraCaptureHandle>(null)
-  const underwaterCaptureRef = useRef<CameraCaptureHandle>(null)
   const [captureState, setCaptureState] = useState<
     'idle' | 'capturing' | 'saved' | 'error'
   >('idle')
@@ -83,31 +80,23 @@ export function DashboardShell({
     if (captureState === 'capturing') return
     setCaptureState('capturing')
     setCaptureFilename('')
-    requestAnimationFrame(() => {
-      try {
-        const surface = surfaceCaptureRef.current?.captureFrame()
-        const underwater = underwaterCaptureRef.current?.captureFrame()
-        if (!surface || !underwater) {
-          throw new Error('Camera frame is not ready')
+    const capturedAt = new Date()
+
+    void Promise.allSettled([
+      downloadCameraCapture('surface', capturedAt),
+      downloadCameraCapture('underwater', capturedAt),
+    ]).then((results) => {
+      const filenames = results.flatMap((result) =>
+        result.status === 'fulfilled' ? [result.value] : [],
+      )
+      setTimeout(() => {
+        if (filenames.length === 0) {
+          setCaptureState('error')
+          return
         }
-        const capturedAt = new Date()
-        const surfaceFilename = downloadCameraCapture(
-          surface,
-          'surface',
-          capturedAt,
-        )
-        const underwaterFilename = downloadCameraCapture(
-          underwater,
-          'underwater',
-          capturedAt,
-        )
-        setTimeout(() => {
-          setCaptureFilename(`${surfaceFilename}, ${underwaterFilename}`)
-          setCaptureState('saved')
-        }, 320)
-      } catch {
-        setTimeout(() => setCaptureState('error'), 320)
-      }
+        setCaptureFilename(filenames.join(', '))
+        setCaptureState('saved')
+      }, 320)
     })
   }
 
@@ -134,14 +123,12 @@ export function DashboardShell({
       >
         <div className="dashboard-grid__cameras">
           <CameraStage
-            ref={surfaceCaptureRef}
             capturing={captureState === 'capturing'}
             streamUrl={surfaceStreamUrl}
             metadataCache={visionMetadataCache}
             metadataStatus={visionMetadataStatus}
           />
           <UnderwaterFallback
-            ref={underwaterCaptureRef}
             capturing={captureState === 'capturing'}
             frame={displayUnderwaterFrame}
             streamUrl={underwaterStreamUrl}
