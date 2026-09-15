@@ -30,7 +30,6 @@ export function MissionStage({ simulation }: MissionStageProps) {
         </div>
         <div className="mission-stage__demo-badge">
           <strong>ASV MISSION CONTROL</strong>
-          <span>{kolamDeliSite.name.toUpperCase()} · LINTASAN A</span>
         </div>
       </div>
 
