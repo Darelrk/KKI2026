@@ -2,7 +2,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 
 import { emptyNavigationTelemetry } from '../lib/navigation-types'
-import { missionRoute, missionRoutePosition } from '../lib/mission-simulation'
+import { missionRoutePosition } from '../lib/mission-simulation'
 import type { MissionSimulationController } from '../lib/use-mission-simulation'
 import { NavigationMap } from './navigation-map'
 
@@ -25,27 +25,19 @@ const simulation = {
 } as MissionSimulationController
 
 describe('NavigationMap', () => {
-  it('shows only live GPS layers in direct mode', () => {
+  it('renders the supplied SVG as the only custom map graphic', () => {
     render(<NavigationMap telemetry={emptyNavigationTelemetry} />)
 
-    expect(
-      screen.getByRole('img', { name: 'ASV mission route' }).querySelector(
-        '.site-map__route',
-      ),
-    ).not.toBeInTheDocument()
-    expect(screen.queryByTestId('surface-zone')).not.toBeInTheDocument()
-    expect(screen.queryByTestId('underwater-zone')).not.toBeInTheDocument()
-    expect(screen.queryAllByTestId('buoy-pair')).toHaveLength(0)
-    expect(
-      screen.queryByTestId('overlay-drag-layer')?.querySelector(
-        '.site-map__dock',
-      ),
-    ).not.toBeInTheDocument()
-    expect(
-      screen.queryByTestId('overlay-drag-layer')?.querySelector(
-        '.site-map__docking-balls',
-      ),
-    ).not.toBeInTheDocument()
+    const image = screen.getByTestId('course-svg-overlay')
+    expect(image).toHaveAttribute('href', '/lintasan-transparan.svg')
+
+    const svg = image.closest('svg')
+    expect(svg).not.toBeNull()
+    expect(svg?.querySelectorAll('image')).toHaveLength(1)
+    expect(svg?.querySelectorAll('polyline,path,circle')).toHaveLength(0)
+    expect(screen.queryByTestId('boat-marker')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('simulation-boat')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('simulation-track')).not.toBeInTheDocument()
     expect(screen.getByText('GPS position unavailable')).toBeInTheDocument()
   })
 
@@ -64,7 +56,8 @@ describe('NavigationMap', () => {
       screen.queryByRole('button', { name: 'Course' }),
     ).not.toBeInTheDocument()
   })
-  it('centers direct map on the latest GPS position', () => {
+
+  it('centers the direct map on the latest GPS position', () => {
     render(
       <NavigationMap
         telemetry={{
@@ -79,11 +72,12 @@ describe('NavigationMap', () => {
     )
 
     const src =
-      screen.getByTitle('Kolam Deli satellite base map').getAttribute('src') ?? ''
+      screen.getByTitle('Kolam Deli satellite base map').getAttribute('src') ??
+      ''
     expect(decodeURIComponent(src)).toContain('ll=3.4997,98.7059')
   })
 
-  it('keeps the satellite map stable while the GPS cursor updates', () => {
+  it('keeps the satellite map stable while GPS data updates', () => {
     const { rerender } = render(
       <NavigationMap
         telemetry={{
@@ -93,7 +87,6 @@ describe('NavigationMap', () => {
             longitude: 98.7059,
             captured_at: '2026-08-07T09:55:31.000Z',
           },
-          heading_deg: 90,
         }}
       />,
     )
@@ -110,22 +103,19 @@ describe('NavigationMap', () => {
             longitude: 98.706,
             captured_at: '2026-08-07T09:55:32.000Z',
           },
-          heading_deg: 180,
         }}
       />,
     )
 
-    expect(
-      screen.getByTitle('Kolam Deli satellite base map'),
-    ).toHaveAttribute('src', initialSrc)
-    expect(screen.getByTestId('boat-marker')).toHaveAttribute(
-      'data-course-heading',
-      '180',
+    expect(screen.getByTitle('Kolam Deli satellite base map')).toHaveAttribute(
+      'src',
+      initialSrc,
     )
+    expect(screen.queryByTestId('boat-marker')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('simulation-track')).not.toBeInTheDocument()
   })
 
-
-  it('shows the local replay boat on the simulation route', () => {
+  it('keeps fixture telemetry readout without drawing a vessel or route', () => {
     render(
       <NavigationMap
         telemetry={emptyNavigationTelemetry}
@@ -133,119 +123,16 @@ describe('NavigationMap', () => {
       />,
     )
 
-    expect(
-      screen.getByRole('img', { name: 'ASV mission route' }),
-    ).toBeInTheDocument()
-    expect(screen.queryByText('COURSE OVERLAY')).not.toBeInTheDocument()
-    expect(screen.getByTestId('simulation-boat')).toHaveAttribute(
-      'data-progress',
-      '0.5',
-    )
-    expect(screen.getByTestId('simulation-boat')).toHaveAttribute(
-      'data-heading',
-    )
-    expect(screen.getByTestId('simulation-boat')).toHaveAttribute(
-      'transform',
-      expect.stringContaining('rotate('),
-    )
-    const travelledPoints = screen
-      .getByTestId('simulation-track')
-      .getAttribute('points')
-      ?.trim()
-      .split(/\s+/)
-    expect(travelledPoints?.length).toBeGreaterThan(2)
-    expect(travelledPoints?.length).toBeLessThan(missionRoute.length)
+    expect(screen.getByTestId('course-svg-overlay')).toBeInTheDocument()
+    expect(screen.queryByTestId('simulation-boat')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('simulation-track')).not.toBeInTheDocument()
     expect(screen.getByText('Lintasan A · 50%')).toBeInTheDocument()
     expect(
       screen.getByText('ASV navigation · mission active'),
     ).toBeInTheDocument()
   })
 
-  it('keeps a fixture reset on the mission route instead of jumping to GPS track', () => {
-    const idleSimulation = {
-      ...simulation,
-      status: 'idle',
-      elapsedMs: 0,
-      progress: 0,
-      position: missionRoutePosition(0),
-    } as MissionSimulationController
-
-    render(
-      <NavigationMap
-        telemetry={{
-          ...emptyNavigationTelemetry,
-          position: {
-            latitude: -2,
-            longitude: 101,
-            captured_at: '2026-07-20T09:31:00.000Z',
-          },
-          track: [
-            {
-              latitude: -1,
-              longitude: 100,
-              captured_at: '2026-07-20T09:30:00.000Z',
-            },
-            {
-              latitude: -2,
-              longitude: 101,
-              captured_at: '2026-07-20T09:31:00.000Z',
-            },
-          ],
-        }}
-        simulation={idleSimulation}
-        previewMode
-      />,
-    )
-
-    expect(
-      screen.getByRole('img', { name: 'ASV mission route' }),
-    ).toBeInTheDocument()
-    expect(screen.getByTestId('simulation-boat')).toHaveAttribute(
-      'data-progress',
-      '0',
-    )
-    expect(screen.queryByText('GPS track · 2 points')).not.toBeInTheDocument()
-  })
-
-  it('shows the moving replay overlay with live telemetry in direct mode', () => {
-    render(
-      <NavigationMap
-        telemetry={{
-          ...emptyNavigationTelemetry,
-          position: {
-            latitude: -2,
-            longitude: 101,
-            captured_at: '2026-07-26T09:31:00.000Z',
-          },
-          heading_deg: 90,
-          track: [
-            {
-              latitude: -1,
-              longitude: 100,
-              captured_at: '2026-07-26T09:30:00.000Z',
-            },
-            {
-              latitude: -2,
-              longitude: 101,
-              captured_at: '2026-07-26T09:31:00.000Z',
-            },
-          ],
-        }}
-        simulation={simulation}
-      />,
-    )
-
-    expect(screen.getByTestId('simulation-track')).toBeInTheDocument()
-    expect(screen.getByTestId('simulation-boat')).toHaveAttribute(
-      'data-progress',
-      '0.5',
-    )
-    expect(screen.getByText('Lintasan A · 50%')).toBeInTheDocument()
-    expect(screen.queryByTestId('boat-marker')).not.toBeInTheDocument()
-    expect(screen.queryByText('GPS track · 2 points')).not.toBeInTheDocument()
-  })
-
-  it('lets the operator drag the mission overlay onto the pool', () => {
+  it('lets the operator drag the SVG overlay', () => {
     window.localStorage.clear()
     render(
       <NavigationMap
@@ -270,7 +157,7 @@ describe('NavigationMap', () => {
     expect(layer.getAttribute('transform')).toContain('translate(10 -4)')
   })
 
-  it('lets the operator scale the mission overlay with the wheel', () => {
+  it('lets the operator scale the SVG overlay', () => {
     window.localStorage.clear()
     render(
       <NavigationMap
@@ -289,84 +176,7 @@ describe('NavigationMap', () => {
     expect(layer.getAttribute('transform')).toContain('scale(1)')
   })
 
-  it('shows the Kolam Deli site context for the on-site fixture', () => {
-    render(
-      <NavigationMap
-        telemetry={emptyNavigationTelemetry}
-        simulation={{
-          ...simulation,
-          status: 'idle',
-          elapsedMs: 0,
-          progress: 0,
-          position: missionRoutePosition(0),
-        }}
-        previewMode
-      />,
-    )
-
-    expect(screen.queryByTestId('site-context')).not.toBeInTheDocument()
-    expect(screen.getByTitle('Kolam Deli satellite base map')).toHaveAttribute(
-      'src',
-      expect.stringContaining('maps.google.com/maps'),
-    )
-    expect(screen.getByTitle('Kolam Deli satellite base map')).toHaveAttribute(
-      'src',
-      expect.stringContaining('t=k'),
-    )
-    expect(screen.getByTitle('Kolam Deli satellite base map')).toHaveAttribute(
-      'src',
-      expect.stringContaining('z=22'),
-    )
-    expect(
-      screen.queryByRole('link', {
-        name: 'Open Kolam Deli in Google Maps',
-      }),
-    ).not.toBeInTheDocument()
-
-    const mapButton = screen.getByRole('button', { name: 'Map' })
-    expect(mapButton).toHaveAttribute('aria-pressed', 'true')
-    expect(
-      screen.queryByRole('button', { name: 'Course' }),
-    ).not.toBeInTheDocument()
-  })
-
-  it('keeps the boat visible at the dock after mission completion', () => {
-    const completeSimulation = {
-      ...simulation,
-      status: 'complete',
-      elapsedMs: 30_000,
-      progress: 1,
-      position: missionRoutePosition(1),
-    } as MissionSimulationController
-
-    render(
-      <NavigationMap
-        telemetry={emptyNavigationTelemetry}
-        simulation={completeSimulation}
-      />,
-    )
-
-    expect(screen.getByTestId('simulation-boat')).toHaveAttribute(
-      'data-status',
-      'complete',
-    )
-  })
-
-  it('hides static course graphics in direct mode', () => {
-    render(<NavigationMap telemetry={emptyNavigationTelemetry} />)
-
-    expect(screen.queryByTestId('surface-zone')).not.toBeInTheDocument()
-    expect(screen.queryByTestId('underwater-zone')).not.toBeInTheDocument()
-    expect(screen.queryAllByTestId('buoy-pair')).toHaveLength(0)
-    expect(screen.getByRole('button', { name: 'Map' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    )
-    expect(
-      screen.queryByRole('button', { name: 'Course' }),
-    ).not.toBeInTheDocument()
-  })
-  it('refreshes the map without fixing its live position', () => {
+  it('refreshes the satellite map without changing its live GPS center', () => {
     const firstTelemetry = {
       ...emptyNavigationTelemetry,
       position: {
@@ -383,27 +193,25 @@ describe('NavigationMap', () => {
         captured_at: '2026-07-20T09:31:00.000Z',
       },
     }
-    const { rerender } = render(
-      <NavigationMap telemetry={firstTelemetry} />,
-    )
+    const { rerender } = render(<NavigationMap telemetry={firstTelemetry} />)
     const firstMap = screen.getByTitle('Kolam Deli satellite base map')
     const firstMapSrc = firstMap.getAttribute('src')
 
     rerender(<NavigationMap telemetry={latestTelemetry} />)
-    expect(
-      screen.getByTitle('Kolam Deli satellite base map'),
-    ).toHaveAttribute('src', firstMapSrc)
+    expect(screen.getByTitle('Kolam Deli satellite base map')).toHaveAttribute(
+      'src',
+      firstMapSrc,
+    )
 
     fireEvent.click(screen.getByRole('button', { name: 'Refresh map' }))
 
     const refreshedMap = screen.getByTitle('Kolam Deli satellite base map')
     expect(refreshedMap).not.toBe(firstMap)
     expect(refreshedMap).toHaveAttribute('src', firstMapSrc)
-    expect(screen.getByTestId('boat-marker')).toBeInTheDocument()
     expect(screen.getByText('GPS position available')).toBeInTheDocument()
   })
 
-  it('updates the GPS cursor without drawing a history line', () => {
+  it('reports GPS track data without drawing custom route graphics', () => {
     render(
       <NavigationMap
         telemetry={{
@@ -413,7 +221,6 @@ describe('NavigationMap', () => {
             longitude: 101,
             captured_at: '2026-07-20T09:31:00.000Z',
           },
-          heading_deg: 90,
           track: [
             {
               latitude: -1,
@@ -432,68 +239,7 @@ describe('NavigationMap', () => {
 
     expect(screen.getByText('GPS track · 2 points')).toBeInTheDocument()
     expect(screen.queryByTestId('gps-track')).not.toBeInTheDocument()
-    expect(screen.getByTestId('boat-marker')).toHaveAttribute(
-      'data-course-heading',
-      '90',
-    )
-    expect(screen.getByTestId('boat-marker')).toHaveAttribute(
-      'transform',
-      expect.stringContaining('rotate('),
-    )
-  })
-
-  it('does not draw a GPS history line in direct mode', () => {
-    render(
-      <NavigationMap
-        telemetry={{
-          ...emptyNavigationTelemetry,
-          position: {
-            latitude: -2,
-            longitude: 102,
-            captured_at: '2026-07-20T09:32:00.000Z',
-          },
-          track: [
-            {
-              latitude: -1,
-              longitude: 100,
-              captured_at: '2026-07-20T09:30:00.000Z',
-            },
-            {
-              latitude: -2,
-              longitude: 101,
-              captured_at: '2026-07-20T09:31:00.000Z',
-            },
-          ],
-        }}
-      />,
-    )
-
-    expect(screen.queryByTestId('gps-track')).not.toBeInTheDocument()
-    expect(screen.getByTestId('boat-marker')).toBeInTheDocument()
-  })
-
-  it('renders one current position without inventing a path', () => {
-    render(
-      <NavigationMap
-        telemetry={{
-          ...emptyNavigationTelemetry,
-          position: {
-            latitude: -1,
-            longitude: 100,
-            captured_at: '2026-07-20T09:30:00.000Z',
-          },
-          track: [
-            {
-              latitude: -1,
-              longitude: 100,
-              captured_at: '2026-07-20T09:30:00.000Z',
-            },
-          ],
-        }}
-      />,
-    )
-
-    expect(screen.getByTestId('boat-marker')).toBeInTheDocument()
-    expect(screen.queryByTestId('gps-track')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('boat-marker')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('simulation-track')).not.toBeInTheDocument()
   })
 })

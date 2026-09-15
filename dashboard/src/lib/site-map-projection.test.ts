@@ -1,53 +1,36 @@
 import { describe, expect, it } from 'vitest'
 
-import { missionRoute } from './mission-simulation'
 import { kolamDeliSite } from './mission-site'
 import {
   buildGoogleMapsSatelliteEmbedUrl,
-  courseHeadingToSiteOverlay,
-  coursePointToSiteOverlay,
-  kolamDeliOverlayCalibration,
+  coursePointToLintasanOverlay,
+  lintasanOverlayShiftForMapCenter,
 } from './site-map-projection'
 
+describe('Lintasan SVG overlay frame', () => {
+  it('maps course coordinates to the supplied SVG frame', () => {
+    const projected = coursePointToLintasanOverlay({
+      x: (421 + 30) / 5.5,
+      y: (390 + 104) / 5.5,
+    })
 
-describe('Kolam Deli course overlay calibration', () => {
-  it('anchors both mission endpoints at the supplied site pin', () => {
-    const anchor = kolamDeliOverlayCalibration.mapAnchor
-
-    expect(coursePointToSiteOverlay(missionRoute[0])).toEqual(anchor)
-    expect(coursePointToSiteOverlay(missionRoute.at(-1)!)).toEqual(anchor)
+    expect(projected.x).toBeCloseTo((421 / 464) * 100, 5)
+    expect(projected.y).toBeCloseTo((390 / 425) * 100, 5)
   })
 
-  it('mirrors the course vertically into the pool', () => {
-    const anchor = kolamDeliOverlayCalibration.mapAnchor
-    const pointBelowDockInCourse = {
-      x: kolamDeliOverlayCalibration.courseAnchor.x,
-      y: kolamDeliOverlayCalibration.courseAnchor.y + 10,
+  it('keeps the overlay aligned when the live map center recenters', () => {
+    expect(lintasanOverlayShiftForMapCenter(kolamDeliSite.center)).toEqual({
+      x: 0,
+      y: 0,
+    })
+
+    const eastOfSite = {
+      ...kolamDeliSite.center,
+      longitude: kolamDeliSite.center.longitude + 0.00001,
     }
-    const projected = coursePointToSiteOverlay(pointBelowDockInCourse)
+    const shift = lintasanOverlayShiftForMapCenter(eastOfSite)
 
-    expect(projected.y).toBeLessThan(anchor.y)
-  })
-
-  it('keeps the calibrated route inside the supplied pool crop', () => {
-    const projected = missionRoute.map((point) =>
-      coursePointToSiteOverlay(point),
-    )
-    const xValues = projected.map((point) => point.x)
-    const yValues = projected.map((point) => point.y)
-
-    expect(Math.min(...xValues)).toBeGreaterThan(39)
-    expect(Math.max(...xValues)).toBeLessThan(57)
-    expect(Math.min(...yValues)).toBeGreaterThan(46)
-    expect(Math.max(...yValues)).toBeLessThan(74)
-  })
-
-  it('transforms headings from the mirrored geometry instead of reusing raw degrees', () => {
-    const transformedNorth = courseHeadingToSiteOverlay(0)
-    const transformedSouth = courseHeadingToSiteOverlay(180)
-
-    expect(transformedNorth).not.toBeCloseTo(0, 3)
-    expect(Math.abs(transformedNorth - transformedSouth)).toBeCloseTo(180, 5)
+    expect(shift.x).toBeLessThan(0)
   })
 })
 

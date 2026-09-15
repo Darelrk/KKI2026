@@ -67,7 +67,7 @@ describe('DashboardShell', () => {
         name: 'Open Kolam Deli test location in Google Maps',
       }),
     ).not.toBeInTheDocument()
-    expect(screen.getByTestId('simulation-boat')).toBeInTheDocument()
+    expect(screen.getByTestId('course-svg-overlay')).toBeInTheDocument()
     expect(
       document.querySelector('.dashboard-shell__footer'),
     ).not.toBeInTheDocument()
@@ -87,7 +87,7 @@ describe('DashboardShell', () => {
     expect(screen.queryByTestId('simulation-boat')).not.toBeInTheDocument()
   })
 
-  it('shows the live GPS boat marker in direct mode', () => {
+  it('shows the supplied SVG in direct mode', () => {
     render(
       <DashboardShell
         live={liveStatus}
@@ -97,7 +97,7 @@ describe('DashboardShell', () => {
       />,
     )
 
-    expect(screen.getByTestId('boat-marker')).toBeInTheDocument()
+    expect(screen.getByTestId('course-svg-overlay')).toBeInTheDocument()
     expect(screen.queryByTestId('simulation-boat')).not.toBeInTheDocument()
   })
 
@@ -114,16 +114,13 @@ describe('DashboardShell', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Start mission' }))
 
     expect(screen.getAllByText('Mission route active')).toHaveLength(2)
-    expect(screen.getByTestId('boat-marker')).toBeInTheDocument()
+    expect(screen.getByTestId('course-svg-overlay')).toBeInTheDocument()
     expect(screen.queryByTestId('simulation-boat')).not.toBeInTheDocument()
   })
 
   it('renders raw main and underwater camera streams instead of model output', () => {
     render(
-      <DashboardShell
-        live={liveStatus}
-        underwaterFrame={underwaterFrame}
-      />,
+      <DashboardShell live={liveStatus} underwaterFrame={underwaterFrame} />,
     )
 
     expect(
@@ -171,7 +168,7 @@ describe('DashboardShell', () => {
     )
 
     expect(screen.queryByText('GPS position')).not.toBeInTheDocument()
-    expect(screen.getByTestId('boat-marker')).toBeInTheDocument()
+    expect(screen.getByTestId('course-svg-overlay')).toBeInTheDocument()
     expect(screen.getByText('COG')).toBeInTheDocument()
     expect(screen.queryByText('Heading')).not.toBeInTheDocument()
     expect(screen.getByText('144.0°')).toBeInTheDocument()
@@ -186,7 +183,9 @@ describe('DashboardShell', () => {
       screen.getByRole('img', { name: 'Diktisaintek Berdampak' }),
     ).toBeInTheDocument()
     expect(
-      screen.getByRole('img', { name: 'Direktorat Jenderal Pendidikan Tinggi' }),
+      screen.getByRole('img', {
+        name: 'Direktorat Jenderal Pendidikan Tinggi',
+      }),
     ).toBeInTheDocument()
     expect(
       screen.getByRole('img', {
